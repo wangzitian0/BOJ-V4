@@ -1,0 +1,114 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-07-05 04:13+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: bojv4/templates/_account_bar.html:11
+msgid "Settings"
+msgstr "设置"
+
+#: bojv4/templates/_account_bar.html:14
+msgid "Log out"
+msgstr ""
+
+#: bojv4/templates/_account_bar.html:17
+msgid "Log in"
+msgstr ""
+
+#: bojv4/templates/_account_bar.html:19
+msgid "Sign up"
+msgstr ""
+
+#: bojv4/templates/_footer.html:3
+msgid "&copy; 2015 &lt;your company here&gt;"
+msgstr ""
+
+#: bojv4/templates/homepage.html:13
+msgid "Welcome to<br>pinax-project-account"
+msgstr ""
+
+#: bojv4/templates/homepage.html:15
+msgid ""
+"\n"
+"                In addition to what is provided by the \"zero\" project, "
+"this project\n"
+"                provides thorough integration with django-user-accounts, "
+"adding\n"
+"                comprehensive account management functionality. It is a "
+"foundation\n"
+"                suitable for most sites that have user accounts.\n"
+"                "
+msgstr ""
+
+#: bojv4/templates/homepage.html:25
+#, python-format
+msgid ""
+"You can <a href=\"%(login_url)s\" class=\"btn btn-default\">Log In</a> or <a "
+"href=\"%(signup_url)s\" class=\"btn btn-primary\">Sign Up</a> to try out the "
+"site."
+msgstr ""
+
+#: bojv4/templates/homepage.html:31
+msgid "What is Pinax?"
+msgstr ""
+
+#: bojv4/templates/homepage.html:33
+msgid ""
+"\n"
+"                <b>Pinax</b> is an open-source platform based on Django and\n"
+"                intended to provide a starting point for websites. It takes\n"
+"                care of the things that many sites have in common, so you "
+"can\n"
+"                focus on what makes your site different.\n"
+"                "
+msgstr ""
+
+#: bojv4/templates/homepage.html:43
+msgid ""
+"\n"
+"                    <b>Starter projects</b> provide project layout,\n"
+"                    scaffolding, already integrated components and\n"
+"                    ready-to-go code.\n"
+"                    "
+msgstr ""
+
+#: bojv4/templates/homepage.html:51
+msgid ""
+"\n"
+"                    <b>Reusable apps</b> provide common\n"
+"                    infrastructure, back-end functionality,\n"
+"                    and user-facing components.\n"
+"                    "
+msgstr ""
+
+#: bojv4/templates/homepage.html:59
+msgid ""
+"\n"
+"                    <b>Themes</b> provide default templates and\n"
+"                    stylesheets for quick prototyping and easy "
+"customization.\n"
+"                    "
+msgstr ""
+
+#: bojv4/templates/homepage.html:70
+msgid ""
+"\n"
+"                See <a href=\"http://pinaxproject.com/\">pinaxproject.com</"
+"a>\n"
+"                for more information.\n"
+"                "
+msgstr ""
