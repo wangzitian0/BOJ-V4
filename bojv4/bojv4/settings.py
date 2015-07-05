@@ -136,6 +136,7 @@ INSTALLED_APPS = [
     "account",
     "metron",
     "pinax.eventlog",
+    "guardian",
 
     # project
     "bojv4",
@@ -174,7 +175,6 @@ FIXTURE_DIRS = [
     os.path.join(PROJECT_ROOT, "fixtures"),
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 ACCOUNT_OPEN_SIGNUP = True
 ACCOUNT_EMAIL_UNIQUE = True
@@ -186,4 +186,26 @@ ACCOUNT_USE_AUTH_AUTHENTICATE = True
 
 AUTHENTICATION_BACKENDS = [
     "account.auth_backends.UsernameAuthenticationBackend",
+    'guardian.backends.ObjectPermissionBackend',
 ]
+
+
+ANONYMOUS_USER_ID = -1
+
+
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+#EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+# Host for sending e-mail.
+EMAIL_HOST = 'mail.bupt.edu.cn'
+
+# Port for sending e-mail.
+EMAIL_PORT = 25
+
+# Optional SMTP authentication information for EMAIL_HOST.
+EMAIL_HOST_USER = 'wangzitian0@bupt.edu.cn'
+EMAIL_HOST_PASSWORD = 'acm123456'
+#EMAIL_USE_TLS = True 
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
