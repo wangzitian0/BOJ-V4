@@ -19,6 +19,7 @@ user模板被放在/heheda/templates/account
 
 ## secret_settings.py ##
 
+```
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -37,3 +38,4 @@ EMAIL_HOST_PASSWORD = 'xxx'
 #EMAIL_USE_TLS = False 
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+```
