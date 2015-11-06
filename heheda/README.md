@@ -12,12 +12,13 @@ pip install -r requirements.txt
 ./manage.py runserver
 ```
 user模板被放在/heheda/templates/account
+
 邮件模板在/heheda/templates/account/emial
 
 
 
 
-## secret_settings.py ##
+## 自己创建 secret_settings.py ##
 
 ```
 DATABASES = {
