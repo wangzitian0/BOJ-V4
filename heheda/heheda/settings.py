@@ -1,5 +1,5 @@
 import os
-
+import secret_settings
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -8,12 +8,6 @@ BASE_DIR = PACKAGE_ROOT
 DEBUG = True
 #DEBUG = False
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "dev.db",
-    }
-}
 
 ALLOWED_HOSTS = []
 
@@ -191,14 +185,3 @@ AUTHENTICATION_BACKENDS = [
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 #EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # Host for sending e-mail.
-EMAIL_HOST = 'mail.bupt.edu.cn'
-
-# Port for sending e-mail.
-EMAIL_PORT = 25
-
-# Optional SMTP authentication information for EMAIL_HOST.
-EMAIL_HOST_USER = 'wangzitian0@bupt.edu.cn'
-EMAIL_HOST_PASSWORD = 'acm123456'
-#EMAIL_USE_TLS = False 
-
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

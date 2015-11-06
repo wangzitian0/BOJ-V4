@@ -11,8 +11,8 @@
         "pk": 2,
         "model": "sites.site",
         "fields": {
-            "domain": "example.com",
-            "name": "example.com"
+            "domain": "code.bupt.edu.cn",
+            "name": "code.bupt.edu.cn"
         }
     }
 ]
