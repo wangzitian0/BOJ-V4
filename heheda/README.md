@@ -18,7 +18,7 @@ user模板被放在/heheda/templates/account
 
 
 
-## 自己创建 secret_settings.py ##
+## 自己创建 heheda/secret_settings.py ##
 
 ```
 DATABASES = {
