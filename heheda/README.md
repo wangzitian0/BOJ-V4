@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ```
 user模板被放在/heheda/templates/account
 
-邮件模板在/heheda/templates/account/emial
+邮件模板在/heheda/templates/account/email
 
 
 
