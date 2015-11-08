@@ -1,0 +1,5 @@
+
+
+class CONF():
+    SUBMISSION_STATUS_LENGTH = 16
+    
