@@ -1,6 +1,6 @@
 from django.db import models
 from problem.models import Problem
-from myuser.models import UserProfile
+from myuser.models import BojUser
 
 # Create your models here.
 class Contest(models.Model):
@@ -29,7 +29,7 @@ class ContestNotice(models.Model):
 
 
 class ContestClarification(models.Model):
-    author = models.ForeignKey('myuser.UserProfile')
+    author = models.ForeignKey('myuser.BojUser')
     contest = models.ForeignKey('Contest')
     question = models.TextField()
     answer = models.TextField()

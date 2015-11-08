@@ -16,7 +16,9 @@ class Manage(models.Model):
     Group = models.ForeignKey('Group')
     class Meta:
         permissions = (
-            ('manage_student', 'manage_contest','view_contest'),
+            ('manage_student','manage_student'),
+            ('manage_contest','manage_contest'),
+            ('view_contest','view_contest'),
         )
 
 class GroupContest(models.Model):

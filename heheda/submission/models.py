@@ -1,5 +1,6 @@
 from django.db import models
 from problem.models import Problem
+from myuser.models import BojUser
 # Create your models here.
 class Submission( models.Model):
     user = models.ForeignKey('myuser.BojUser')

@@ -140,13 +140,12 @@ INSTALLED_APPS = [
     "heheda",
     "myuser",
     "guardian",
-]
-
-"""
     "problem",
-    "group",
-    "contest",
     "submission",
+    "contest",
+    "group",
+]
+"""
 """
 
 ANONYMOUS_USER_ID = -1

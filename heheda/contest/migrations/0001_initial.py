@@ -7,8 +7,8 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('problem', '0003_auto_20151107_2154'),
-        ('myuser', '0003_auto_20151108_1201'),
+        ('myuser', '0007_auto_20151108_2035'),
+        ('problem', '0001_initial'),
     ]
 
     operations = [
@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('question', models.TextField()),
                 ('answer', models.TextField()),
-                ('author', models.ForeignKey(to='myuser.UserProfile')),
+                ('author', models.ForeignKey(to='myuser.BojUser')),
                 ('contest', models.ForeignKey(to='contest.Contest')),
             ],
         ),
