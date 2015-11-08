@@ -137,10 +137,15 @@ INSTALLED_APPS = [
     # project
     "heheda",
     "myuser",
-    "problem",
-    "group",
     "guardian",
 ]
+
+"""
+    "problem",
+    "group",
+    "contest",
+    "submission",
+"""
 
 ANONYMOUS_USER_ID = -1
 

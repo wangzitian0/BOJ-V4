@@ -1,4 +1,5 @@
 from django.db import models
+from myuser.models import UserProfile
 
 # Create your models here.
 class Problem(models.Model):

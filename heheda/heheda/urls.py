@@ -11,8 +11,8 @@ urlpatterns = patterns(
     "",
     url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
     url(r"^admin/", include(admin.site.urls)),
-    url(r"^account/settings/$", myuser.views.SettingsView.as_view(), name="account_settings"),
-    url(r"^account/signup/$", myuser.views.SignupView.as_view(), name="account_signup"),
+    url(r"^account/settings/$", myuser.views.BojSettingsView.as_view(), name="account_settings"),
+    url(r"^account/signup/$", myuser.views.BojUserView.as_view(), name="bojuser_signup"),
     url(r"^account/", include("account.urls")),
 )
 
