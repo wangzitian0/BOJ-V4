@@ -1,5 +1,5 @@
 import os
-import secret_settings
+from secret_settings import *
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -9,7 +9,8 @@ DEBUG = True
 #DEBUG = False
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['bojv4.bupt.edu.cn']
+DEFAULT_FROM_EMAIL = 'webmaster@bupt.edu.cn'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -106,6 +107,8 @@ MIDDLEWARE_CLASSES = [
     "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'django.contrib.auth.backends.ModelBackend', # this is default
+    'guardian.backends.ObjectPermissionBackend',
 ]
 
 ROOT_URLCONF = "heheda.urls"
@@ -134,7 +137,12 @@ INSTALLED_APPS = [
     # project
     "heheda",
     "myuser",
+    "problem",
+    "group",
+    "guardian",
 ]
+
+ANONYMOUS_USER_ID = -1
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
