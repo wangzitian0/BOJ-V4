@@ -1,5 +1,5 @@
 from django.db import models
-from myuser.models import UserProfile
+from myuser.models import BojUser
 
 # Create your models here.
 class Problem(models.Model):
@@ -14,7 +14,7 @@ class Problem(models.Model):
     codelength = models.IntegerField(default=MAX_LEN_CODE) #code len limit?
     prob_desc = models.TextField(max_length=MAX_LEN_DESC, default='None')
     is_spj = models.IntegerField(default=0) # 0: no spj; 1: all data spj
-    author = models.ForeignKey('myuser.UserProfile')
+    author = models.ForeignKey('myuser.BojUser')
     data_count = models.IntegerField(default=0) # number of test data
 
  

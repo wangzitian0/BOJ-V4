@@ -11,6 +11,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['bojv4.bupt.edu.cn']
 DEFAULT_FROM_EMAIL = 'webmaster@bupt.edu.cn'
+SITE_URL='localhost:8080'
+SITE_NAME='bojv4'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -27,8 +29,8 @@ TIME_ZONE = 'Asia/Shanghai'
 #LANGUAGE_CODE = "en-us"
 LANGUAGE_CODE = 'zh-hans'
 
-SITE_ID = int(os.environ.get("SITE_ID", 1))
-
+#SITE_ID = int(os.environ.get("SITE_ID", 1))
+SITE_ID = 1
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True

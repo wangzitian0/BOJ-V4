@@ -11,6 +11,8 @@ pip install -r requirements.txt
 ./manage.py loaddata sites
 ./manage.py runserver
 ```
+网站基本信息在fixture/sites。json里面，loaddata sites之后会自动设置
+
 user模板被放在/heheda/templates/account
 
 邮件模板在/heheda/templates/account/email
