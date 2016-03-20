@@ -3,3 +3,4 @@
 db.sql*
 *~*
 *migrations*
+bojv4/secret.py
