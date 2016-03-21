@@ -1,6 +1,6 @@
 *.py[co]
 *.sw[nop]
-db.sql*
+dev.db
 *~*
 *migrations*
 bojv4/secret.py
