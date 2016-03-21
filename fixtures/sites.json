@@ -3,16 +3,8 @@
         "pk": 1,
         "model": "sites.site",
         "fields": {
-            "domain": "localhost:8000",
-            "name": "example.com [localhost]"
-        }
-    },
-    {
-        "pk": 2,
-        "model": "sites.site",
-        "fields": {
-            "domain": "example.com",
-            "name": "example.com"
+            "domain": "10.105.242.26:8000",
+            "name": "BOJv4"
         }
     }
 ]

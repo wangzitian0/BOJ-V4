@@ -1,18 +1,14 @@
 import os
-
+from secret_settings import *
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
-BASE_DIR = PACKAGE_ROOT
+BASE_DIR = PROJECT_ROOT
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "dev.db",
-    }
-}
 
 ALLOWED_HOSTS = []
 
@@ -23,11 +19,12 @@ ALLOWED_HOSTS = []
 # timezone as the operating system.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Shanghai"
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = "en-us"
+#LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-hans"
 
 SITE_ID = int(os.environ.get("SITE_ID", 1))
 
@@ -44,7 +41,7 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = os.path.join(PACKAGE_ROOT, "site_media", "media")
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, "site_media", "media")
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -55,7 +52,7 @@ MEDIA_URL = "/site_media/media/"
 # Don"t put anything in this directory yourself; store your static files
 # in apps" "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.join(PACKAGE_ROOT, "site_media", "static")
+STATIC_ROOT = os.path.join(PROJECT_ROOT, "site_media", "static")
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -73,14 +70,12 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = "=q_e%)utjhv5y*c3rp5uk8xqeo6(1an$w)=7$)wa2+-h=d8q)u"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(PACKAGE_ROOT, "templates"),
+            os.path.join(PROJECT_ROOT, "templates"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -171,8 +166,8 @@ FIXTURE_DIRS = [
     os.path.join(PROJECT_ROOT, "fixtures"),
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+#==================
 ACCOUNT_OPEN_SIGNUP = True
 ACCOUNT_EMAIL_UNIQUE = True
 ACCOUNT_EMAIL_CONFIRMATION_REQUIRED = False
@@ -181,6 +176,13 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
 ACCOUNT_USE_AUTH_AUTHENTICATE = True
 
+#==================
 AUTHENTICATION_BACKENDS = [
     "account.auth_backends.UsernameAuthenticationBackend",
 ]
+
+
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
