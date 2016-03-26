@@ -1,10 +1,17 @@
+from django.utils.translation import ugettext_lazy as _
 class CONST():
     LANGUAGE = (
-        ( 'gcc', 'GNU C'),
         ( 'g++', 'GNU C++'),
+        ( 'gcc', 'GNU C'),
         ( 'java', 'java'),
+        ( 'g+11', 'GNU C++ 11'),
     )
 
+    GENDER = (
+        ( 'S', _('Secret')),
+        ( 'F', _('Female')),
+        ( 'M', _('Male')),
+    )
     STATUS_CODE = (
         ( 'PD', 'Pending'),
         ( 'SE', 'System Error'),

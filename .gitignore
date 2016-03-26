@@ -4,3 +4,6 @@ dev.db
 *~*
 *migrations*
 bojv4/secret_settings.py
+node_modules/*
+static/_build/*
+
