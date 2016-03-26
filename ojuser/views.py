@@ -1,15 +1,15 @@
-from django.shortcuts import render
 from account.views import SignupView, SettingsView
 from django.views.generic.edit import FormView
-from  .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
+from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
 from django.contrib import messages
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 
-# Create your views here.
+
 class OjUserSignupView(SignupView):
 
     form_class = UserProfileForm
+
     def after_signup(self, form):
         self.create_profile(form)
         super(OjUserSignupView, self).after_signup(form)
@@ -31,7 +31,6 @@ class OjUserSettingsView(SettingsView):
         profile.save()
         super(OjUserSettingsView, self).update_account(form)
 
-
     def get_initial(self):
         initial = super(OjUserSettingsView, self).get_initial()
         profile = self.request.user.profile
@@ -39,9 +38,6 @@ class OjUserSettingsView(SettingsView):
         return initial
 
 
-
-
-#  from django.core.urlresolvers import reverse_lazy
 class OjUserProfilesView(FormView):
     template_name = 'account/profiles.html'
     form_class = UserProfilesForm
@@ -73,5 +69,3 @@ class OjUserProfilesView(FormView):
                 self.messages["profiles_updated"]["text"]
             )
         return redirect(self.get_success_url())
-
-

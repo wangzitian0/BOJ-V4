@@ -134,6 +134,7 @@ INSTALLED_APPS = [
     # project
     "bojv4",
     "ojuser",
+    "problem",
 ]
 
 # A sample logging configuration. The only tangible logging
