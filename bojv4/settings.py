@@ -2,6 +2,8 @@ import os
 from secret_settings import *
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+#  PACKAGE_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, os.pardir))
+PACKAGE_ROOT = PROJECT_ROOT
 BASE_DIR = PROJECT_ROOT
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -131,6 +133,7 @@ INSTALLED_APPS = [
 
     # project
     "bojv4",
+    "ojuser",
 ]
 
 # A sample logging configuration. The only tangible logging

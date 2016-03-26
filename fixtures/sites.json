@@ -3,7 +3,7 @@
         "pk": 1,
         "model": "sites.site",
         "fields": {
-            "domain": "10.105.242.26:8000",
+            "domain": "10.105.242.26:8080",
             "name": "BOJv4"
         }
     }
