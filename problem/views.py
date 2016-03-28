@@ -20,3 +20,4 @@ class ProblemDataViewSet(viewsets.ModelViewSet):
 class ProblemListView(ListView):
 
     model = Problem
+    paginate_by = 10

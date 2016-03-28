@@ -132,6 +132,7 @@ INSTALLED_APPS = [
     "pinax.webanalytics",
     "guardian",
     "rest_framework",
+    "bootstrap_pagination",
 
     # project
     "bojv4",
