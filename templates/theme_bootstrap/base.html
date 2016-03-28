@@ -37,12 +37,10 @@
                             </div>
                             <div class="collapse navbar-collapse navbar-responsive-collapse">
                                 {% block nav %}
-                                    {% comment %}
-                                        <ul class="nav navbar-nav">
-                                            <li><a href="#tab_one">One</a></li>
-                                            <li><a href="#tab_two">Two</a></li>
-                                        </ul>
-                                    {% endcomment %}
+                                    <ul class="nav navbar-nav">
+                                        <li><a href="#tab_one">One</a></li>
+                                        <li><a href="#tab_two">Two</a></li>
+                                    </ul>
                                 {% endblock %}
                                 {% block account_bar %}{% include "_account_bar.html" %}{% endblock %}
                             </div>

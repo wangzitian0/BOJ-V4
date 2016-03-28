@@ -1,0 +1,23 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}Problem List{% endblock %}
+
+{% block body_class %}problem-list{% endblock %}
+
+{% block body_base %}
+<section class="jumbotron">
+  <div class="container">
+    {% include "_messages.html" %}
+    <h1>Articles</h1>
+    <ul>
+      {% for problem in object_list %}
+      <li>{{ problem.title }}</li>
+      {% empty %}
+      <li>No articles yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}

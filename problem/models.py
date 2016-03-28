@@ -18,6 +18,9 @@ class Problem(models.Model):
     # 0: no spj; 1: all data spj
     author = models.ForeignKey(User)
 
+    def __unicode__(self):
+        return str(self.pk) + str(self.title)
+
     class Meta:
         permissions = (
             ('view', 'View Problem'),
@@ -33,3 +36,6 @@ class ProblemData(models.Model):
     problem = models.ForeignKey(Problem)
     score = models.IntegerField(default=0)
     data = models.FileField(upload_to=upload_dir)
+
+    def __unicode__(self):
+        return str(self.problem.pk) + str(self.pk)
