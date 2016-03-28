@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     "account",
     "pinax.eventlog",
     "pinax.webanalytics",
+    "guardian",
 
     # project
     "bojv4",
@@ -182,7 +183,9 @@ ACCOUNT_USE_AUTH_AUTHENTICATE = True
 
 #==================
 AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
     "account.auth_backends.UsernameAuthenticationBackend",
+    "guardian.backends.ObjectPermissionBackend",
 ]
 
 

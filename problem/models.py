@@ -17,5 +17,19 @@ class Problem(models.Model):
     is_spj = models.IntegerField(default=0)
     # 0: no spj; 1: all data spj
     author = models.ForeignKey(User)
-    data_count = models.IntegerField(default=0)
-    # number of test data
+
+    class Meta:
+        permissions = (
+            ('view', 'View Problem'),
+            ('edit', 'Edit Problem'),
+        )
+
+
+def upload_dir(instance, filename):
+    return 'documents/{0}/{1}'.format(instance.problem.pk, str(filename))
+
+
+class ProblemData(models.Model):
+    problem = models.ForeignKey(Problem)
+    score = models.IntegerField(default=0)
+    data = models.FileField(upload_to=upload_dir)
