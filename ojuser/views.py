@@ -4,6 +4,14 @@ from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import User
+from rest_framework import viewsets
+from .serializers import UserSerializer
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 class OjUserSignupView(SignupView):

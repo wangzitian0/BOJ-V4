@@ -2,17 +2,24 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
-
 from django.contrib import admin
-import ojuser.views
+
+from rest_framework import routers
+from problem.views import ProblemViewSet, ProblemDataViewSet
+from ojuser.views import UserViewSet
+
+
+router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'problems', ProblemViewSet)
+router.register(r'problemdatas', ProblemDataViewSet)
 
 urlpatterns = [
     url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
     url(r"^admin/", include(admin.site.urls)),
-    url(r"^account/signup/$", ojuser.views.OjUserSignupView.as_view(), name="account_signup"),
-    url(r"^account/settings/$", ojuser.views.OjUserSettingsView.as_view(), name="account_settings"),
-    url(r"^account/profiles/$", ojuser.views.OjUserProfilesView.as_view(), name="account_profiles"),
-    url(r"^account/", include("account.urls")),
+    url(r"^account/", include("ojuser.urls")),
+    url(r'^api/', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

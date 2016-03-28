@@ -6,8 +6,8 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir
 PACKAGE_ROOT = PROJECT_ROOT
 BASE_DIR = PROJECT_ROOT
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#  Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+#  BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
 
@@ -25,7 +25,7 @@ TIME_ZONE = "Asia/Shanghai"
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-#LANGUAGE_CODE = "en-us"
+#  LANGUAGE_CODE = "en-us"
 LANGUAGE_CODE = "en-hans"
 
 SITE_ID = int(os.environ.get("SITE_ID", 1))
@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     "pinax.eventlog",
     "pinax.webanalytics",
     "guardian",
+    "rest_framework",
 
     # project
     "bojv4",
@@ -172,7 +173,7 @@ FIXTURE_DIRS = [
 ]
 
 
-#==================
+#  ==================
 ACCOUNT_OPEN_SIGNUP = True
 ACCOUNT_EMAIL_UNIQUE = True
 ACCOUNT_EMAIL_CONFIRMATION_REQUIRED = False
@@ -181,7 +182,7 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
 ACCOUNT_USE_AUTH_AUTHENTICATE = True
 
-#==================
+#  ==================
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "account.auth_backends.UsernameAuthenticationBackend",
@@ -193,3 +194,11 @@ if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
