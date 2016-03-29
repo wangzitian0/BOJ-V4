@@ -1,3 +1,6 @@
-#  from django.contrib import admin
+from django.contrib import admin
+from .models import UserProfile, GroupProfile, Consisting
 
-# Register your models here.
+admin.site.register(UserProfile)
+admin.site.register(GroupProfile)
+admin.site.register(Consisting)

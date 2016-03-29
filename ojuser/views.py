@@ -4,9 +4,10 @@ from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from .serializers import UserSerializer
+from django.views.generic import ListView, DetailView
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -77,3 +78,25 @@ class OjUserProfilesView(FormView):
                 self.messages["profiles_updated"]["text"]
             )
         return redirect(self.get_success_url())
+
+
+class GroupListView(ListView):
+
+    model = Group
+    template_name = 'ojuser/group_list.html'
+
+    def get_queryset(self):
+        return self.request.user.groups.all()
+
+
+class GroupDetailView(DetailView):
+
+    model = Group
+    template_name = 'ojuser/group_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupDetailView, self).get_context_data(**kwargs)
+        ob = context['object']
+        context['parents'] = ob.profile.parents()
+        context['children'] = ob.profile.children.all()
+        return context

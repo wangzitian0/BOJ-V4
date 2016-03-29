@@ -23,8 +23,7 @@ class Problem(models.Model):
 
     class Meta:
         permissions = (
-            ('view', 'View Problem'),
-            ('edit', 'Edit Problem'),
+            ('view_problem', 'View Problem'),
         )
 
 

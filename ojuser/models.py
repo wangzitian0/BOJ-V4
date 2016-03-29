@@ -12,9 +12,12 @@ class UserProfile(models.Model):
     prefer_lang = models.CharField(max_length=4)
 
 
-class GroupProfile(node_factory('ConsistOf')):
+class GroupProfile(node_factory('Consisting')):
     group = models.OneToOneField(Group, related_name='profile')
 
+    def __unicode__(self):
+        return str(self.group)
 
-class ConsistOf(edge_factory(GroupProfile, concrete=False)):
+
+class Consisting(edge_factory(GroupProfile, concrete=False)):
     name = models.CharField(max_length=32, blank=True, null=True)
