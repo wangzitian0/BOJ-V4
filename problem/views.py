@@ -1,9 +1,13 @@
 from rest_framework import viewsets
-from .models import Problem, ProblemData
-from .serializers import ProblemSerializer, ProblemDataSerializer
-from django.views.generic import ListView, DetailView
 from rest_framework.permissions import IsAuthenticated
 from guardian.shortcuts import get_objects_for_user
+
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.core.urlresolvers import reverse_lazy
+
+from .models import Problem, ProblemData
+from .serializers import ProblemSerializer, ProblemDataSerializer
 
 
 class ProblemViewSet(viewsets.ModelViewSet):
@@ -38,3 +42,20 @@ class ProblemDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(ProblemDetailView, self).get_context_data(**kwargs)
         return context
+
+
+class ProblemCreateView(CreateView):
+    model = Problem
+    fields = '__all__'
+    template_name_suffix = '_create_form'
+
+
+class ProblemUpdateView(UpdateView):
+    model = Problem
+    fields = '__all__'
+    template_name_suffix = '_update_form'
+
+
+class ProblemDeleteView(DeleteView):
+    model = Problem
+    success_url = reverse_lazy('problem:problem-list')
