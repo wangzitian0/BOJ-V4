@@ -3,24 +3,22 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from bojv4.conf import CONST
 
 
 class Problem(models.Model):
-    title = models.CharField(max_length=CONST.PROBLEM_TITLE_LENGTH, default='Untitled')
-    running_time = models.IntegerField(default=CONST.PROBLEM_DEFAULT_RUNNING_TIME)
-    #  time limit in ms
-    running_memory = models.IntegerField(default=CONST.PROBLEM_DEFAULT_RUNNING_MEMORY)
-    #  memory limit in kb
-    codelength = models.IntegerField(default=CONST.PROBLEM_MAX_LEN_CODE)
-    #  code len limit?
-    prob_desc = models.TextField(max_length=CONST.PROBLEM_MAX_LEN_DESC, default='None')
+    title = models.CharField(max_length=50, default='Untitled')
+    time_limit = models.IntegerField(default=1000)
+    memory_limit = models.IntegerField(default=65536)
+    code_length_limit = models.IntegerField(default=65536)
+    problem_desc = models.TextField(default='None')
     is_spj = models.IntegerField(default=0)
-    # 0: no spj; 1: all data spj
     author = models.ForeignKey(User)
+    created_time = models.DateTimeField(auto_now_add=True)
+    last_updated_time = models.DateTimeField(auto_now=True)
+    allowed_lang = models.ManyToManyField('Language', related_name='problems')
 
     def __unicode__(self):
-        return str(self.pk) + str(self.title)
+        return str(self.pk) + " " + str(self.title)
 
     def get_absolute_url(self):
         return reverse('problem:problem-detail', kwargs={'pk': self.pk})
@@ -31,6 +29,15 @@ class Problem(models.Model):
         )
 
 
+class Language(models.Model):
+    key = models.CharField(max_length=6, unique=True)
+    name = models.CharField(max_length=30)
+    desc = models.TextField(default='None')
+
+    def __unicode__(self):
+        return str(self.name)
+
+
 def upload_dir(instance, filename):
     return 'documents/{0}/{1}'.format(instance.problem.pk, str(filename))
 
@@ -39,6 +46,21 @@ class ProblemData(models.Model):
     problem = models.ForeignKey(Problem)
     score = models.IntegerField(default=0)
     data = models.FileField(upload_to=upload_dir)
+    info = models.TextField(null=True)
 
     def __unicode__(self):
-        return str(self.problem.pk) + str(self.pk)
+        return str(self.problem.pk) + " " + str(self.pk)
+
+
+class Submission(models.Model):
+    user = models.ForeignKey(User)
+    problem = models.ForeignKey(Problem)
+    datetime = models.DateTimeField(auto_now_add=True)
+    score = models.IntegerField(default=0)
+    running_time = models.IntegerField(default=0)
+    running_memory = models.IntegerField(default=0)
+    info = models.TextField(null=True)
+    Language = models.ForeignKey(Language, related_name='submissions')
+
+    def __unicode__(self):
+        return "-".join([str(self.pk), str(self.user), str(self.problem), str(self.datetime)])

@@ -6,8 +6,9 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
 
-from .models import Problem, ProblemData
+from .models import Problem, ProblemData, Language, Submission
 from .serializers import ProblemSerializer, ProblemDataSerializer
+from .serializers import SubmissionSerializer, LanguageSerializer
 
 
 class ProblemViewSet(viewsets.ModelViewSet):
@@ -19,6 +20,18 @@ class ProblemViewSet(viewsets.ModelViewSet):
 class ProblemDataViewSet(viewsets.ModelViewSet):
     queryset = ProblemData.objects.all()
     serializer_class = ProblemDataSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class SubmissionViewSet(viewsets.ModelViewSet):
+    queryset = Submission.objects.all()
+    serializer_class = SubmissionSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class LanguageViewSet(viewsets.ModelViewSet):
+    queryset = Language.objects.all()
+    serializer_class = LanguageSerializer
     permission_classes = (IsAuthenticated,)
 
 
