@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 
+from filer.fields.file import FilerFileField
+
 
 class Problem(models.Model):
     title = models.CharField(max_length=50, default='Untitled')
@@ -45,8 +47,9 @@ def upload_dir(instance, filename):
 class ProblemData(models.Model):
     problem = models.ForeignKey(Problem)
     score = models.IntegerField(default=0)
-    data = models.FileField(upload_to=upload_dir)
-    info = models.TextField(null=True)
+    #  data = models.FileField(upload_to=upload_dir)
+    data = FilerFileField(related_name="problemdata")
+    info = models.TextField(blank=True)
 
     def __unicode__(self):
         return str(self.problem.pk) + " " + str(self.pk)
@@ -59,7 +62,7 @@ class Submission(models.Model):
     score = models.IntegerField(default=0)
     running_time = models.IntegerField(default=0)
     running_memory = models.IntegerField(default=0)
-    info = models.TextField(null=True)
+    info = models.TextField(blank=True)
     Language = models.ForeignKey(Language, related_name='submissions')
 
     def __unicode__(self):

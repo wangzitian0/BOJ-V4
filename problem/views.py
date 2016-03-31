@@ -7,8 +7,16 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
 
 from .models import Problem, ProblemData, Language, Submission
+from filer.models.filemodels import File
+
 from .serializers import ProblemSerializer, ProblemDataSerializer
-from .serializers import SubmissionSerializer, LanguageSerializer
+from .serializers import SubmissionSerializer, LanguageSerializer, FileSerializer
+
+
+class FileViewSet(viewsets.ModelViewSet):
+    queryset = File.objects.all()
+    serializer_class = FileSerializer
+    permission_classes = (IsAuthenticated,)
 
 
 class ProblemViewSet(viewsets.ModelViewSet):

@@ -139,6 +139,9 @@ INSTALLED_APPS = [
     "bojv4",
     "ojuser",
     "problem",
+    "easy_thumbnails",
+    "filer",
+    "mptt",
 ]
 
 # A sample logging configuration. The only tangible logging
@@ -189,6 +192,7 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "account.auth_backends.UsernameAuthenticationBackend",
     "guardian.backends.ObjectPermissionBackend",
+    "filer.server.backends.default.DefaultServer",
 ]
 
 
@@ -204,3 +208,14 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+#  ==============================================
+
+THUMBNAIL_PROCESSORS = (
+    'easy_thumbnails.processors.colorspace',
+    'easy_thumbnails.processors.autocrop',
+    #  'easy_thumbnails.processors.scale_and_crop',
+    'filer.thumbnail_processors.scale_and_crop_with_subject_location',
+    'easy_thumbnails.processors.filters',
+)
+FILER_ENABLE_PERMISSIONS = True
+FILER_CANONICAL_URL = 'sharing/'
