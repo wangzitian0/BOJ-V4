@@ -6,7 +6,7 @@ from filer.models.filemodels import File
 class FileSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = File
-        fields = ['url', 'file', ]
+        fields = ['file', ]
 
 
 class ProblemSerializer(serializers.HyperlinkedModelSerializer):
