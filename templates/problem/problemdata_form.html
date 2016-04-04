@@ -1,0 +1,115 @@
+{% extends "site_base.html" %}
+{% load upload_tags %}
+{% load i18n %}
+{% load bootstrap %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/style.css">
+<!-- blueimp Gallery styles -->
+<link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/blueimp-gallery.min.css">
+<!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+<link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/jquery.fileupload-ui.css">
+<!-- CSS adjustments for browsers with JavaScript disabled -->
+<noscript><link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/jquery.fileupload-ui-noscript.css"></noscript>
+{% endblock %}
+
+{% block head_title %}pinax-project-account{% endblock %}
+
+{% block body_class %}home{% endblock %}
+
+{% block body %}
+  <!-- The file upload form used as target for the file upload widget -->
+  <form id="fileupload" method="post" action="." enctype="multipart/form-data">{% csrf_token %}
+    <!-- Redirect browsers with JavaScript disabled to the origin page -->
+    <!--<noscript><input type="hidden" name="redirect" value="http://blueimp.github.io/jQuery-File-Upload/"></noscript>-->
+    <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+    <div class="row fileupload-buttonbar">
+      <div class="col-lg-7">
+        <!-- The fileinput-button span is used to style the file input field as button -->
+        <span class="btn btn-success fileinput-button">
+          <i class="glyphicon glyphicon-plus"></i>
+          <span>Add files...</span>
+          <input type="file" name="file" multiple>
+        </span>
+        <button type="submit" class="btn btn-primary start">
+          <i class="glyphicon glyphicon-upload"></i>
+          <span>Start upload</span>
+        </button>
+        <button type="reset" class="btn btn-warning cancel">
+          <i class="glyphicon glyphicon-ban-circle"></i>
+          <span>Cancel upload</span>
+        </button>
+        <button type="button" class="btn btn-danger delete">
+          <i class="glyphicon glyphicon-trash"></i>
+          <span>Delete</span>
+        </button>
+        <input type="checkbox" class="toggle">
+        <!-- The loading indicator is shown during file processing -->
+        <span class="fileupload-loading"></span>
+      </div>
+      <!-- The global progress information -->
+      <div class="col-lg-5 fileupload-progress fade">
+        <!-- The global progress bar -->
+        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar progress-bar-success" style="width:0%;"></div>
+        </div>
+        <!-- The extended global progress information -->
+        <div class="progress-extended">&nbsp;</div>
+      </div>
+    </div>
+    <!-- The table listing the files available for upload/download -->
+    <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
+  </form>
+<!-- The blueimp Gallery widget -->
+<div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">
+  <div class="slides"></div>
+  <h3 class="title"></h3>
+  <a class="prev">‹</a>
+  <a class="next">›</a>
+  <a class="close">×</a>
+  <a class="play-pause"></a>
+  <ol class="indicator"></ol>
+</div>
+{% endblock %}
+{% block extra_body %}
+{% upload_js %}
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+<script src="{{ STATIC_URL }}jfu/js/vendor/jquery.ui.widget.js"></script>
+<!-- The Templates plugin is included to render the upload/download listings -->
+<script src="{{ STATIC_URL }}jfu/js/tmpl.min.js"></script>
+<!-- The Load Image plugin is included for the preview images and image resizing functionality -->
+<script src="{{ STATIC_URL }}jfu/js/load-image.min.js"></script>
+<!-- The Canvas to Blob plugin is included for image resizing functionality -->
+<script src="{{ STATIC_URL }}jfu/js/canvas-to-blob.min.js"></script>
+<!-- Bootstrap JS is not required, but included for the responsive demo navigation -->
+<script src="{{ STATIC_URL }}jfu/js/bootstrap.min.js"></script>
+<!-- blueimp Gallery script -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.blueimp-gallery.min.js"></script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.iframe-transport.js"></script>
+<!-- The basic File Upload plugin -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.fileupload.js"></script>
+<!-- The File Upload processing plugin -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.fileupload-process.js"></script>
+<!-- The File Upload image preview & resize plugin -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.fileupload-image.js"></script>
+<!-- The File Upload audio preview plugin -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.fileupload-audio.js"></script>
+<!-- The File Upload video preview plugin -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.fileupload-video.js"></script>
+<!-- The File Upload validation plugin -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.fileupload-validate.js"></script>
+<!-- The File Upload user interface plugin -->
+<script src="{{ STATIC_URL }}jfu/js/jquery.fileupload-ui.js"></script>
+<!-- The main application script -->
+<script src="{{ STATIC_URL }}jfu/js/main.js"></script>
+<script src="{{ STATIC_URL }}jfu/js/locale.js"></script>
+<script src="{{ STATIC_URL }}jfu/js/csrf.js"></script>
+<!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->
+<!--[if gte IE 8]>
+<script src="{{ STATIC_URL }}jfu/js/cors/jquery.xdr-transport.js"></script>
+<![endif]-->
+
+{% endblock %}

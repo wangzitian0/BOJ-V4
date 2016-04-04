@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
+from filer.models.filemodels import File
 from django.core.urlresolvers import reverse
 from django.db import models
 
-from filer.fields.file import FilerFileField
+#  from filer.fields.file import FilerFileField
 
 
 class Problem(models.Model):
@@ -44,11 +45,10 @@ def upload_dir(instance, filename):
     return 'documents/{0}/{1}'.format(instance.problem.pk, str(filename))
 
 
-class ProblemData(models.Model):
-    problem = models.ForeignKey(Problem)
+class ProblemDataInfo(models.Model):
+    problem = models.ForeignKey(Problem, related_name="datainfo")
     score = models.IntegerField(default=0)
-    #  data = models.FileField(upload_to=upload_dir)
-    data = FilerFileField(related_name="problemdata")
+    data = models.OneToOneField(File, null=True, blank=True, related_name="datainfo")
     info = models.TextField(blank=True)
 
     def __unicode__(self):

@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import Problem, ProblemData, Language, Submission
+from .models import Problem, ProblemDataInfo, Language, Submission
 from filer.models.filemodels import File
 
 
 class FileSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = File
-        fields = ['file', ]
+        fields = ['url', 'name', 'size', 'file', ]
 
 
 class ProblemSerializer(serializers.HyperlinkedModelSerializer):
@@ -14,11 +14,10 @@ class ProblemSerializer(serializers.HyperlinkedModelSerializer):
         model = Problem
 
 
-class ProblemDataSerializer(serializers.HyperlinkedModelSerializer):
-    data = FileSerializer()
+class ProblemDataInfoSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
-        model = ProblemData
+        model = ProblemDataInfo
 
 
 class LanguageSerializer(serializers.HyperlinkedModelSerializer):

@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 from django.contrib import admin
 
 from rest_framework import routers
-from problem.views import ProblemViewSet, ProblemDataViewSet
+from problem.views import ProblemViewSet, ProblemDataInfoViewSet
 from problem.views import SubmissionViewSet, LanguageViewSet, FileViewSet
 from ojuser.views import UserViewSet
 
@@ -14,7 +14,7 @@ router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'files', FileViewSet)
 router.register(r'problems', ProblemViewSet)
-router.register(r'problemdatas', ProblemDataViewSet)
+router.register(r'datainfo', ProblemDataInfoViewSet)
 router.register(r'languages', LanguageViewSet)
 router.register(r'submissions', SubmissionViewSet)
 

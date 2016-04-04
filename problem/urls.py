@@ -8,4 +8,7 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/$', views.ProblemDetailView.as_view(), name='problem-detail'),
     url(r'^(?P<pk>[0-9]+)/update/$', views.ProblemUpdateView.as_view(), name='problem-update'),
     url(r'^(?P<pk>[0-9]+)/delete/$', views.ProblemDeleteView.as_view(), name='problem-delete'),
+    url(r'^(?P<pid>[0-9]+)/datas/$', views.FileCreateView.as_view(), name='upload-new'),
+    url(r'^(?P<pid>[0-9]+)/view/$', views.FileListView.as_view(), name='upload-view'),
+    url(r'^delete/(?P<pk>\d+)$', views.FileDeleteView.as_view(), name='upload-delete'),
 ]
