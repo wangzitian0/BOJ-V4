@@ -1,7 +1,7 @@
 {% extends "site_base.html" %}
 
 {% load i18n %}
-{% load bootstrap %}
+{% load bootstrap3 %}
 
 {% block head_title %}My Groups{% endblock %}
 
@@ -12,9 +12,13 @@
   <div class="container">
     <h3>update problem</h3>
     <form action="" method="post">{% csrf_token %}
-      {{ form|bootstrap }}
+      {% bootstrap_form form %}
       <input type="submit" value="Save" />
     </form>
   </div>
 </section>
+{% endblock %}
+{% block extra_body %}
+  {{ form.media.js }}
+  {{ form.media.css }}
 {% endblock %}

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from filer.models.filemodels import File
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -19,6 +19,7 @@ class Problem(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
     allowed_lang = models.ManyToManyField('Language', related_name='problems')
+    groups = models.ManyToManyField(Group, related_name='problems')
 
     def __unicode__(self):
         return str(self.pk) + " " + str(self.title)

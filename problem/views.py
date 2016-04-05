@@ -1,21 +1,22 @@
+import json
+import mimetypes
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from guardian.shortcuts import get_objects_for_user
 
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
 
-from .models import Problem, ProblemDataInfo, Language
 from filer.models.filemodels import File
+from .models import Problem, ProblemDataInfo, Language
 
 from .serializers import ProblemSerializer, ProblemDataInfoSerializer
 from .serializers import LanguageSerializer, FileSerializer
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse
 
-import mimetypes
-import json
+from .forms import ProblemForm
 
 
 class FileViewSet(viewsets.ModelViewSet):
@@ -65,14 +66,22 @@ class ProblemDetailView(DetailView):
 
 class ProblemCreateView(CreateView):
     model = Problem
-    fields = '__all__'
+    #  fields = '__all__'
+    form_class = ProblemForm
     template_name_suffix = '_create_form'
+
+    def get_success_url(self):
+        return reverse('problem:upload-new', args=[self.object.pk])
 
 
 class ProblemUpdateView(UpdateView):
     model = Problem
-    fields = '__all__'
+    #  fields = '__all__'
+    form_class = ProblemForm
     template_name_suffix = '_update_form'
+
+    def get_success_url(self):
+        return reverse('problem:upload-new', args=[self.object.pk])
 
 
 class ProblemDeleteView(DeleteView):
@@ -125,7 +134,7 @@ class FileCreateView(CreateView):
     def form_valid(self, form):
         _problem = Problem.objects.get(pk=self.kwargs['pid'])
         self.object = form.save()
-        print _problem, self.object
+        #  print _problem, self.object
         ProblemDataInfo.objects.create(data=self.object, problem=_problem)
         files = [serialize(self.object)]
         data = {'files': files}

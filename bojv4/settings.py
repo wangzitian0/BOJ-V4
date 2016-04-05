@@ -133,10 +133,12 @@ INSTALLED_APPS = [
     "pinax.webanalytics",
     "guardian",
     "rest_framework",
-    "bootstrap_pagination",
+    #  "bootstrap_pagination",
+    "bootstrap3",
     "easy_thumbnails",
     "filer",
     "mptt",
+    "django_select2",
 
     # project
     "bojv4",

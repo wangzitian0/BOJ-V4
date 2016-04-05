@@ -8,11 +8,12 @@ from rest_framework import routers
 from problem.views import ProblemViewSet, ProblemDataInfoViewSet
 from problem.views import LanguageViewSet, FileViewSet
 from submission.views import SubmissionViewSet
-from ojuser.views import UserViewSet
+from ojuser.views import UserViewSet, GroupViewSet
 
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
+router.register(r'groups', GroupViewSet)
 router.register(r'files', FileViewSet)
 router.register(r'problems', ProblemViewSet)
 router.register(r'datainfo', ProblemDataInfoViewSet)
@@ -28,6 +29,7 @@ urlpatterns = [
     url(r"^api/", include(router.urls)),
     url(r"^api-auth/", include('rest_framework.urls', namespace="rest_framework")),
     url(r"^filer/", include("filer.urls")),
+    url(r'^select2/', include('django_select2.urls')),
     url(r'^', include('filer.server.urls')),
 ]
 if settings.DEBUG:

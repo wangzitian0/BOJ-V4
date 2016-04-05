@@ -1,7 +1,9 @@
 {% extends "site_base.html" %}
 {% load upload_tags %}
 {% load i18n %}
-{% load bootstrap %}
+{% load bootstrap3 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/style.css">
