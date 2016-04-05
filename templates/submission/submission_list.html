@@ -1,0 +1,25 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load bootstrap_pagination %}
+
+{% block head_title %}All Submission{% endblock %}
+
+{% block body_class %}all-submission{% endblock %}
+
+{% block body_base %}
+<section class="jumbotron">
+  <div class="container">
+    {% include "_messages.html" %}
+    <h1>Submissions</h1>
+    <ul>
+      {% for submission in object_list %}
+      <li><a href="{%url 'submission:submission-detail' submission.pk %}">{{ submission.pk }}</a></li>
+      {% empty %}
+      <li>No articles yet.</li>
+      {% endfor %}
+    </ul>
+    {% bootstrap_paginate page_obj %}
+  </div>
+</section>
+{% endblock %}

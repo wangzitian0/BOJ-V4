@@ -6,11 +6,11 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
 
-from .models import Problem, ProblemDataInfo, Language, Submission
+from .models import Problem, ProblemDataInfo, Language
 from filer.models.filemodels import File
 
 from .serializers import ProblemSerializer, ProblemDataInfoSerializer
-from .serializers import SubmissionSerializer, LanguageSerializer, FileSerializer
+from .serializers import LanguageSerializer, FileSerializer
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 
@@ -36,12 +36,6 @@ class ProblemDataInfoViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
 
-class SubmissionViewSet(viewsets.ModelViewSet):
-    queryset = Submission.objects.all()
-    serializer_class = SubmissionSerializer
-    permission_classes = (IsAuthenticated,)
-
-
 class LanguageViewSet(viewsets.ModelViewSet):
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
@@ -60,7 +54,6 @@ class ProblemListView(ListView):
 class ProblemDetailView(DetailView):
 
     model = Problem
-    template_name = 'problem/problem_detail.html'
 
     def get_queryset(self):
         return get_objects_for_user(self.request.user, 'problem.view_problem')

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Problem, ProblemDataInfo, Language, Submission
+from .models import Problem, ProblemDataInfo, Language
 from filer.models.filemodels import File
 
 
@@ -23,8 +23,3 @@ class ProblemDataInfoSerializer(serializers.HyperlinkedModelSerializer):
 class LanguageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Language
-
-
-class SubmissionSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Submission

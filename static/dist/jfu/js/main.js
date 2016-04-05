@@ -59,11 +59,14 @@ $(function () {
     } else {
         // Load existing files:
         $('#fileupload').addClass('fileupload-processing');
+        var pk = window.location.pathname.split('/').slice(-3,-2);
+        var _url = '/problem/'+pk+'/view/';
+        // alert(_url);
         $.ajax({
             // Uncomment the following to send cross-domain cookies:
             //xhrFields: {withCredentials: true},
             //url: $('#fileupload').fileupload('option', 'url'),
-            url: '/problem/1/view/',
+            url: _url,
             dataType: 'json',
             context: $('#fileupload')[0]
         }).always(function () {

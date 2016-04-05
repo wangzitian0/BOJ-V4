@@ -53,17 +53,3 @@ class ProblemDataInfo(models.Model):
 
     def __unicode__(self):
         return str(self.problem.pk) + " " + str(self.pk)
-
-
-class Submission(models.Model):
-    user = models.ForeignKey(User)
-    problem = models.ForeignKey(Problem)
-    datetime = models.DateTimeField(auto_now_add=True)
-    score = models.IntegerField(default=0)
-    running_time = models.IntegerField(default=0)
-    running_memory = models.IntegerField(default=0)
-    info = models.TextField(blank=True)
-    Language = models.ForeignKey(Language, related_name='submissions')
-
-    def __unicode__(self):
-        return "-".join([str(self.pk), str(self.user), str(self.problem), str(self.datetime)])

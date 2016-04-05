@@ -134,14 +134,15 @@ INSTALLED_APPS = [
     "guardian",
     "rest_framework",
     "bootstrap_pagination",
+    "easy_thumbnails",
+    "filer",
+    "mptt",
 
     # project
     "bojv4",
     "ojuser",
     "problem",
-    "easy_thumbnails",
-    "filer",
-    "mptt",
+    "submission",
 ]
 
 # A sample logging configuration. The only tangible logging

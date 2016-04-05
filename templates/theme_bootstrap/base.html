@@ -39,7 +39,7 @@
               {% block nav %}
               <ul class="nav navbar-nav">
                 <li><a href="{%url 'problem:problem-list' %}">Problem</a></li>
-                <li><a href="#tab_two">Two</a></li>
+                <li><a href="{%url 'submission:submission-list' %}">Submission</a></li>
               </ul>
               {% endblock %}
               {% block account_bar %}{% include "_account_bar.html" %}{% endblock %}
