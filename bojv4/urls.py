@@ -1,4 +1,4 @@
-from django.conf.urls import include, url
+from django.conf.urls import include, url, patterns
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
@@ -26,11 +26,16 @@ urlpatterns = [
     url(r"^account/", include("ojuser.urls")),
     url(r"^problem/", include("problem.urls", namespace="problem")),
     url(r"^submission/", include("submission.urls", namespace="submission")),
+    url(r'^select2/', include('django_select2.urls')),
+    url(r"^filer/", include("filer.urls")),
     url(r"^api/", include(router.urls)),
     url(r"^api-auth/", include('rest_framework.urls', namespace="rest_framework")),
-    url(r"^filer/", include("filer.urls")),
-    url(r'^select2/', include('django_select2.urls')),
     url(r'^', include('filer.server.urls')),
 ]
 if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += patterns(
+        '',
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

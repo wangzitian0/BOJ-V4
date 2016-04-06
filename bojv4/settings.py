@@ -107,6 +107,7 @@ MIDDLEWARE_CLASSES = [
     "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "bojv4.urls"
@@ -126,6 +127,7 @@ INSTALLED_APPS = [
     # theme
     "bootstrapform",
     "pinax_theme_bootstrap",
+    "bootstrap3",
 
     # external
     "account",
@@ -134,11 +136,11 @@ INSTALLED_APPS = [
     "guardian",
     "rest_framework",
     #  "bootstrap_pagination",
-    "bootstrap3",
     "easy_thumbnails",
     "filer",
     "mptt",
     "django_select2",
+    "debug_toolbar",
 
     # project
     "bojv4",
@@ -222,3 +224,8 @@ THUMBNAIL_PROCESSORS = (
 )
 FILER_ENABLE_PERMISSIONS = True
 FILER_CANONICAL_URL = 'sharing/'
+
+#  ==============================================
+
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+INTERNAL_IPS = ["10.105.243.4", "10.205.24.165"]

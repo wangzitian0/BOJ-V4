@@ -1,7 +1,7 @@
 {% extends "site_base.html" %}
 
 {% load i18n %}
-{% load bootstrap_pagination %}
+{% load bootstrap3 %}
 
 {% block head_title %}My Groups{% endblock %}
 
@@ -14,7 +14,7 @@
     <h1>My Groups</h1>
     <ul>
       {% for group in object_list %}
-      <li><a href="{%url 'group-detail' group.pk %}">{{ group.name }}</a></li>
+      <li><a href="{%url 'mygroup-detail' group.pk %}">{{ group.name }}</a></li>
       {% empty %}
       <li>No groups yet.</li>
       {% endfor %}

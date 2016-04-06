@@ -3,12 +3,16 @@ import mimetypes
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from guardian.shortcuts import get_objects_for_user
+from guardian.decorators import permission_required_or_403
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.contrib.admin.views.decorators import staff_member_required
+#  from django.contrib.auth.decorators import login_required
 
 from filer.models.filemodels import File
 from .models import Problem, ProblemDataInfo, Language
@@ -70,6 +74,17 @@ class ProblemCreateView(CreateView):
     form_class = ProblemForm
     template_name_suffix = '_create_form'
 
+    #  @staff_member_required
+    @method_decorator(staff_member_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.author = self.request.user
+        self.object.save()
+        return super(ProblemCreateView, self).form_valid(form)
+
     def get_success_url(self):
         return reverse('problem:upload-new', args=[self.object.pk])
 
@@ -80,6 +95,10 @@ class ProblemUpdateView(UpdateView):
     form_class = ProblemForm
     template_name_suffix = '_update_form'
 
+    @method_decorator(permission_required_or_403('change_problem', (Problem, 'pk', 'pk')))
+    def dispatch(self, request, *args, **kwargs):
+        return super(ProblemUpdateView, self).dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse('problem:upload-new', args=[self.object.pk])
 
@@ -88,6 +107,9 @@ class ProblemDeleteView(DeleteView):
     model = Problem
     success_url = reverse_lazy('problem:problem-list')
 
+    @method_decorator(permission_required_or_403('delete_problem', (Problem, 'pk', 'pk')))
+    def dispatch(self, request, *args, **kwargs):
+        return super(ProblemDeleteView, self).dispatch(request, *args, **kwargs)
 
 #  =======================  problem datas  ===========================
 

@@ -8,7 +8,7 @@ class ProblemForm(forms.ModelForm):
 
     class Meta:
         model = Problem
-        fields = '__all__'
+        exclude = ["author", ]
         widgets = {
             'groups': ModelSelect2MultipleWidget(
                 search_fields=['name__icontains', ]
