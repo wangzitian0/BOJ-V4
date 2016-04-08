@@ -10,14 +10,23 @@ class FileSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ProblemSerializer(serializers.HyperlinkedModelSerializer):
+
     class Meta:
         model = Problem
 
 
 class ProblemDataInfoSerializer(serializers.HyperlinkedModelSerializer):
+    data = FileSerializer()
 
     class Meta:
         model = ProblemDataInfo
+
+
+class ProblemDataSerializer(serializers.HyperlinkedModelSerializer):
+    datainfo = ProblemDataInfoSerializer(many=True)
+
+    class Meta:
+        model = Problem
 
 
 class LanguageSerializer(serializers.HyperlinkedModelSerializer):

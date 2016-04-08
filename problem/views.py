@@ -18,9 +18,12 @@ from filer.models.filemodels import File
 from .models import Problem, ProblemDataInfo, Language
 
 from .serializers import ProblemSerializer, ProblemDataInfoSerializer
-from .serializers import LanguageSerializer, FileSerializer
+from .serializers import LanguageSerializer, FileSerializer, ProblemDataSerializer
 
 from .forms import ProblemForm
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework.decorators import detail_route
 
 
 class FileViewSet(viewsets.ModelViewSet):
@@ -33,6 +36,13 @@ class ProblemViewSet(viewsets.ModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
     permission_classes = (IsAuthenticated,)
+
+    @detail_route(methods=['get'], url_path='datas')
+    def get_problem_datas(self, request, pk=None):
+        qs = self.get_queryset()
+        problem = get_object_or_404(qs, pk=pk)
+        serializer = ProblemDataSerializer(problem, context={'request': request})
+        return Response(serializer.data)
 
 
 class ProblemDataInfoViewSet(viewsets.ModelViewSet):
