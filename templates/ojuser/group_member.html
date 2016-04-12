@@ -11,14 +11,14 @@
 <section class="jumbotron">
   <div class="container">
     <h3>group member</h3>
-    <!--div class="input-group col-lg-2">
-      <input type="number" id="new-lines-number" min="1" max="1000" class="form-control" value="1">
+    <div id="example"></div>
+    <br>
+    <div class="input-group col-lg-2">
+      <input type="number" id="new-lines-number" min="1" max="1000" class="form-control input-sm" value="1">
       <span class="input-group-btn">
-        <button id="btn-new-line" class="btn btn-primary" type="button">Add new lines</button>
+        <button id="btn-new-line" class="btn btn-primary btn-sm" type="button">New</button>
       </span>
     </div>
-    <br-->
-      <div id="example"></div>
   </div>
 </section>
 {% endblock %}
@@ -28,53 +28,35 @@
 <link rel="stylesheet" media="screen" href="{{ STATIC_URL }}handsontable/handsontable.full.css"></script>
 <script>
   $(document).ready(function(){
-    var data = [
+    var _data = [
       ["aa","ok"],
       ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","waiting"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","waiting"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","waiting"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","ok"],
-      ["aa","waiting"],
     ];
 
     var table = $("#example").handsontable({
-      data: data,
+      data: _data,
       fillHandle: "horizontal",
       rowHeaders: true,
       colHeaders: ['username', 'status'],
       columns: [
         {
+          data: 'username'
         },
         {
+          data: 'status',
           readOnly: true
         }
       ]
     });
-    /* $("#btn-new-line").click(function(){ */
-      /* table.handsontable('alter', 'insert_row',null,$("#new-lines-number").val()); */
-    /* }); */
+    var pk = window.location.pathname.split('/').slice(-3,-2);
+    var _url = '/api/groups/'+pk+'/users/';
+    $.get(_url,function(data,status){
+      /* alert("Data: " + data.data[0].username+ "\nStatus: " + status); */
+      table.handsontable('loadData',data.data);
+    });
+    $("#btn-new-line").click(function(){
+      table.handsontable('alter', 'insert_row',null,$("#new-lines-number").val());
+    });
   });
 </script>
 {% endblock %}

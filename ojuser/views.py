@@ -6,12 +6,15 @@ from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
-from .serializers import UserSerializer, GroupSerializer
+from .serializers import UserSerializer, GroupSerializer, GroupUsersSerializer
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
 
 from django.core.urlresolvers import reverse
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework.decorators import detail_route
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -22,6 +25,13 @@ class UserViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+
+    @detail_route(methods=['get', 'patch', 'post'], url_path='users')
+    def get_problem_datas(self, request, pk=None):
+        qs = self.get_queryset()
+        group = get_object_or_404(qs, pk=pk)
+        serializer = GroupUsersSerializer(group, context={'request': request})
+        return Response(serializer.data)
 
 
 class OjUserSignupView(SignupView):
