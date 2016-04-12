@@ -1,13 +1,17 @@
 from account.views import SignupView, SettingsView
-from django.views.generic.edit import FormView
 from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
+from .forms import GroupProfileForm, GroupForm
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from .serializers import UserSerializer, GroupSerializer
-from django.views.generic import ListView, DetailView
+from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic.edit import FormView
+from django.http import HttpResponseRedirect
+
+from django.core.urlresolvers import reverse
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -102,6 +106,37 @@ class GroupDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
         ob = context['object']
+        context['admins'] = ob.profile.admins.all()
         context['parents'] = ob.profile.parents()
         context['children'] = ob.profile.children.all()
         return context
+
+
+class GroupCreateView(TemplateView):
+    template_name = 'ojuser/group_create_form.html'
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        group_form = context["group_form"]
+        group_profile_form = context["group_profile_form"]
+        if group_form.is_valid() and group_profile_form.is_valid():
+            group = group_form.save()
+            group_profile_form = GroupProfileForm(request.POST, instance=group.profile)
+            group_profile_form.superadmin = self.request.user
+            group_profile_form.save()
+            return HttpResponseRedirect(reverse('mygroup-detail', args=[group.pk, ]))
+        return super(GroupCreateView, self).render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupCreateView, self).get_context_data(**kwargs)
+
+        group_form = GroupForm(self.request.POST or None)
+        group_profile_form = GroupProfileForm(self.request.POST or None)
+        context["group_form"] = group_form
+        context["group_profile_form"] = group_profile_form
+
+        return context
+
+
+class GroupMemberView(TemplateView):
+    template_name = 'ojuser/group_member.html'

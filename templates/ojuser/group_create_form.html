@@ -10,9 +10,10 @@
 {% block body_base %}
 <section class="jumbotron">
   <div class="container">
-    <h3>create problem</h3>
+    <h3>create group</h3>
     <form action="" method="post">{% csrf_token %}
-      {% bootstrap_form form %}
+      {% bootstrap_form group_form %}
+      {% bootstrap_form group_profile_form %}
       <input type="submit" value="Save" />
     </form>
   </div>
@@ -20,6 +21,8 @@
 {% endblock %}
 
 {% block extra_body %}
-  {{ form.media.js }}
-  {{ form.media.css }}
+  {{ group_form.media.js }}
+  {{ group_form.media.css }}
+  {{ group_profile_form.media.js }}
+  {{ group_profile_form.media.css }}
 {% endblock %}

@@ -1,8 +1,10 @@
 from django import forms
 import account.forms
-from .models import UserProfile
+from .models import UserProfile, GroupProfile
 from bojv4.conf import CONST
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import Group
+from django_select2.forms import ModelSelect2MultipleWidget
 
 
 class UserProfileForm(account.forms.SignupForm):
@@ -44,3 +46,23 @@ class UserProfilesForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ['gender', 'prefer_lang', ]
+
+
+class GroupForm(forms.ModelForm):
+
+    class Meta:
+        model = Group
+        #  fields = '__all__'
+        fields = ['name', ]
+
+
+class GroupProfileForm(forms.ModelForm):
+
+    class Meta:
+        model = GroupProfile
+        fields = ['nickname', 'admins', ]
+        widgets = {
+            'admins': ModelSelect2MultipleWidget(
+                search_fields=['username__icontains', ]
+            ),
+        }

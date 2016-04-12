@@ -11,13 +11,21 @@
 <section class="jumbotron">
   <div class="container">
     {% include "_messages.html" %}
-    <h1>Groups {{ object.name }}</h1>
+    <h1>Groups {{ object.name }} - {{ object.profile.nickname }}</h1>
+    <h4>Admins</h4>
+    <ul>
+      {% for admin in admins %}
+      <li>{{ admin.username }}</li>
+      {% empty %}
+      <li>No admin yet.</li>
+      {% endfor %}
+    </ul>
     <h4>Parents</h4>
     <ul>
       {% for profile in parents %}
       <li><a href="{%url 'mygroup-detail' profile.group.pk %}">{{ profile.group.name }}</a></li>
       {% empty %}
-      <li>No parents yet.</li>
+      <li>No parent yet.</li>
       {% endfor %}
     </ul>
     <h4>Children</h4>
@@ -25,9 +33,14 @@
       {% for profile in children %}
       <li><a href="{%url 'mygroup-detail' profile.group.pk %}">{{ profile.group.name }}</a></li>
       {% empty %}
-      <li>No children yet.</li>
+      <li>No child yet.</li>
       {% endfor %}
     </ul>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_body %}
+  {{ form.media.js }}
+  {{ form.media.css }}
 {% endblock %}

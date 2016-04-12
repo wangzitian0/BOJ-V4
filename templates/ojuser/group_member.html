@@ -1,0 +1,80 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load bootstrap3 %}
+
+{% block head_title %}My Groups{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block body_base %}
+<section class="jumbotron">
+  <div class="container">
+    <h3>group member</h3>
+    <!--div class="input-group col-lg-2">
+      <input type="number" id="new-lines-number" min="1" max="1000" class="form-control" value="1">
+      <span class="input-group-btn">
+        <button id="btn-new-line" class="btn btn-primary" type="button">Add new lines</button>
+      </span>
+    </div>
+    <br-->
+      <div id="example"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_body %}
+<script src="{{ STATIC_URL }}handsontable/handsontable.full.js"></script>
+<link rel="stylesheet" media="screen" href="{{ STATIC_URL }}handsontable/handsontable.full.css"></script>
+<script>
+  $(document).ready(function(){
+    var data = [
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","waiting"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","waiting"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","waiting"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","ok"],
+      ["aa","waiting"],
+    ];
+
+    var table = $("#example").handsontable({
+      data: data,
+      fillHandle: "horizontal",
+      rowHeaders: true,
+      colHeaders: ['username', 'status'],
+      columns: [
+        {
+        },
+        {
+          readOnly: true
+        }
+      ]
+    });
+    /* $("#btn-new-line").click(function(){ */
+      /* table.handsontable('alter', 'insert_row',null,$("#new-lines-number").val()); */
+    /* }); */
+  });
+</script>
+{% endblock %}

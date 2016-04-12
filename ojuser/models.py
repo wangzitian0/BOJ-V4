@@ -13,10 +13,13 @@ class UserProfile(models.Model):
 
 
 class GroupProfile(node_factory('Consisting')):
+    nickname = models.CharField(max_length=30)
     group = models.OneToOneField(Group, related_name='profile')
+    admins = models.ManyToManyField(User, related_name='managed_group_profiles')
+    superadmin = models.ForeignKey(User, default=1, related_name='established_group_profiles')
 
     def __unicode__(self):
-        return str(self.group)
+        return self.group.__unicode__() + "_profile"
 
 
 class Consisting(edge_factory(GroupProfile, concrete=False)):
