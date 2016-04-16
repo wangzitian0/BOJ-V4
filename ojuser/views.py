@@ -3,15 +3,16 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
-from rest_framework import viewsets
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
 
 from django.core.urlresolvers import reverse
 #  from django.shortcuts import get_object_or_404
-#  from rest_framework.response import Response
+from rest_framework.response import Response
 #  from rest_framework.decorators import detail_route
+from rest_framework.decorators import list_route
+from rest_framework import viewsets, status
 from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
@@ -28,6 +29,17 @@ class UserViewSet(viewsets.ModelViewSet):
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+
+    @list_route(methods=['post'], url_path='bulk_create')
+    def create_users(self, request):
+        serializer = UserProfileSerializer(
+            data=request.data, many=True, context={'request': request}
+        )
+        #  print request.data
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -147,6 +159,10 @@ class GroupCreateView(TemplateView):
         context["group_profile_form"] = group_profile_form
 
         return context
+
+
+class UserAddView(TemplateView):
+    template_name = 'ojuser/user_add.html'
 
 
 class GroupAddMemberView(TemplateView):

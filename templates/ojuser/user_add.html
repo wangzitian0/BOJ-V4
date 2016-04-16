@@ -1,0 +1,107 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load bootstrap3 %}
+
+{% block head_title %}My Groups{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block body_base %}
+<section class="jumbotron">
+  <div class="container">
+    <h3>group member</h3>
+    <div id="example"></div>
+    <br>
+    <div class="row">
+      <div class="col-lg-2">
+      <div class="input-group">
+        <input type="number" id="new-lines-number" min="1" max="1000" class="form-control input-sm" value="1">
+        <span class="input-group-btn">
+          <button id="btn-new-line" class="btn btn-info btn-sm" type="button">New</button>
+        </span>
+      </div>
+      </div>
+      <div class="col-lg-offset-9">
+        <button class="btn btn-primary" id="submit-btn">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_body %}
+<script src="{{ STATIC_URL }}handsontable/handsontable.full.js"></script>
+<link rel="stylesheet" media="screen" href="{{ STATIC_URL }}handsontable/handsontable.full.css"></script>
+<script>
+  $(document).ready(function(){
+    var _data = [
+      {},
+    ];
+
+    var table = $("#example").handsontable({
+      data: _data,
+      stretchH: 'all',
+      fillHandle: "horizontal",
+      rowHeaders: true,
+      columnSorting: true,
+      colHeaders: ['username', 'nickname', 'password', 'status'],
+      columns: [
+        {data: 'username'},
+        {data: 'nickname'},
+        {data: 'password'},
+        {data: 'status',readOnly: true},
+      ],
+      comments: true,
+
+    });
+    $("#submit-btn").click( function() {
+      $.ajax({
+        type: "POST",
+        url: '/api/users/bulk_create/',
+        data: JSON.stringify(table.handsontable('getSourceData')),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(res){
+          /* alert(JSON.stringify(res)); */
+          for (var i=0;i<res.length;i++){
+            _data[i].status="added"
+          }
+          table.handsontable('render');
+          alert("All is added!");
+          for (var i=0;i<3*res.length;i++){
+            table.handsontable('getPlugin','comments').removeCommentAtCell(i/3, i%3);
+          }
+        },
+        error: function(errors) {
+          errors=errors.responseJSON;
+          for (var i=0;i<errors.length;i++){
+            if(Object.keys(errors[i]).length==0)
+              _data[i].status="ok";
+            else{
+              if(errors[i].username)
+                table.handsontable('getCellMeta', i, 0).comment=errors[i].username;
+              if(errors[i].nickname)
+                table.handsontable('getCellMeta', i, 1).comment=errors[i].nickname;
+              if(errors[i].password)
+                table.handsontable('getCellMeta', i, 2).comment=errors[i].password;
+              _data[i].status="error";
+            }
+          }
+          table.handsontable('render');
+          alert("error!");
+        }
+      });
+    });
+    /* var pk = window.location.pathname.split('/').slice(-3,-2); */
+    /* var _url = '/api/groups/'+pk+'/users/'; */
+    /* $.get(_url,function(data,status){ */
+      /* alert("Data: " + data.data[0].username+ "\nStatus: " + status); */
+      /* table.handsontable('loadData',data.data); */
+    /* }); */
+    $("#btn-new-line").click(function(){
+      table.handsontable('alter', 'insert_row',null,$("#new-lines-number").val());
+    });
+  });
+</script>
+{% endblock %}
