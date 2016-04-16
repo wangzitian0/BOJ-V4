@@ -140,6 +140,7 @@ INSTALLED_APPS = [
     "filer",
     "mptt",
     "django_select2",
+    "django_tables2",
     "debug_toolbar",
 
     # project

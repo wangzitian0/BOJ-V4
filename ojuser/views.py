@@ -1,20 +1,23 @@
 from account.views import SignupView, SettingsView
-from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
-from .forms import GroupProfileForm, GroupForm
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
-from .serializers import UserSerializer, GroupSerializer, GroupUsersSerializer
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
 
 from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
-from rest_framework.decorators import detail_route
+#  from django.shortcuts import get_object_or_404
+#  from rest_framework.response import Response
+#  from rest_framework.decorators import detail_route
+from django_tables2 import RequestConfig
+
+from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
+from .forms import GroupProfileForm, GroupForm
+from .serializers import UserSerializer, UserProfileSerializer, GroupSerializer
+from .tables import GroupUserTable
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -22,16 +25,14 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
+class UserProfileViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+
+
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-
-    @detail_route(methods=['get', 'patch', 'post'], url_path='users')
-    def get_problem_datas(self, request, pk=None):
-        qs = self.get_queryset()
-        group = get_object_or_404(qs, pk=pk)
-        serializer = GroupUsersSerializer(group, context={'request': request})
-        return Response(serializer.data)
 
 
 class OjUserSignupView(SignupView):
@@ -148,5 +149,18 @@ class GroupCreateView(TemplateView):
         return context
 
 
+class GroupAddMemberView(TemplateView):
+    template_name = 'ojuser/group_add_member.html'
+
+
 class GroupMemberView(TemplateView):
     template_name = 'ojuser/group_member.html'
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super(GroupMemberView, self).get_context_data(**kwargs)
+        group = Group.objects.get(pk=pk)
+        group_users = group.user_set.all()
+        group_users_table = GroupUserTable(group_users)
+        RequestConfig(self.request).configure(group_users_table)
+        context['group_users_table'] = group_users_table
+        return context
