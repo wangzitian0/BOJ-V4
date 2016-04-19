@@ -13,11 +13,22 @@
     <h3>group member</h3>
     <div id="example"></div>
     <br>
-    <div class="input-group col-lg-2">
-      <input type="number" id="new-lines-number" min="1" max="1000" class="form-control input-sm" value="1">
-      <span class="input-group-btn">
-        <button id="btn-new-line" class="btn btn-primary btn-sm" type="button">New</button>
-      </span>
+    <div class="row">
+      <div class="col-lg-2">
+      <div class="input-group">
+        <input type="number" id="new-lines-number" min="1" max="1000" class="form-control input-sm" value="1">
+        <span class="input-group-btn">
+          <button id="btn-del-line" class="btn btn-warning btn-sm" type="button">Del</button>
+        </span>
+        <span class="input-group-btn">
+          <button id="btn-add-line" class="btn btn-info btn-sm" type="button">Add</button>
+        </span>
+      </div>
+      </div>
+      <div class="col-lg-offset-9">
+        <button class="btn btn-primary" id="submit-btn">Submit</button>
+        <a href="{% url 'user-add' %}" class="btn btn-large btn-primary">New Users</a>
+      </div>
     </div>
   </div>
 </section>
@@ -29,25 +40,64 @@
 <script>
   $(document).ready(function(){
     var _data = [
-      ["aa","ok","gg","gg"],
-      ["aa","ok","gg","gg"],
-      ["aa","ok"],
+      {},
     ];
 
     var table = $("#example").handsontable({
       data: _data,
+      stretchH: 'all',
       fillHandle: "horizontal",
       rowHeaders: true,
-      colHeaders: ['username', 'nickname', 'email', 'password'],
+      columnSorting: true,
+      colHeaders: ['username', 'status'],
+      columns: [
+        {data: 'username'},
+        {data: 'status',readOnly: true},
+      ],
+      comments: true,
+
     });
-    /* var pk = window.location.pathname.split('/').slice(-3,-2); */
-    /* var _url = '/api/groups/'+pk+'/users/'; */
-    /* $.get(_url,function(data,status){ */
-      /* alert("Data: " + data.data[0].username+ "\nStatus: " + status); */
-      /* table.handsontable('loadData',data.data); */
-    /* }); */
-    $("#btn-new-line").click(function(){
+    var pk = window.location.pathname.split('/').slice(-3,-2);
+    var _url = '/api/groups/'+pk+'/addmembers/';
+    $("#submit-btn").click( function() {
+      $.ajax({
+        type: "POST",
+        url: _url,
+        data: JSON.stringify(table.handsontable('getSourceData')),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(res){
+          /* alert(JSON.stringify(res)); */
+          for (var i=0;i<res.length;i++){
+            if(Object.keys(res[i]).length==0)
+              _data[i].status="successfule added";
+            else
+              _data[i].status="already added";
+
+          }
+          table.handsontable('render');
+          alert("All is added!");
+        },
+        error: function(errors) {
+          errors=errors.responseJSON;
+          for (var i=0;i<errors.length;i++){
+            if(Object.keys(errors[i]).length==0)
+              _data[i].status="ok";
+            else{
+              _data[i].status=errors[i].username;
+            }
+          }
+          table.handsontable('render');
+          alert("error!");
+        }
+      });
+    });
+    $("#btn-add-line").click(function(){
       table.handsontable('alter', 'insert_row',null,$("#new-lines-number").val());
+    });
+    $("#btn-del-line").click(function(){
+      var number=$("#new-lines-number").val();
+      table.handsontable('alter', 'remove_row',_data.length-number,number);
     });
   });
 </script>

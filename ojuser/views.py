@@ -8,16 +8,16 @@ from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
 
 from django.core.urlresolvers import reverse
-#  from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-#  from rest_framework.decorators import detail_route
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, detail_route
 from rest_framework import viewsets, status
 from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
 from .forms import GroupProfileForm, GroupForm
-from .serializers import UserSerializer, UserProfileSerializer, GroupSerializer
+from .serializers import UserSerializer, UserProfileSerializer
+from .serializers import GroupSerializer, UserSlugSerializer
 from .tables import GroupUserTable
 
 
@@ -45,6 +45,37 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+
+    @detail_route(methods=['get'], url_path='members')
+    def get_members(self, request, pk=None):
+        qs = self.get_queryset()
+        group = get_object_or_404(qs, pk=pk)
+        serializer = UserSlugSerializer(group.user_set, many=True)
+        return Response(serializer.data)
+
+    @detail_route(methods=['post'], url_path='addmembers')
+    def add_users(self, request, pk=None):
+        users = []
+        errors = []
+        valid = 1
+        qs = self.get_queryset()
+        group = get_object_or_404(qs, pk=pk)
+        for x in request.data:
+            try:
+                user = User.objects.get(username=x['username'])
+                users.append(user)
+                if user in group.user_set.all():
+                    errors.append({"username:user have in group"})
+                else:
+                    errors.append({})
+            except User.DoesNotExist:
+                errors.append({"username:user do not exsit"})
+                valid = 0
+        #  print request.data
+        if valid:
+            group.user_set.add(*users)
+            return Response(errors, status=status.HTTP_201_CREATED)
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OjUserSignupView(SignupView):
@@ -147,7 +178,7 @@ class GroupCreateView(TemplateView):
             group_profile_form = GroupProfileForm(request.POST, instance=group.profile)
             group_profile_form.superadmin = self.request.user
             group_profile_form.save()
-            return HttpResponseRedirect(reverse('mygroup-detail', args=[group.pk, ]))
+            return HttpResponseRedirect(reverse('mygroup-add-member', args=[group.pk, ]))
         return super(GroupCreateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
@@ -161,8 +192,42 @@ class GroupCreateView(TemplateView):
         return context
 
 
+class GroupUpdateView(TemplateView):
+    template_name = 'ojuser/group_update_form.html'
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        self.group_form = GroupForm(self.request.POST, instance=self.object)
+        self.group_profile_form = GroupProfileForm(self.request.POST, instance=self.object.profile)
+        if self.group_form.is_valid() and self.group_profile_form.is_valid():
+            self.group_form.save()
+            self.group_profile_form.superadmin = self.request.user
+            self.group_profile_form.save()
+            return HttpResponseRedirect(reverse('mygroup-add-member', args=[context['pk'], ]))
+        return super(GroupUpdateView, self).render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupUpdateView, self).get_context_data(**kwargs)
+        self.pk = self.kwargs['pk']
+        qs = Group.objects.all()
+        self.object = get_object_or_404(qs, pk=self.pk)
+
+        self.group_form = GroupForm(instance=self.object)
+        self.group_profile_form = GroupProfileForm(instance=self.object.profile)
+
+        context["group_form"] = self.group_form
+        context["group_profile_form"] = self.group_profile_form
+        context['pk'] = self.pk
+
+        return context
+
+
 class UserAddView(TemplateView):
     template_name = 'ojuser/user_add.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UserAddView, self).get_context_data(**kwargs)
+        return context
 
 
 class GroupAddMemberView(TemplateView):
@@ -179,4 +244,5 @@ class GroupMemberView(TemplateView):
         group_users_table = GroupUserTable(group_users)
         RequestConfig(self.request).configure(group_users_table)
         context['group_users_table'] = group_users_table
+        context['pk'] = pk
         return context

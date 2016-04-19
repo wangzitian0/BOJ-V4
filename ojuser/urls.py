@@ -8,6 +8,8 @@ urlpatterns = [
     url(r'^mygroups/(?P<pk>[0-9]+)/$', views.GroupDetailView.as_view(), name='mygroup-detail'),
     url(r'^mygroups/(?P<pk>[0-9]+)/members/$', views.GroupMemberView.as_view(),
         name='mygroup-member'),
+    url(r'^mygroups/(?P<pk>[0-9]+)/update/$', views.GroupUpdateView.as_view(),
+        name='mygroup-update'),
     url(r'^mygroups/(?P<pk>[0-9]+)/addmembers/$', views.GroupAddMemberView.as_view(),
         name='mygroup-add-member'),
     url(r'^myusers/add/$', views.UserAddView.as_view(), name='user-add'),

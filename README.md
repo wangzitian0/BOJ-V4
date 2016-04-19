@@ -37,3 +37,10 @@ DATABASES = {
     }
 }
 ```
+
+姿势汇总
+```
+TemplateView实现多个表单的验证
+ojuser/views.py
+class GroupUpdateView(TemplateView):
+```

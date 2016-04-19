@@ -12,6 +12,9 @@
   <div class="container">
     {% include "_messages.html" %}
     <h1>{{ object.pk }}. {{ object.title }}</h1>
+    <div>
+      <a href="{% url 'problem:problem-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
+    </div>
   </div>
 </section>
 {% endblock %}

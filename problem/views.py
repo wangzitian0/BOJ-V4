@@ -163,8 +163,14 @@ class FileCreateView(CreateView):
     fields = "__all__"
     template_name = 'problem/problemdata_form.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(FileCreateView, self).get_context_data(**kwargs)
+        context['pid'] = self.kwargs['pid']
+        return context
+
     def form_valid(self, form):
-        _problem = Problem.objects.get(pk=self.kwargs['pid'])
+        pid = self.kwargs['pid']
+        _problem = Problem.objects.get(pk=pid)
         self.object = form.save()
         #  print _problem, self.object
         ProblemDataInfo.objects.create(data=self.object, problem=_problem)

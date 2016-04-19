@@ -10,19 +10,19 @@
 {% block body_base %}
 <section class="jumbotron">
   <div class="container">
-    <h3>update problem</h3>
+    <h3>create group</h3>
     <form action="" method="post">{% csrf_token %}
-      {% bootstrap_form form %}
-      <input type="submit" value="Save" class="btn btn-large btn-primary"/>
+      {% bootstrap_form group_form %}
+      {% bootstrap_form group_profile_form %}
+      <input type="submit" value="Save" />
     </form>
-    <br>
-    <div>
-      <a href="{% url 'problem:upload-new' object.pk %}" class="btn btn-large btn-primary">Datas</a>
-    </div>
   </div>
 </section>
 {% endblock %}
+
 {% block extra_body %}
-  {{ form.media.js }}
-  {{ form.media.css }}
+  {{ group_form.media.js }}
+  {{ group_form.media.css }}
+  {{ group_profile_form.media.js }}
+  {{ group_profile_form.media.css }}
 {% endblock %}

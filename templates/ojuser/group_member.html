@@ -13,6 +13,9 @@
   <div class="container">
     <h3>group member</h3>
     {% render_table group_users_table %}
+    <div>
+      <a href="{% url 'mygroup-add-member' pk %}" class="btn btn-large btn-primary">Update</a>
+    </div>
   </div>
 </section>
 {% endblock %}

@@ -18,7 +18,10 @@
       <div class="input-group">
         <input type="number" id="new-lines-number" min="1" max="1000" class="form-control input-sm" value="1">
         <span class="input-group-btn">
-          <button id="btn-new-line" class="btn btn-info btn-sm" type="button">New</button>
+          <button id="btn-del-line" class="btn btn-warning btn-sm" type="button">Del</button>
+        </span>
+        <span class="input-group-btn">
+          <button id="btn-add-line" class="btn btn-info btn-sm" type="button">Add</button>
         </span>
       </div>
       </div>
@@ -56,51 +59,68 @@
 
     });
     $("#submit-btn").click( function() {
-      $.ajax({
-        type: "POST",
-        url: '/api/users/bulk_create/',
-        data: JSON.stringify(table.handsontable('getSourceData')),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(res){
-          /* alert(JSON.stringify(res)); */
-          for (var i=0;i<res.length;i++){
-            _data[i].status="added"
-          }
-          table.handsontable('render');
-          alert("All is added!");
-          for (var i=0;i<3*res.length;i++){
-            table.handsontable('getPlugin','comments').removeCommentAtCell(i/3, i%3);
-          }
-        },
-        error: function(errors) {
-          errors=errors.responseJSON;
-          for (var i=0;i<errors.length;i++){
-            if(Object.keys(errors[i]).length==0)
-              _data[i].status="ok";
-            else{
-              if(errors[i].username)
-                table.handsontable('getCellMeta', i, 0).comment=errors[i].username;
-              if(errors[i].nickname)
-                table.handsontable('getCellMeta', i, 1).comment=errors[i].nickname;
-              if(errors[i].password)
-                table.handsontable('getCellMeta', i, 2).comment=errors[i].password;
-              _data[i].status="error";
-            }
-          }
-          table.handsontable('render');
-          alert("error!");
+      var dict = {},valid=true;
+      for(var i=0;valid&&i<_data.length;i++){
+        if(_data[i].username==""){
+          valid=false;
+          alert("do not let username empty!");
         }
-      });
+        else if(dict[_data[i].username]==null){
+          dict[_data.username]=true;
+        }
+        else {
+          valid=false;
+          alert("let username unique!");
+        }
+      }
+      if(valid){
+        $.ajax({
+          type: "POST",
+          url: '/api/users/bulk_create/',
+          data: JSON.stringify(table.handsontable('getSourceData')),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(res){
+            /* alert(JSON.stringify(res)); */
+            for (var i=0;i<3*res.length;i++){
+              table.handsontable('getPlugin','comments').removeCommentAtCell(i/3, i%3);
+            }
+            for (var i=0;i<res.length;i++){
+              _data[i].status="added"
+            }
+            table.handsontable('render');
+            alert("All is added!");
+          },
+          error: function(errors) {
+            errors=errors.responseJSON;
+            for (var i=0;i<3*errors.length;i++){
+              table.handsontable('getPlugin','comments').removeCommentAtCell(i/3, i%3);
+            }
+            for (var i=0;i<errors.length;i++){
+              if(Object.keys(errors[i]).length==0)
+                _data[i].status="ok";
+              else{
+                if(errors[i].username)
+                  table.handsontable('getCellMeta', i, 0).comment=errors[i].username;
+                if(errors[i].nickname)
+                  table.handsontable('getCellMeta', i, 1).comment=errors[i].nickname;
+                if(errors[i].password)
+                  table.handsontable('getCellMeta', i, 2).comment=errors[i].password;
+                _data[i].status="error";
+              }
+            }
+            table.handsontable('render');
+            alert("error!");
+          }
+        });
+      }
     });
-    /* var pk = window.location.pathname.split('/').slice(-3,-2); */
-    /* var _url = '/api/groups/'+pk+'/users/'; */
-    /* $.get(_url,function(data,status){ */
-      /* alert("Data: " + data.data[0].username+ "\nStatus: " + status); */
-      /* table.handsontable('loadData',data.data); */
-    /* }); */
-    $("#btn-new-line").click(function(){
+    $("#btn-add-line").click(function(){
       table.handsontable('alter', 'insert_row',null,$("#new-lines-number").val());
+    });
+    $("#btn-del-line").click(function(){
+      var number=$("#new-lines-number").val();
+      table.handsontable('alter', 'remove_row',_data.length-number,number);
     });
   });
 </script>
