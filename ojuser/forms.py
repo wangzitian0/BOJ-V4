@@ -68,32 +68,3 @@ class GroupProfileForm(forms.ModelForm):
                 search_fields=['group__name__icontains', ]
             ),
         }
-"""
-    parents = forms.ModelMultipleChoiceField("self")
-
-    def __init__(self, *args, **kwargs):
-        super(GroupProfileForm, self).__init__(*args, **kwargs)
-        group_profile_qs = GroupProfile.objects.all()
-        self.fields['parents'].widget = ModelSelect2MultipleWidget(
-            queryset=group_profile_qs,
-            search_fields=['group__name__icontains', ]
-        )
-        self.fields['parents'].initial = self.instance.get_parents()
-        self.fields['parents'].queryset = group_profile_qs
-
-    def save(self, *args, **kwargs):
-        instance = super(GroupProfileForm, self).save(*args, **kwargs)
-        Consisting.objects.filter(child=instance).delete()
-        #  need add some exception about circle
-        for pr in self.cleaned_data['parents']:
-            instance.add_parent(pr)
-
-    class Meta:
-        model = GroupProfile
-        fields = ['nickname', 'admins', 'parents', ]
-        widgets = {
-            'admins': ModelSelect2MultipleWidget(
-                search_fields=['username__icontains', ]
-            ),
-        }
-"""
