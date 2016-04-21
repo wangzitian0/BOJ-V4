@@ -178,7 +178,7 @@ class GroupCreateView(TemplateView):
             group_profile_form = GroupProfileForm(request.POST, instance=group.profile)
             group_profile_form.superadmin = self.request.user
             group_profile_form.save()
-            return HttpResponseRedirect(reverse('mygroup-add-member', args=[group.pk, ]))
+            return HttpResponseRedirect(reverse('mygroup-member', args=[group.pk, ]))
         return super(GroupCreateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
@@ -203,7 +203,7 @@ class GroupUpdateView(TemplateView):
             self.group_form.save()
             self.group_profile_form.superadmin = self.request.user
             self.group_profile_form.save()
-            return HttpResponseRedirect(reverse('mygroup-add-member', args=[context['pk'], ]))
+            return HttpResponseRedirect(reverse('mygroup-member', args=[context['pk'], ]))
         return super(GroupUpdateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):

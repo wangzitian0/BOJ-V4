@@ -17,9 +17,10 @@ class GroupProfile(node_factory('Consisting')):
     group = models.OneToOneField(Group, related_name='profile')
     admins = models.ManyToManyField(User, related_name='managed_group_profiles')
     superadmin = models.ForeignKey(User, default=1, related_name='established_group_profiles')
+    #  parents = models.ManyToManyField("self", symmetrical=False, through="Consisting",)
 
     def __unicode__(self):
-        return self.group.__unicode__() + "_profile"
+        return self.group.__unicode__()
 
 
 class Consisting(edge_factory(GroupProfile, concrete=False)):
