@@ -1,10 +1,10 @@
 from django import forms
 import account.forms
-from .models import UserProfile, GroupProfile, Consisting
+from .models import UserProfile, GroupProfile
 from bojv4.conf import CONST
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import Group
-from django_select2.forms import ModelSelect2MultipleWidget
+from django_select2.forms import ModelSelect2MultipleWidget, ModelSelect2Widget
 
 
 class UserProfileForm(account.forms.SignupForm):
@@ -57,27 +57,36 @@ class GroupForm(forms.ModelForm):
 
 
 class GroupProfileForm(forms.ModelForm):
+    class Meta:
+        model = GroupProfile
+        fields = ['nickname', 'admins', 'parent', ]
+        widgets = {
+            'admins': ModelSelect2MultipleWidget(
+                search_fields=['username__icontains', ]
+            ),
+            'parent': ModelSelect2Widget(
+                search_fields=['group__name__icontains', ]
+            ),
+        }
+"""
     parents = forms.ModelMultipleChoiceField("self")
 
     def __init__(self, *args, **kwargs):
         super(GroupProfileForm, self).__init__(*args, **kwargs)
-        #  change it to groups which i can manager
-        #  self.fields['parents'].queryset = self.instance._parents
-        self.fields['parents'].queryset = GroupProfile.objects.all()
-        self.fields['parents'].initial = self.instance.parents()
+        group_profile_qs = GroupProfile.objects.all()
         self.fields['parents'].widget = ModelSelect2MultipleWidget(
-            queryset=GroupProfile.objects.all(),
+            queryset=group_profile_qs,
             search_fields=['group__name__icontains', ]
         )
+        self.fields['parents'].initial = self.instance.get_parents()
+        self.fields['parents'].queryset = group_profile_qs
 
     def save(self, *args, **kwargs):
         instance = super(GroupProfileForm, self).save(*args, **kwargs)
         Consisting.objects.filter(child=instance).delete()
-        parents = []
+        #  need add some exception about circle
         for pr in self.cleaned_data['parents']:
-            gg = Consisting(parent=pr, child=instance)
-            parents.append(gg)
-        Consisting.objects.bulk_create(parents)
+            instance.add_parent(pr)
 
     class Meta:
         model = GroupProfile
@@ -87,3 +96,4 @@ class GroupProfileForm(forms.ModelForm):
                 search_fields=['username__icontains', ]
             ),
         }
+"""

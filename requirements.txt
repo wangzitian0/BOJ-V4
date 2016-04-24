@@ -12,7 +12,7 @@ django-dag==1.4
 django-debug-toolbar==1.4
 django-filer==1.1.1
 django-filter==0.13.0
-django-guardian==1.4.2
+django-guardian
 django-mptt==0.8.3
 django-polymorphic==0.9.1
 django-private-media==0.1.3

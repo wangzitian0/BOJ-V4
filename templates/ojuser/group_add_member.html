@@ -28,6 +28,7 @@
       <div class="col-lg-offset-9">
         <button class="btn btn-primary" id="submit-btn">Submit</button>
         <a href="{% url 'user-add' %}" target="_blank" class="btn btn-large btn-primary">New Users</a>
+        <a href="{% url 'mygroup-member' pk  %}" class="btn btn-large btn-primary">Finished</a>
       </div>
     </div>
   </div>
@@ -39,10 +40,19 @@
 <link rel="stylesheet" media="screen" href="{{ STATIC_URL }}handsontable/handsontable.full.css"></script>
 <script>
   $(document).ready(function(){
-    var _data = [
-      {},
-    ];
-
+    var _data = [{},];
+    var pk = window.location.pathname.split('/').slice(-3,-2);
+    var _url = '/api/groups/'+pk+'/addmembers/';
+    /* $.ajax({ */
+      /* type: "GET", */
+      /* url: _url, */
+      /* success: function(res){ */
+        /* for (var i=0;i<res.length;i++){ */
+          /* _data.push(res[i]); */
+          /* _data[i].status="already added"; */
+        /* } */
+      /* } */
+    /* }); */
     var table = $("#example").handsontable({
       data: _data,
       stretchH: 'all',
@@ -57,8 +67,6 @@
       comments: true,
 
     });
-    var pk = window.location.pathname.split('/').slice(-3,-2);
-    var _url = '/api/groups/'+pk+'/addmembers/';
     $("#submit-btn").click( function() {
       $.ajax({
         type: "POST",

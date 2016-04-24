@@ -50,13 +50,6 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class UserSlugSerializer(serializers.ModelSerializer):
-    """
-    status = serializers.SerializerMethodField()
-
-    def get_status(self, object):
-        return "in group"
-    """
-
     class Meta:
         model = User
         fields = ('username', )

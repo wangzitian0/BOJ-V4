@@ -21,6 +21,115 @@ from .serializers import GroupSerializer, UserSlugSerializer
 from .tables import GroupUserTable
 
 
+class GroupListView(ListView):
+
+    model = Group
+    template_name = 'ojuser/group_list.html'
+
+    def get_queryset(self):
+        return self.request.user.groups.all()
+
+
+class GroupCreateView(TemplateView):
+    template_name = 'ojuser/group_create_form.html'
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        group_form = context["group_form"]
+        group_profile_form = context["group_profile_form"]
+        if group_form.is_valid() and group_profile_form.is_valid():
+            group = group_form.save()
+            group_profile_form = GroupProfileForm(request.POST, instance=group.profile)
+            group_profile_form.superadmin = self.request.user
+            group_profile_form.save()
+            return HttpResponseRedirect(reverse('mygroup-member', args=[group.pk, ]))
+        return super(GroupCreateView, self).render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupCreateView, self).get_context_data(**kwargs)
+
+        group_form = GroupForm(self.request.POST or None)
+        group_profile_form = GroupProfileForm(self.request.POST or None)
+        context["group_form"] = group_form
+        context["group_profile_form"] = group_profile_form
+
+        return context
+
+
+class GroupUpdateView(TemplateView):
+    template_name = 'ojuser/group_update_form.html'
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        self.group_form = GroupForm(self.request.POST, instance=self.object)
+        self.group_profile_form = GroupProfileForm(self.request.POST, instance=self.object.profile)
+        if self.group_form.is_valid() and self.group_profile_form.is_valid():
+            self.group_form.save()
+            self.group_profile_form.superadmin = self.request.user
+            self.group_profile_form.save()
+            return HttpResponseRedirect(reverse('mygroup-member', args=[context['pk'], ]))
+        return super(GroupUpdateView, self).render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupUpdateView, self).get_context_data(**kwargs)
+        self.pk = self.kwargs['pk']
+        qs = Group.objects.all()
+        self.object = get_object_or_404(qs, pk=self.pk)
+
+        self.group_form = GroupForm(instance=self.object)
+        self.group_profile_form = GroupProfileForm(instance=self.object.profile)
+
+        context["group_form"] = self.group_form
+        context["group_profile_form"] = self.group_profile_form
+        context['pk'] = self.pk
+
+        return context
+
+
+class GroupDetailView(DetailView):
+
+    model = Group
+    template_name = 'ojuser/group_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupDetailView, self).get_context_data(**kwargs)
+        ob = context['object']
+        context['admins'] = ob.profile.admins.all()
+        context['children'] = ob.profile.get_children()
+        return context
+
+
+class GroupMemberView(TemplateView):
+    template_name = 'ojuser/group_member.html'
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super(GroupMemberView, self).get_context_data(**kwargs)
+        group = Group.objects.get(pk=pk)
+        group_users = group.user_set.all()
+        group_users_table = GroupUserTable(group_users)
+        RequestConfig(self.request).configure(group_users_table)
+        context['group_users_table'] = group_users_table
+        context['pk'] = pk
+        return context
+
+
+class GroupAddMemberView(TemplateView):
+    template_name = 'ojuser/group_add_member.html'
+
+    def get_context_data(self, pk=None, **kwargs):
+        context = super(GroupAddMemberView, self).get_context_data(**kwargs)
+        context['pk'] = pk
+        return context
+
+
+class UserAddView(TemplateView):
+    template_name = 'ojuser/user_add.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UserAddView, self).get_context_data(**kwargs)
+        return context
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -46,20 +155,20 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
-    @detail_route(methods=['get'], url_path='members')
+    @detail_route(methods=['get', ], url_path='members')
     def get_members(self, request, pk=None):
         qs = self.get_queryset()
         group = get_object_or_404(qs, pk=pk)
         serializer = UserSlugSerializer(group.user_set, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['post'], url_path='addmembers')
+    @detail_route(methods=['post', ], url_path='addmembers')
     def add_users(self, request, pk=None):
+        qs = self.get_queryset()
+        group = get_object_or_404(qs, pk=pk)
         users = []
         errors = []
         valid = 1
-        qs = self.get_queryset()
-        group = get_object_or_404(qs, pk=pk)
         for x in request.data:
             try:
                 user = User.objects.get(username=x['username'])
@@ -141,108 +250,3 @@ class OjUserProfilesView(FormView):
                 self.messages["profiles_updated"]["text"]
             )
         return redirect(self.get_success_url())
-
-
-class GroupListView(ListView):
-
-    model = Group
-    template_name = 'ojuser/group_list.html'
-
-    def get_queryset(self):
-        return self.request.user.groups.all()
-
-
-class GroupDetailView(DetailView):
-
-    model = Group
-    template_name = 'ojuser/group_detail.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(GroupDetailView, self).get_context_data(**kwargs)
-        ob = context['object']
-        context['admins'] = ob.profile.admins.all()
-        context['parents'] = ob.profile.parents()
-        context['children'] = ob.profile.children.all()
-        return context
-
-
-class GroupCreateView(TemplateView):
-    template_name = 'ojuser/group_create_form.html'
-
-    def post(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        group_form = context["group_form"]
-        group_profile_form = context["group_profile_form"]
-        if group_form.is_valid() and group_profile_form.is_valid():
-            group = group_form.save()
-            group_profile_form = GroupProfileForm(request.POST, instance=group.profile)
-            group_profile_form.superadmin = self.request.user
-            group_profile_form.save()
-            return HttpResponseRedirect(reverse('mygroup-member', args=[group.pk, ]))
-        return super(GroupCreateView, self).render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        context = super(GroupCreateView, self).get_context_data(**kwargs)
-
-        group_form = GroupForm(self.request.POST or None)
-        group_profile_form = GroupProfileForm(self.request.POST or None)
-        context["group_form"] = group_form
-        context["group_profile_form"] = group_profile_form
-
-        return context
-
-
-class GroupUpdateView(TemplateView):
-    template_name = 'ojuser/group_update_form.html'
-
-    def post(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        self.group_form = GroupForm(self.request.POST, instance=self.object)
-        self.group_profile_form = GroupProfileForm(self.request.POST, instance=self.object.profile)
-        if self.group_form.is_valid() and self.group_profile_form.is_valid():
-            self.group_form.save()
-            self.group_profile_form.superadmin = self.request.user
-            self.group_profile_form.save()
-            return HttpResponseRedirect(reverse('mygroup-member', args=[context['pk'], ]))
-        return super(GroupUpdateView, self).render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        context = super(GroupUpdateView, self).get_context_data(**kwargs)
-        self.pk = self.kwargs['pk']
-        qs = Group.objects.all()
-        self.object = get_object_or_404(qs, pk=self.pk)
-
-        self.group_form = GroupForm(instance=self.object)
-        self.group_profile_form = GroupProfileForm(instance=self.object.profile)
-
-        context["group_form"] = self.group_form
-        context["group_profile_form"] = self.group_profile_form
-        context['pk'] = self.pk
-
-        return context
-
-
-class UserAddView(TemplateView):
-    template_name = 'ojuser/user_add.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(UserAddView, self).get_context_data(**kwargs)
-        return context
-
-
-class GroupAddMemberView(TemplateView):
-    template_name = 'ojuser/group_add_member.html'
-
-
-class GroupMemberView(TemplateView):
-    template_name = 'ojuser/group_member.html'
-
-    def get_context_data(self, pk=None, **kwargs):
-        context = super(GroupMemberView, self).get_context_data(**kwargs)
-        group = Group.objects.get(pk=pk)
-        group_users = group.user_set.all()
-        group_users_table = GroupUserTable(group_users)
-        RequestConfig(self.request).configure(group_users_table)
-        context['group_users_table'] = group_users_table
-        context['pk'] = pk
-        return context

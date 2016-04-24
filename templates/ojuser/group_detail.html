@@ -2,6 +2,7 @@
 
 {% load i18n %}
 {% load bootstrap3 %}
+{% load mptt_tags %}
 
 {% block head_title %}My Groups{% endblock %}
 
@@ -21,13 +22,7 @@
       {% endfor %}
     </ul>
     <h4>Parents</h4>
-    <ul>
-      {% for profile in parents %}
-      <li><a href="{%url 'mygroup-detail' profile.group.pk %}">{{ profile.group.name }}</a></li>
-      {% empty %}
-      <li>No parent yet.</li>
-      {% endfor %}
-    </ul>
+    {{ object.profile.get_ancestors | tree_path:" > " }}
     <h4>Children</h4>
     <ul>
       {% for profile in children %}
