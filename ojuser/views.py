@@ -3,9 +3,11 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
+from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
+from django.utils.decorators import method_decorator
 
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
@@ -19,6 +21,10 @@ from .forms import GroupProfileForm, GroupForm
 from .serializers import UserSerializer, UserProfileSerializer
 from .serializers import GroupSerializer, UserSlugSerializer
 from .tables import GroupUserTable
+from .models import GroupProfile
+
+from guardian.shortcuts import get_objects_for_user
+from guardian.decorators import permission_required_or_403
 
 
 class GroupListView(ListView):
@@ -27,11 +33,21 @@ class GroupListView(ListView):
     template_name = 'ojuser/group_list.html'
 
     def get_queryset(self):
-        return self.request.user.groups.all()
+        group_profiles = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        qs = Group.objects.filter(profile__in=group_profiles)
+        return self.request.user.groups.all() | qs
 
 
 class GroupCreateView(TemplateView):
     template_name = 'ojuser/group_create_form.html'
+
+    @method_decorator(staff_member_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(GroupCreateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data()
@@ -39,9 +55,9 @@ class GroupCreateView(TemplateView):
         group_profile_form = context["group_profile_form"]
         if group_form.is_valid() and group_profile_form.is_valid():
             group = group_form.save()
-            group_profile_form = GroupProfileForm(request.POST, instance=group.profile)
-            group_profile_form.superadmin = self.request.user
-            group_profile_form.save()
+            group_profile = GroupProfileForm(request.POST, instance=group.profile).save()
+            group_profile.superadmin = self.request.user
+            group_profile.save()
             return HttpResponseRedirect(reverse('mygroup-member', args=[group.pk, ]))
         return super(GroupCreateView, self).render_to_response(context)
 
@@ -59,14 +75,19 @@ class GroupCreateView(TemplateView):
 class GroupUpdateView(TemplateView):
     template_name = 'ojuser/group_update_form.html'
 
+    @method_decorator(permission_required_or_403('change_groupprofile', (GroupProfile, 'pk', 'pk')))
+    def dispatch(self, request, *args, **kwargs):
+        return super(GroupUpdateView, self).dispatch(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         self.group_form = GroupForm(self.request.POST, instance=self.object)
         self.group_profile_form = GroupProfileForm(self.request.POST, instance=self.object.profile)
         if self.group_form.is_valid() and self.group_profile_form.is_valid():
             self.group_form.save()
-            self.group_profile_form.superadmin = self.request.user
-            self.group_profile_form.save()
+            group_profile = self.group_profile_form.save()
+            group_profile.superadmin = self.request.user
+            group_profile.save()
             return HttpResponseRedirect(reverse('mygroup-member', args=[context['pk'], ]))
         return super(GroupUpdateView, self).render_to_response(context)
 
@@ -93,28 +114,24 @@ class GroupDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
-        ob = context['object']
-        context['admins'] = ob.profile.admins.all()
-        context['children'] = ob.profile.get_children()
-        return context
+        group = context['object']
+        context['admins'] = group.profile.admins.all()
+        context['children'] = group.profile.get_children()
 
-
-class GroupMemberView(TemplateView):
-    template_name = 'ojuser/group_member.html'
-
-    def get_context_data(self, pk=None, **kwargs):
-        context = super(GroupMemberView, self).get_context_data(**kwargs)
-        group = Group.objects.get(pk=pk)
         group_users = group.user_set.all()
         group_users_table = GroupUserTable(group_users)
         RequestConfig(self.request).configure(group_users_table)
+        #  add filter here
         context['group_users_table'] = group_users_table
-        context['pk'] = pk
         return context
 
 
 class GroupAddMemberView(TemplateView):
     template_name = 'ojuser/group_add_member.html'
+
+    @method_decorator(permission_required_or_403('change_groupprofile', (GroupProfile, 'pk', 'pk')))
+    def dispatch(self, request, *args, **kwargs):
+        return super(GroupAddMemberView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, pk=None, **kwargs):
         context = super(GroupAddMemberView, self).get_context_data(**kwargs)

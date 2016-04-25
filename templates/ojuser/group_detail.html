@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load bootstrap3 %}
 {% load mptt_tags %}
+{% load django_tables2 %}
 
 {% block head_title %}My Groups{% endblock %}
 
@@ -32,8 +33,10 @@
       {% endfor %}
     </ul>
   </div>
+  <h3>group member</h3>
+  {% render_table group_users_table %}
   <div>
-    <a href="{% url 'mygroup-member' object.pk %}" class="btn btn-large btn-primary">Members</a>
+    <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">Add members</a>
     <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
   </div>
 </section>

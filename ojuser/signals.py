@@ -40,21 +40,22 @@ def change_perm(func, instance):
 
     descendants = instance.get_descendants(include_self=True)
 
-    print ancestors, descendants
+    #  print ancestors, descendants
 
     for admin in admins:
         for des in descendants:
-            func('change_groupprofile', admin, des)
+            func('ojuser.change_groupprofile', admin, des)
 
     for ans in ancestors:
         for des in descendants:
-            func('view_groupprofile', des.group, ans)
+            func('ojuser.view_groupprofile', des.group, ans)
 
 
 @receiver(post_save, sender=GroupProfile)
 def handle_group_dag_save(sender, instance, *args, **kwargs):
     change_perm(assign_perm, instance)
-    instance.group.user_set.add(instance.superadmin)
+    #  instance.superadmin.groups.add(instance.group)
+    #  print instance.group.user_set, instance.superadmin
 
 
 @receiver(pre_save, sender=GroupProfile)
