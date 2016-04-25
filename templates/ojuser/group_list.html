@@ -2,6 +2,7 @@
 
 {% load i18n %}
 {% load bootstrap3 %}
+{% load django_tables2 %}
 
 {% block head_title %}My Groups{% endblock %}
 
@@ -12,16 +13,12 @@
   <div class="container">
     {% include "_messages.html" %}
     <h1>My Groups</h1>
-    <ul>
-      {% for group in object_list %}
-      <li><a href="{%url 'mygroup-detail' group.pk %}">{{ group.name }}</a></li>
-      {% empty %}
-      <li>No groups yet.</li>
-      {% endfor %}
-    </ul>
+    {% render_table groups_table %}
+    {% if request.user.is_staff %}
     <div>
       <a href="{% url 'mygroup-create' %}" class="btn btn-large btn-primary">New </a>
     </div>
+    {% endif %}
   </div>
 </section>
 {% endblock %}

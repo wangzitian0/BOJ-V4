@@ -15,19 +15,21 @@
     <br>
     <div class="row">
       <div class="col-lg-2">
-      <div class="input-group">
-        <input type="number" id="new-lines-number" min="1" max="1000" class="form-control input-sm" value="1">
-        <span class="input-group-btn">
-          <button id="btn-del-line" class="btn btn-warning btn-sm" type="button">Del</button>
-        </span>
-        <span class="input-group-btn">
-          <button id="btn-add-line" class="btn btn-info btn-sm" type="button">Add</button>
-        </span>
+        <div class="input-group">
+          <input type="number" id="new-lines-number" min="1" max="1000" class="form-control input-sm" value="1">
+          <span class="input-group-btn">
+            <button id="btn-del-line" class="btn btn-warning btn-sm" type="button">Del</button>
+          </span>
+          <span class="input-group-btn">
+            <button id="btn-add-line" class="btn btn-info btn-sm" type="button">Add</button>
+          </span>
+        </div>
       </div>
+      <div class="col-lg-offset-6 col-lg-2">
+        <a href="{% url 'user-add' %}" target="_blank" class="btn btn-large btn-warning">New Users</a>
       </div>
-      <div class="col-lg-offset-9">
-        <button class="btn btn-primary" id="submit-btn">Submit</button>
-        <a href="{% url 'user-add' %}" target="_blank" class="btn btn-large btn-primary">New Users</a>
+      <div class="col-lg-offset-1">
+        <button class="btn btn-primary" id="submit-btn">Add Users</button>
         <a href="{% url 'mygroup-detail' pk  %}" class="btn btn-large btn-primary">Finished</a>
       </div>
     </div>

@@ -14,6 +14,7 @@ class UserProfile(models.Model):
 
 class GroupProfile(MPTTModel):
     nickname = models.CharField(max_length=30)
+    desc = models.TextField(blank=True)
     group = models.OneToOneField(Group, related_name='profile')
     admins = models.ManyToManyField(User, related_name='managed_group_profiles')
     superadmin = models.ForeignKey(User, default=1, related_name='established_group_profiles')

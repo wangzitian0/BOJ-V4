@@ -4,6 +4,7 @@
 {% load bootstrap3 %}
 {% load mptt_tags %}
 {% load django_tables2 %}
+{% load guardian_tags %}
 
 {% block head_title %}My Groups{% endblock %}
 
@@ -34,15 +35,16 @@
     </ul>
   </div>
   <h3>group member</h3>
+
   {% render_table group_users_table %}
+
+  {% get_obj_perms request.user for object.profile as "object_perms" %}
+
+  {% if "change_groupprofile" in object_perms %}
   <div>
     <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">Add members</a>
     <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
   </div>
+  {% endif %}
 </section>
-{% endblock %}
-
-{% block extra_body %}
-  {{ form.media.js }}
-  {{ form.media.css }}
 {% endblock %}

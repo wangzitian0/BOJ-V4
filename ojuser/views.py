@@ -20,10 +20,10 @@ from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
 from .forms import GroupProfileForm, GroupForm
 from .serializers import UserSerializer, UserProfileSerializer
 from .serializers import GroupSerializer, UserSlugSerializer
-from .tables import GroupUserTable
+from .tables import GroupUserTable, GroupTable
 from .models import GroupProfile
 
-from guardian.shortcuts import get_objects_for_user
+#  from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
 
 
@@ -32,6 +32,15 @@ class GroupListView(ListView):
     model = Group
     template_name = 'ojuser/group_list.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(GroupListView, self).get_context_data(**kwargs)
+        groups_table = GroupTable(self.get_queryset())
+        RequestConfig(self.request).configure(groups_table)
+        #  add filter here
+        context['groups_table'] = groups_table
+        return context
+
+"""
     def get_queryset(self):
         group_profiles = get_objects_for_user(
             self.request.user,
@@ -40,6 +49,7 @@ class GroupListView(ListView):
         )
         qs = Group.objects.filter(profile__in=group_profiles)
         return self.request.user.groups.all() | qs
+"""
 
 
 class GroupCreateView(TemplateView):
@@ -58,7 +68,7 @@ class GroupCreateView(TemplateView):
             group_profile = GroupProfileForm(request.POST, instance=group.profile).save()
             group_profile.superadmin = self.request.user
             group_profile.save()
-            return HttpResponseRedirect(reverse('mygroup-member', args=[group.pk, ]))
+            return HttpResponseRedirect(reverse('mygroup-detail', args=[group.pk, ]))
         return super(GroupCreateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
@@ -88,7 +98,7 @@ class GroupUpdateView(TemplateView):
             group_profile = self.group_profile_form.save()
             group_profile.superadmin = self.request.user
             group_profile.save()
-            return HttpResponseRedirect(reverse('mygroup-member', args=[context['pk'], ]))
+            return HttpResponseRedirect(reverse('mygroup-detail', args=[context['pk'], ]))
         return super(GroupUpdateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
