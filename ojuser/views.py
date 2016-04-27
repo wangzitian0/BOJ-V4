@@ -17,11 +17,12 @@ from rest_framework import viewsets, status
 from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
-from .forms import GroupProfileForm, GroupForm
+from .forms import GroupProfileForm, GroupForm, GroupSearchForm
 from .serializers import UserSerializer, UserProfileSerializer
 from .serializers import GroupSerializer, UserSlugSerializer
 from .tables import GroupUserTable, GroupTable
 from .models import GroupProfile
+from .filters import GroupFilter
 
 #  from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
@@ -32,12 +33,20 @@ class GroupListView(ListView):
     model = Group
     template_name = 'ojuser/group_list.html'
 
+    def get_queryset(self):
+        qs = super(GroupListView, self).get_queryset()
+        self.filter = GroupFilter(self.request.GET, queryset=qs)
+        return self.filter.qs
+
     def get_context_data(self, **kwargs):
         context = super(GroupListView, self).get_context_data(**kwargs)
         groups_table = GroupTable(self.get_queryset())
         RequestConfig(self.request).configure(groups_table)
         #  add filter here
+        group_search_form = GroupSearchForm()
+        context["group_search_form"] = group_search_form
         context['groups_table'] = groups_table
+        context['filter'] = self.filter
         return context
 
 """

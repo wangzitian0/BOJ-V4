@@ -13,6 +13,26 @@
   <div class="container">
     {% include "_messages.html" %}
     <h1>My Groups</h1>
+    <div>
+      <form id="group-search">
+        <div class="col-lg-3">
+          {% bootstrap_form group_search_form %}
+        </div>
+        <div class="col-lg-2">
+          <br>
+          <input value="Go!" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+        </div>
+      </form>
+      <form id="filter" action="" method="get">
+        <div class="col-lg-2">
+          {% bootstrap_form filter.form %}
+        </div>
+        <div class="col-lg-2">
+          <br>
+          <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+        </div>
+      </form>
+    </div>
     {% render_table groups_table %}
     {% if request.user.is_staff %}
     <div>
@@ -21,4 +41,18 @@
     {% endif %}
   </div>
 </section>
+{% endblock %}
+{% block extra_body %}
+  {{ group_search_form.media.js }}
+  {{ group_search_form.media.css }}
+<script>
+  $(document).ready(function(){
+    $('#group-search').submit(function (e) {
+      e.preventDefault();
+      var gg = $('#group-search').find('select[name="keyword"]').val()
+      window.location.href = "{%url 'mygroup-list' %}" + gg + "/"
+      /* window.location.href = window.location.href + str(gg); */
+    });
+  });
+</script>
 {% endblock %}

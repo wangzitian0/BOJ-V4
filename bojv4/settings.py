@@ -141,7 +141,9 @@ INSTALLED_APPS = [
     "mptt",
     "django_select2",
     "django_tables2",
+    "django_filters",
     "debug_toolbar",
+    "crispy_forms",
 
     # project
     "bojv4",

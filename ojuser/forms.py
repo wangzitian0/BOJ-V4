@@ -56,6 +56,28 @@ class GroupForm(forms.ModelForm):
         fields = ['name', ]
 
 
+class GroupSearchWidget(ModelSelect2Widget):
+    model = Group,
+    search_fields = [
+        'name__icontains',
+        'profile__nickname__icontains',
+    ]
+
+    def label_from_instance(self, group):
+        return group.name + " - " + group.profile.nickname
+
+
+class GroupSearchForm(forms.Form):
+
+    keyword = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        widget=GroupSearchWidget()
+    )
+
+    class Meta:
+        fields = ['keyword', ]
+
+
 class GroupProfileForm(forms.ModelForm):
     class Meta:
         model = GroupProfile
