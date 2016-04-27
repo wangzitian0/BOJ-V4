@@ -14,10 +14,7 @@ class GroupTable(tables.Table):
     )
     status = tables.TemplateColumn(
         """
-{% load guardian_tags %}
-{% get_obj_perms request.user for record.profile as "record_perms" %}
-
-{% if "change_groupprofile" in record_perms %}
+{% if record in group_can_change %}
 <a href="{% url 'mygroup-update' record.pk %}" class="btn btn-xs btn-primary">Update</a>
 {% endif %}
         """,

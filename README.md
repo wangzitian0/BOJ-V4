@@ -44,3 +44,7 @@ TemplateView实现多个表单的验证
 ojuser/views.py
 class GroupUpdateView(TemplateView):
 ```
+权限控制最重要的接口
+```
+https://django-guardian.readthedocs.org/en/stable/api/guardian.shortcuts.html
+```

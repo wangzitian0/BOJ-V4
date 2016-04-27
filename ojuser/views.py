@@ -24,7 +24,7 @@ from .tables import GroupUserTable, GroupTable
 from .models import GroupProfile
 from .filters import GroupFilter
 
-#  from guardian.shortcuts import get_objects_for_user
+from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
 
 
@@ -36,6 +36,12 @@ class GroupListView(ListView):
     def get_queryset(self):
         qs = super(GroupListView, self).get_queryset()
         self.filter = GroupFilter(self.request.GET, queryset=qs)
+        profiles_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        self.group_can_change_qs = Group.objects.filter(profile__in=profiles_can_change)
         return self.filter.qs
 
     def get_context_data(self, **kwargs):
@@ -47,6 +53,7 @@ class GroupListView(ListView):
         context["group_search_form"] = group_search_form
         context['groups_table'] = groups_table
         context['filter'] = self.filter
+        context['group_can_change'] = self.group_can_change_qs
         return context
 
 """
