@@ -8,6 +8,7 @@ from django.views.generic import TemplateView, ListView, DetailView
 from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
 from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
@@ -33,6 +34,10 @@ class GroupListView(ListView):
     model = Group
     template_name = 'ojuser/group_list.html'
 
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(GroupListView, self).dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         qs = super(GroupListView, self).get_queryset()
         self.filter = GroupFilter(self.request.GET, queryset=qs, user=self.request.user)
@@ -55,17 +60,6 @@ class GroupListView(ListView):
         context['filter'] = self.filter
         context['group_can_change'] = self.group_can_change_qs
         return context
-
-"""
-    def get_queryset(self):
-        group_profiles = get_objects_for_user(
-            self.request.user,
-            'ojuser.change_groupprofile',
-            with_superuser=True
-        )
-        qs = Group.objects.filter(profile__in=group_profiles)
-        return self.request.user.groups.all() | qs
-"""
 
 
 class GroupCreateView(TemplateView):
@@ -101,7 +95,10 @@ class GroupCreateView(TemplateView):
 class GroupUpdateView(TemplateView):
     template_name = 'ojuser/group_update_form.html'
 
-    @method_decorator(permission_required_or_403('change_groupprofile', (GroupProfile, 'pk', 'pk')))
+    @method_decorator(permission_required_or_403(
+        'change_groupprofile',
+        (GroupProfile, 'group__pk', 'pk')
+    ))
     def dispatch(self, request, *args, **kwargs):
         return super(GroupUpdateView, self).dispatch(request, *args, **kwargs)
 
@@ -155,7 +152,10 @@ class GroupDetailView(DetailView):
 class GroupMemberView(TemplateView):
     template_name = 'ojuser/group_members.html'
 
-    @method_decorator(permission_required_or_403('change_groupprofile', (GroupProfile, 'pk', 'pk')))
+    @method_decorator(permission_required_or_403(
+        'change_groupprofile',
+        (GroupProfile, 'group__pk', 'pk')
+    ))
     def dispatch(self, request, *args, **kwargs):
         return super(GroupMemberView, self).dispatch(request, *args, **kwargs)
 

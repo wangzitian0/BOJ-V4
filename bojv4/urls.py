@@ -23,7 +23,7 @@ router.register(r'submissions', SubmissionViewSet)
 urlpatterns = [
     url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
     url(r"^admin/", include(admin.site.urls)),
-    url(r"^account/", include("ojuser.urls")),
+    url(r"^accounts/", include("ojuser.urls")),
     url(r"^problem/", include("problem.urls", namespace="problem")),
     url(r"^submission/", include("submission.urls", namespace="submission")),
     url(r'^select2/', include('django_select2.urls')),

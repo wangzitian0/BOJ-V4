@@ -17,18 +17,16 @@ def handle_user_save(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Group)
 def handle_group_save(sender, instance, created, **kwargs):
     if created:
+        #  gp = GroupProfile(group=instance,)
+        #  gp.save()
+        #  gp.insert_at(None, position='first-child', save=True)
         GroupProfile.objects.create(group=instance)
 
 
 @receiver(m2m_changed, sender=GroupProfile.admins.through)
 def handle_admins_save(sender, instance, action, pk_set, reverse, **kwargs):
     #  print action, instance, pk_set
-    if action == "post_add" and not reverse:
-        admins = User.objects.filter(pk__in=pk_set)
-        for admin in admins.all():
-            instance.group.user_set.add(admin)
-    elif action == "post_clear" and not reverse:
-        instance.group.user_set.clear()
+    instance.save()
 
 
 def change_perm(func, instance):
@@ -54,10 +52,9 @@ def change_perm(func, instance):
 @receiver(post_save, sender=GroupProfile)
 def handle_group_dag_save(sender, instance, *args, **kwargs):
     change_perm(assign_perm, instance)
-    #  instance.superadmin.groups.add(instance.group)
-    #  print instance.group.user_set, instance.superadmin
 
 
 @receiver(pre_save, sender=GroupProfile)
 def handle_group_dag_delete(sender, instance, *args, **kwargs):
-    change_perm(remove_perm, instance)
+    if instance.pk:
+        change_perm(remove_perm, instance)

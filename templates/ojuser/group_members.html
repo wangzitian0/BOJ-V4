@@ -42,14 +42,17 @@
 <link rel="stylesheet" media="screen" href="{{ STATIC_URL }}handsontable/handsontable.full.css"></script>
 <script>
   $(document).ready(function(){
-    var _data = [{},];
+    var _data = [
+      {"username":""},
+    ];
     var pk = window.location.pathname.split('/').slice(-3,-2);
     var _url = '/api/groups/'+pk+'/members/';
     $.ajax({
       type: "GET",
       url: _url,
       success: function(res){
-        _data.length = 0;
+        if(res.length>0)
+          _data.length = 0;
         for (var i=0;i<res.length;i++){
           _data.push(res[i]);
           _data[i].status="already added";
