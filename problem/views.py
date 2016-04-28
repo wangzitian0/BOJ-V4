@@ -80,11 +80,9 @@ class ProblemDetailView(DetailView):
 
 class ProblemCreateView(CreateView):
     model = Problem
-    #  fields = '__all__'
     form_class = ProblemForm
     template_name_suffix = '_create_form'
 
-    #  @staff_member_required
     @method_decorator(staff_member_required)
     def dispatch(self, request, *args, **kwargs):
         return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)

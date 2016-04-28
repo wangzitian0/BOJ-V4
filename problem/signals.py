@@ -1,8 +1,8 @@
 from django.dispatch import receiver
 from django.db.models.signals import m2m_changed
-from django.contrib.auth.models import Group
+#  from django.contrib.auth.models import Group
 
-from guardian.shortcuts import assign_perm, get_users_with_perms
+#  from guardian.shortcuts import assign_perm, get_users_with_perms
 
 from .models import Problem
 
@@ -10,6 +10,7 @@ from .models import Problem
 @receiver(m2m_changed, sender=Problem.groups.through)
 def handle_problem_save(sender, instance, action, pk_set, reverse, **kwargs):
     if action == "post_add" and not reverse:
+        """
         assign_perm('change_problem', instance.author, instance)
         assign_perm('delete_problem', instance.author, instance)
         assign_perm('view_problem', instance.author, instance)
@@ -40,3 +41,4 @@ def handle_problem_save(sender, instance, action, pk_set, reverse, **kwargs):
             assign_perm('change_problem', user, instance)
             assign_perm('delete_problem', user, instance)
         # auth all father group admin edit permssion
+        """

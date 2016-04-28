@@ -17,16 +17,14 @@ def handle_user_save(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Group)
 def handle_group_save(sender, instance, created, **kwargs):
     if created:
-        #  gp = GroupProfile(group=instance,)
-        #  gp.save()
-        #  gp.insert_at(None, position='first-child', save=True)
         GroupProfile.objects.create(group=instance)
 
 
 @receiver(m2m_changed, sender=GroupProfile.admins.through)
 def handle_admins_save(sender, instance, action, pk_set, reverse, **kwargs):
     #  print action, instance, pk_set
-    instance.save()
+    #  instance.save()
+    pass
 
 
 def change_perm(func, instance):
@@ -39,10 +37,13 @@ def change_perm(func, instance):
     descendants = instance.get_descendants(include_self=True)
 
     #  print ancestors, descendants
+    #  here should use cache,  all of  anc,admin,des
 
     for admin in admins:
         for des in descendants:
             func('ojuser.change_groupprofile', admin, des)
+        for ans in ancestors:
+            func('ojuser.view_groupprofile', admin, ans)
 
     for ans in ancestors:
         for des in descendants:
@@ -51,10 +52,12 @@ def change_perm(func, instance):
 
 @receiver(post_save, sender=GroupProfile)
 def handle_group_dag_save(sender, instance, *args, **kwargs):
+    print sender, instance, args, kwargs
     change_perm(assign_perm, instance)
 
 
 @receiver(pre_save, sender=GroupProfile)
 def handle_group_dag_delete(sender, instance, *args, **kwargs):
+    print sender, instance, args, kwargs
     if instance.pk:
         change_perm(remove_perm, instance)

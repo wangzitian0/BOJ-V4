@@ -75,7 +75,10 @@ class GroupCreateView(TemplateView):
         group_profile_form = context["group_profile_form"]
         if group_form.is_valid() and group_profile_form.is_valid():
             group = group_form.save()
-            group_profile = GroupProfileForm(request.POST, instance=group.profile).save()
+            group_profile = GroupProfileForm(
+                request.POST,
+                instance=group.profile
+            ).save(commit=False)
             group_profile.superadmin = self.request.user
             group_profile.save()
             return HttpResponseRedirect(reverse('mygroup-detail', args=[group.pk, ]))
@@ -108,9 +111,7 @@ class GroupUpdateView(TemplateView):
         self.group_profile_form = GroupProfileForm(self.request.POST, instance=self.object.profile)
         if self.group_form.is_valid() and self.group_profile_form.is_valid():
             self.group_form.save()
-            group_profile = self.group_profile_form.save()
-            group_profile.superadmin = self.request.user
-            group_profile.save()
+            self.group_profile_form.save()
             return HttpResponseRedirect(reverse('mygroup-detail', args=[context['pk'], ]))
         return super(GroupUpdateView, self).render_to_response(context)
 
