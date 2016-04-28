@@ -44,17 +44,30 @@
   $(document).ready(function(){
     var _data = [{},];
     var pk = window.location.pathname.split('/').slice(-3,-2);
-    var _url = '/api/groups/'+pk+'/addmembers/';
-    /* $.ajax({ */
-      /* type: "GET", */
-      /* url: _url, */
-      /* success: function(res){ */
-        /* for (var i=0;i<res.length;i++){ */
-          /* _data.push(res[i]); */
-          /* _data[i].status="already added"; */
-        /* } */
-      /* } */
-    /* }); */
+    var _url = '/api/groups/'+pk+'/members/';
+    $.ajax({
+      type: "GET",
+      url: _url,
+      success: function(res){
+        _data.length = 0;
+        for (var i=0;i<res.length;i++){
+          _data.push(res[i]);
+          _data[i].status="already added";
+        }
+        table.handsontable('loadData', _data);
+        table.handsontable('addHook', 'afterChange', function(changes, source) {
+          if(source=="edit"||source=="paste"){
+            for (var i=0;i<changes.length;i++){
+              if(changes[i][1]=="username" && changes[i][2] != changes[i][3]){
+                var r = changes[i][0]
+                _data[r].status="";
+              }
+            }
+          }
+          table.handsontable('render');
+        });
+      }
+    });
     var table = $("#example").handsontable({
       data: _data,
       stretchH: 'all',
@@ -77,15 +90,12 @@
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function(res){
-          /* alert(JSON.stringify(res)); */
+          _data.length = 0;
           for (var i=0;i<res.length;i++){
-            if(Object.keys(res[i]).length==0)
-              _data[i].status="successfule added";
-            else
-              _data[i].status="already added";
-
+            _data.push(res[i]);
+            _data[i].status="already added";
           }
-          table.handsontable('render');
+          table.handsontable('loadData', _data);
           alert("All is added!");
         },
         error: function(errors) {
@@ -97,13 +107,14 @@
               _data[i].status=errors[i].username;
             }
           }
-          table.handsontable('render');
+          table.handsontable('loadData', _data);
           alert("error!");
         }
       });
     });
     $("#btn-add-line").click(function(){
-      table.handsontable('alter', 'insert_row',null,$("#new-lines-number").val());
+      var number=$("#new-lines-number").val();
+      table.handsontable('alter', 'insert_row',null,number);
     });
     $("#btn-del-line").click(function(){
       var number=$("#new-lines-number").val();

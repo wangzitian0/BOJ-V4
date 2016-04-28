@@ -152,15 +152,15 @@ class GroupDetailView(DetailView):
         return context
 
 
-class GroupAddMemberView(TemplateView):
-    template_name = 'ojuser/group_add_member.html'
+class GroupMemberView(TemplateView):
+    template_name = 'ojuser/group_members.html'
 
     @method_decorator(permission_required_or_403('change_groupprofile', (GroupProfile, 'pk', 'pk')))
     def dispatch(self, request, *args, **kwargs):
-        return super(GroupAddMemberView, self).dispatch(request, *args, **kwargs)
+        return super(GroupMemberView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, pk=None, **kwargs):
-        context = super(GroupAddMemberView, self).get_context_data(**kwargs)
+        context = super(GroupMemberView, self).get_context_data(**kwargs)
         context['pk'] = pk
         return context
 
@@ -198,36 +198,28 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
-    @detail_route(methods=['get', ], url_path='members')
-    def get_members(self, request, pk=None):
+    @detail_route(methods=['post', 'get', 'put', ], url_path='members')
+    def manage_member(self, request, pk=None):
         qs = self.get_queryset()
         group = get_object_or_404(qs, pk=pk)
+        if request.method == "POST" or request.method == "PUT":
+            users = []
+            errors = []
+            valid = 1
+            for x in request.data:
+                try:
+                    user = User.objects.get(username=x['username'])
+                    users.append(user)
+                    errors.append({})
+                except User.DoesNotExist:
+                    errors.append({"username": "user do not exsit"})
+                    valid = 0
+            if not valid:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            group.user_set.clear()
+            group.user_set.add(*users)
         serializer = UserSlugSerializer(group.user_set, many=True)
         return Response(serializer.data)
-
-    @detail_route(methods=['post', ], url_path='addmembers')
-    def add_users(self, request, pk=None):
-        qs = self.get_queryset()
-        group = get_object_or_404(qs, pk=pk)
-        users = []
-        errors = []
-        valid = 1
-        for x in request.data:
-            try:
-                user = User.objects.get(username=x['username'])
-                users.append(user)
-                if user in group.user_set.all():
-                    errors.append({"username:user have in group"})
-                else:
-                    errors.append({})
-            except User.DoesNotExist:
-                errors.append({"username:user do not exsit"})
-                valid = 0
-        #  print request.data
-        if valid:
-            group.user_set.add(*users)
-            return Response(errors, status=status.HTTP_201_CREATED)
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OjUserSignupView(SignupView):
