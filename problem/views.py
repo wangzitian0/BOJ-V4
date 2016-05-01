@@ -1,9 +1,3 @@
-import json
-import mimetypes
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from guardian.shortcuts import get_objects_for_user
-from guardian.decorators import permission_required_or_403
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -12,18 +6,26 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.contrib.admin.views.decorators import staff_member_required
-#  from django.contrib.auth.decorators import login_required
-
-from filer.models.filemodels import File
-from .models import Problem, ProblemDataInfo, Language
-
-from .serializers import ProblemSerializer, ProblemDataInfoSerializer
-from .serializers import LanguageSerializer, FileSerializer, ProblemDataSerializer
-
-from .forms import ProblemForm
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+
+import json
+import mimetypes
+from django_tables2 import RequestConfig
+from filer.models.filemodels import File
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
+from guardian.shortcuts import get_objects_for_user
+from guardian.decorators import permission_required_or_403
+
+from .models import Problem, ProblemDataInfo, Language
+from .filters import ProblemFilter
+from .tables import ProblemTable
+from .serializers import ProblemSerializer, ProblemDataInfoSerializer
+from .serializers import LanguageSerializer, FileSerializer, ProblemDataSerializer
+from .forms import ProblemForm
 
 
 class FileViewSet(viewsets.ModelViewSet):
@@ -62,8 +64,30 @@ class ProblemListView(ListView):
     model = Problem
     paginate_by = 10
 
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(ProblemListView, self).dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
-        return get_objects_for_user(self.request.user, 'problem.view_problem')
+        groups_can_view = get_objects_for_user(
+            self.request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True
+        )
+        qs = Problem.objects.filter(groups__profile__in=groups_can_view).distinct()
+        self.filter = ProblemFilter(self.request.GET, queryset=qs, user=self.request.user)
+        #  self.group_can_change_qs = Problem.objects.filter(profile__in=profiles_can_change)
+        return self.filter.qs
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemListView, self).get_context_data(**kwargs)
+        problems_table = ProblemTable(self.get_queryset())
+        RequestConfig(self.request).configure(problems_table)
+        #  add filter here
+        context['problems_table'] = problems_table
+        context['filter'] = self.filter
+        #  context['group_can_change'] = self.group_can_change_qs
+        return context
 
 
 class ProblemDetailView(DetailView):

@@ -2,6 +2,7 @@
 
 {% load i18n %}
 {% load bootstrap3 %}
+{% load django_tables2 %}
 
 {% block head_title %}Problem List{% endblock %}
 
@@ -13,15 +14,24 @@
     {% include "_messages.html" %}
     <h1>Articles</h1>
     <div>
+    </div>
+    <div>
+      <form id="filter" action="" method="get">
+        <div class="col-lg-2">
+          {% bootstrap_form filter.form %}
+        </div>
+        <div class="col-lg-2">
+          <br>
+          <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+        </div>
+      </form>
+    </div>
+    {% render_table problems_table %}
+    {% if request.user.is_staff %}
+    <div>
       <a href="{% url 'problem:problem-add' %}" class="btn btn-large btn-primary">Add</a>
     </div>
-    <ul>
-      {% for problem in object_list %}
-      <li><a href="{%url 'problem:problem-detail' problem.pk %}">{{ problem.title }}</a></li>
-      {% empty %}
-      <li>No articles yet.</li>
-      {% endfor %}
-    </ul>
+    {% endif %}
     {% bootstrap_pagination page_obj %}
   </div>
 </section>
