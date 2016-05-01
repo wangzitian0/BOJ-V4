@@ -4,11 +4,12 @@ from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
 from django.contrib.admin.views.decorators import staff_member_required
-from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic import TemplateView, ListView, DetailView, DeleteView
 from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse_lazy
 
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
@@ -47,6 +48,12 @@ class GroupListView(ListView):
             with_superuser=True
         )
         self.group_can_change_qs = Group.objects.filter(profile__in=profiles_can_change)
+        profiles_can_delete = get_objects_for_user(
+            self.request.user,
+            'ojuser.delete_groupprofile',
+            with_superuser=True
+        )
+        self.group_can_delete_qs = Group.objects.filter(profile__in=profiles_can_delete)
         return self.filter.qs
 
     def get_context_data(self, **kwargs):
@@ -59,6 +66,7 @@ class GroupListView(ListView):
         context['groups_table'] = groups_table
         context['filter'] = self.filter
         context['group_can_change'] = self.group_can_change_qs
+        context['group_can_delete'] = self.group_can_delete_qs
         return context
 
 
@@ -81,6 +89,7 @@ class GroupCreateView(TemplateView):
             ).save(commit=False)
             group_profile.superadmin = self.request.user
             group_profile.save()
+            messages.success(request, 'Group created!')
             return HttpResponseRedirect(reverse('mygroup-detail', args=[group.pk, ]))
         return super(GroupCreateView, self).render_to_response(context)
 
@@ -129,6 +138,19 @@ class GroupUpdateView(TemplateView):
         context['pk'] = self.pk
 
         return context
+
+
+class GroupDeleteView(DeleteView):
+    model = Group
+    template_name = 'ojuser/group_confirm_delete.html'
+    success_url = reverse_lazy('mygroup-list')
+
+    @method_decorator(permission_required_or_403(
+        'delete_groupprofile',
+        (GroupProfile, 'group__pk', 'pk')
+    ))
+    def dispatch(self, request, *args, **kwargs):
+        return super(GroupDeleteView, self).dispatch(request, *args, **kwargs)
 
 
 class GroupDetailView(DetailView):

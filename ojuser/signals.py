@@ -52,12 +52,13 @@ def change_perm(func, instance):
 
 @receiver(post_save, sender=GroupProfile)
 def handle_group_dag_save(sender, instance, *args, **kwargs):
-    print sender, instance, args, kwargs
+    #  print sender, instance, args, kwargs
     change_perm(assign_perm, instance)
+    assign_perm('ojuser.delete_groupprofile', instance.superadmin, instance)
 
 
 @receiver(pre_save, sender=GroupProfile)
 def handle_group_dag_delete(sender, instance, *args, **kwargs):
-    print sender, instance, args, kwargs
+    #  print sender, instance, args, kwargs
     if instance.pk:
         change_perm(remove_perm, instance)

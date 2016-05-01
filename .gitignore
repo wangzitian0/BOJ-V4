@@ -6,3 +6,4 @@ bojv4/secret_settings.py
 node_modules/*
 static/_build/*
 site_media/*
+nohup.out

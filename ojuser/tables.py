@@ -13,11 +13,7 @@ class GroupTable(tables.Table):
         orderable=False,
     )
     status = tables.TemplateColumn(
-        """
-{% if record in group_can_change %}
-<a href="{% url 'mygroup-update' record.pk %}" class="btn btn-xs btn-primary">Update</a>
-{% endif %}
-        """,
+        template_name='ojuser/group_list_external.html',
         orderable=False,
     )
 

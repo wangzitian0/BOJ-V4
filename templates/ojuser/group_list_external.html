@@ -1,0 +1,9 @@
+{% load bootstrap3 %}
+
+{% if record in group_can_change %}
+<a href="{% url 'mygroup-add-member' record.pk %}" title="成员管理">{% bootstrap_icon "user text-primary" %}</a>
+<a href="{% url 'mygroup-update' record.pk %}" title="修改组信息">{% bootstrap_icon "edit text-primary" %}</a>
+{% endif %}
+{% if record in group_can_delete %}
+<a href="{% url 'mygroup-delete' record.pk %}" title="删除组">{% bootstrap_icon "remove text-danger" %}</a>
+{% endif %}
