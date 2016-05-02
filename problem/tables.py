@@ -12,5 +12,5 @@ class ProblemTable(tables.Table):
 
     class Meta:
         model = Problem
-        fields = ('title', 'time_limit', 'memory_limit', 'author', 'status',)
+        fields = ('title', 'time_limit', 'memory_limit', 'superadmin', 'status',)
         template = 'django_tables2/bootstrap.html'

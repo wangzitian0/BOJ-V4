@@ -8,9 +8,18 @@ class ProblemForm(forms.ModelForm):
 
     class Meta:
         model = Problem
-        exclude = ["author", ]
+        exclude = ["superadmin", ]
         widgets = {
+            'allowed_lang': ModelSelect2MultipleWidget(
+                search_fields=[
+                    'key__icontains',
+                    'name__icontains',
+                ]
+            ),
             'groups': ModelSelect2MultipleWidget(
-                search_fields=['name__icontains', ]
+                search_fields=[
+                    'name__icontains',
+                    'nickname__icontains',
+                ]
             ),
         }

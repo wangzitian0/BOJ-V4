@@ -1,6 +1,6 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
-from django.db.models.signals import m2m_changed
+#  from django.db.models.signals import m2m_changed
 
 from django.contrib.auth.models import User, Group
 
@@ -33,9 +33,9 @@ def change_perm(func, instance):
     for ans in ancestors:
         for des in descendants:
             func('ojuser.change_groupprofile', ans.superadmin, des)
-            func('ojuser.view_groupprofile', des.superadmin, ans)
+            func('ojuser.view_groupprofile', ans.superadmin, des)
             func('ojuser.change_groupprofile', ans.admin_group, des)
-            func('ojuser.view_groupprofile', des.admin_group, ans)
+            func('ojuser.view_groupprofile', ans.admin_group, des)
             func('ojuser.view_groupprofile', des.user_group, ans)
 
 

@@ -1,8 +1,8 @@
 {% load bootstrap3 %}
 
 {% if record in problem_can_change %}
-<a href="{% url 'problem-update' record.pk %}" title="修改组信息">{% bootstrap_icon "edit text-primary" %}</a>
+<a href="{% url 'problem:problem-update' record.pk %}" title="修改组信息">{% bootstrap_icon "edit text-primary" %}</a>
 {% endif %}
 {% if record in problem_can_delete %}
-<a href="{% url 'problem-delete' record.pk %}" title="删除组">{% bootstrap_icon "remove text-danger" %}</a>
+<a href="{% url 'problem:problem-delete' record.pk %}" title="删除组">{% bootstrap_icon "remove text-danger" %}</a>
 {% endif %}

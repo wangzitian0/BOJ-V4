@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from filer.models.filemodels import File
 from django.core.urlresolvers import reverse
 from django.db import models
+from ojuser.models import GroupProfile
 
 #  from filer.fields.file import FilerFileField
 
@@ -15,11 +16,11 @@ class Problem(models.Model):
     code_length_limit = models.IntegerField(default=65536)
     problem_desc = models.TextField(default='None')
     is_spj = models.IntegerField(default=0)
-    author = models.ForeignKey(User)
+    superadmin = models.ForeignKey(User)
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
     allowed_lang = models.ManyToManyField('Language', related_name='problems')
-    groups = models.ManyToManyField(Group, related_name='problems')
+    groups = models.ManyToManyField(GroupProfile, related_name='problems')
 
     def __unicode__(self):
         return str(self.pk) + " " + str(self.title)

@@ -74,22 +74,22 @@ class ProblemListView(ListView):
             'ojuser.view_groupprofile',
             with_superuser=True
         )
-        problem_can_view_qs = Problem.objects.filter(groups__profile__in=gp_can_view).distinct()
+        self.problem_can_view_qs = Problem.objects.filter(groups__in=gp_can_view).distinct()
 
         gp_can_change = get_objects_for_user(
             self.request.user,
             'ojuser.change_groupprofile',
             with_superuser=True
         )
-        problem_can_change_qs = Problem.objects.filter(groups__profile__in=gp_can_change).distinct()
+        self.problem_can_change_qs = Problem.objects.filter(groups__in=gp_can_change).distinct()
 
         groups_can_delete = get_objects_for_user(
             self.request.user,
             'problem.delete_problem',
             with_superuser=True
         )
-        problem_can_delete_qs = Problem.objects.filter(pk__in=groups_can_delete).distinct()
-        qs = problem_can_view_qs | problem_can_change_qs | problem_can_delete_qs
+        self.problem_can_delete_qs = Problem.objects.filter(pk__in=groups_can_delete).distinct()
+        qs = self.problem_can_view_qs | self.problem_can_change_qs | self.problem_can_delete_qs
         self.filter = ProblemFilter(self.request.GET, queryset=qs, user=self.request.user)
         #  self.group_can_change_qs = Problem.objects.filter(profile__in=profiles_can_change)
         return self.filter.qs
@@ -101,7 +101,9 @@ class ProblemListView(ListView):
         #  add filter here
         context['problems_table'] = problems_table
         context['filter'] = self.filter
-        #  context['group_can_change'] = self.group_can_change_qs
+        context['problem_can_view'] = self.problem_can_view_qs
+        context['problem_can_delete'] = self.problem_can_delete_qs
+        context['problem_can_change'] = self.problem_can_change_qs
         return context
 
 
@@ -128,7 +130,7 @@ class ProblemCreateView(CreateView):
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        self.object.author = self.request.user
+        self.object.superadmin = self.request.user
         self.object.save()
         return super(ProblemCreateView, self).form_valid(form)
 
