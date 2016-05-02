@@ -69,12 +69,27 @@ class ProblemListView(ListView):
         return super(ProblemListView, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        groups_can_view = get_objects_for_user(
+        gp_can_view = get_objects_for_user(
             self.request.user,
             'ojuser.view_groupprofile',
             with_superuser=True
         )
-        qs = Problem.objects.filter(groups__profile__in=groups_can_view).distinct()
+        problem_can_view_qs = Problem.objects.filter(groups__profile__in=gp_can_view).distinct()
+
+        gp_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        problem_can_change_qs = Problem.objects.filter(groups__profile__in=gp_can_change).distinct()
+
+        groups_can_delete = get_objects_for_user(
+            self.request.user,
+            'problem.delete_problem',
+            with_superuser=True
+        )
+        problem_can_delete_qs = Problem.objects.filter(pk__in=groups_can_delete).distinct()
+        qs = problem_can_view_qs | problem_can_change_qs | problem_can_delete_qs
         self.filter = ProblemFilter(self.request.GET, queryset=qs, user=self.request.user)
         #  self.group_can_change_qs = Problem.objects.filter(profile__in=profiles_can_change)
         return self.filter.qs

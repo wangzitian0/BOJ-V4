@@ -6,9 +6,7 @@ from django_tables2.utils import A
 class ProblemTable(tables.Table):
     title = tables.LinkColumn('problem:problem-detail', args=[A('pk')])
     status = tables.TemplateColumn(
-        """
-<p>gg</p>
-        """,
+        template_name='problem/problem_list_external.html',
         orderable=False,
     )
 

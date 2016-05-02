@@ -3,7 +3,7 @@ import account.forms
 from .models import UserProfile, GroupProfile
 from bojv4.conf import CONST
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import User, Group
 from django_select2.forms import ModelSelect2MultipleWidget, ModelSelect2Widget
 
 
@@ -47,47 +47,74 @@ class UserProfilesForm(forms.ModelForm):
         model = UserProfile
         fields = ['gender', 'prefer_lang', ]
 
-
-class GroupForm(forms.ModelForm):
-
-    class Meta:
-        model = Group
-        #  fields = '__all__'
-        fields = ['name', ]
-
-
+"""
 class GroupSearchWidget(ModelSelect2Widget):
-    model = Group,
+    model = GroupProfile,
     search_fields = [
         'name__icontains',
-        'profile__nickname__icontains',
+        'nickname__icontains',
     ]
 
-    def label_from_instance(self, group):
-        return group.name + " - " + group.profile.nickname
+    #  def label_from_instance(self, group):
+    #  return group.name + " - " + group.profile.nickname
+"""
 
 
 class GroupSearchForm(forms.Form):
 
     keyword = forms.ModelChoiceField(
-        queryset=Group.objects.all(),
-        widget=GroupSearchWidget()
+        queryset=GroupProfile.objects.all(),
+        #  widget=GroupSearchWidget()
+        widget=ModelSelect2Widget(
+            search_fields=[
+                'name__icontains',
+                'nickname__icontains',
+            ]
+        )
     )
 
     class Meta:
         fields = ['keyword', ]
 
 
+class GroupForm(forms.ModelForm):
+    admins = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        widget=ModelSelect2MultipleWidget(
+            queryset=User.objects.all(),
+            search_fields=[
+                'username__icontains',
+            ]
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(GroupForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['admins'].initial = self.instance.user_set.all()
+
+    def save(self, commit=True):
+        instance = super(GroupForm, self).save(commit=False)
+        instance.user_set.clear()
+        for admin in self.cleaned_data['admins']:
+            instance.user_set.add(admin)
+        if commit:
+            instance.save()
+        return instance
+
+    class Meta:
+        model = Group
+        #  fields = '__all__'
+        fields = ['admins', ]
+
+
 class GroupProfileForm(forms.ModelForm):
     class Meta:
         model = GroupProfile
-        fields = ['nickname', 'admins', 'parent', ]
+        fields = ['name', 'nickname', 'parent', ]
         widgets = {
-            'admins': ModelSelect2MultipleWidget(
-                search_fields=['username__icontains', ]
-            ),
             'parent': ModelSelect2Widget(
-                search_fields=['group__name__icontains', ]
+                search_fields=['name__icontains', ]
             ),
         }
 

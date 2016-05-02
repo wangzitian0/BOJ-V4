@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
+from .models import GroupProfile
 #  from .models import UserProfile
 
 
@@ -8,6 +9,29 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ('url', 'username', 'email', )
+
+
+class UserSlugSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', )
+
+
+class GroupSerializer(serializers.HyperlinkedModelSerializer):
+    user_set = UserSlugSerializer(many=True)
+
+    class Meta:
+        model = Group
+        fields = ('url', 'name', 'user_set')
+
+
+class GroupProfileSerializer(serializers.HyperlinkedModelSerializer):
+    user_group = GroupSerializer()
+    admin_group = GroupSerializer()
+
+    class Meta:
+        model = GroupProfile
+        fields = ('url', 'name', 'nickname', 'user_group', 'admin_group', )
 
 
 class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
@@ -41,23 +65,3 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
         instance.profile.save()
 
         return instance
-
-
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ('url', 'name', )
-
-
-class UserSlugSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', )
-
-
-class GroupUsersSerializer(serializers.ModelSerializer):
-    user_set = UserSlugSerializer(many=True)
-
-    class Meta:
-        model = Group
-        fields = ('user_set', )

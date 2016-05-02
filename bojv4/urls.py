@@ -8,12 +8,14 @@ from rest_framework import routers
 from problem.views import ProblemViewSet, ProblemDataInfoViewSet
 from problem.views import LanguageViewSet, FileViewSet
 from submission.views import SubmissionViewSet
-from ojuser.views import UserProfileViewSet, GroupViewSet
+from ojuser.views import UserProfileViewSet, GroupProfileViewSet, GroupViewSet
 
 
 router = routers.DefaultRouter()
+#  router.register(r'profiles', UserProfileViewSet)
 router.register(r'users', UserProfileViewSet)
-router.register(r'groups', GroupViewSet)
+router.register(r'inline-groups', GroupViewSet)
+router.register(r'groups', GroupProfileViewSet)
 router.register(r'files', FileViewSet)
 router.register(r'problems', ProblemViewSet)
 router.register(r'datainfo', ProblemDataInfoViewSet)

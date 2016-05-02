@@ -9,6 +9,7 @@ from .models import Problem
 
 @receiver(m2m_changed, sender=Problem.groups.through)
 def handle_problem_save(sender, instance, action, pk_set, reverse, **kwargs):
+    print instance, action, pk_set, reverse
     if action == "post_add" and not reverse:
         """
         assign_perm('change_problem', instance.author, instance)

@@ -12,8 +12,8 @@
   <div class="container">
     <h3>Update group</h3>
     <form action="" method="post">{% csrf_token %}
-      {% bootstrap_form group_form %}
       {% bootstrap_form group_profile_form %}
+      {% bootstrap_form group_admins_form %}
       <input type="submit" value="Save" class="btn btn-large btn-primary"/>
     </form>
   </div>
@@ -21,8 +21,8 @@
 {% endblock %}
 
 {% block extra_body %}
-  {{ group_form.media.js }}
-  {{ group_form.media.css }}
+  {{ group_admins_form.media.js }}
+  {{ group_admins_form.media.css }}
   {{ group_profile_form.media.js }}
   {{ group_profile_form.media.css }}
 {% endblock %}

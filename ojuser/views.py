@@ -21,7 +21,7 @@ from django_tables2 import RequestConfig
 from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
 from .forms import GroupProfileForm, GroupForm, GroupSearchForm
 from .serializers import UserSerializer, UserProfileSerializer
-from .serializers import GroupSerializer, UserSlugSerializer
+from .serializers import GroupProfileSerializer, UserSlugSerializer, GroupSerializer
 from .tables import GroupUserTable, GroupTable
 from .models import GroupProfile
 from .filters import GroupFilter
@@ -32,7 +32,7 @@ from guardian.decorators import permission_required_or_403
 
 class GroupListView(ListView):
 
-    model = Group
+    model = GroupProfile
     template_name = 'ojuser/group_list.html'
 
     @method_decorator(login_required)
@@ -47,13 +47,13 @@ class GroupListView(ListView):
             'ojuser.change_groupprofile',
             with_superuser=True
         )
-        self.group_can_change_qs = Group.objects.filter(profile__in=profiles_can_change)
+        self.group_can_change_qs = profiles_can_change
         profiles_can_delete = get_objects_for_user(
             self.request.user,
             'ojuser.delete_groupprofile',
             with_superuser=True
         )
-        self.group_can_delete_qs = Group.objects.filter(profile__in=profiles_can_delete)
+        self.group_can_delete_qs = profiles_can_delete
         return self.filter.qs
 
     def get_context_data(self, **kwargs):
@@ -78,29 +78,21 @@ class GroupCreateView(TemplateView):
         return super(GroupCreateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        group_form = context["group_form"]
-        group_profile_form = context["group_profile_form"]
-        if group_form.is_valid() and group_profile_form.is_valid():
-            group = group_form.save()
-            group_profile = GroupProfileForm(
-                request.POST,
-                instance=group.profile
-            ).save(commit=False)
-            group_profile.superadmin = self.request.user
-            group_profile.save()
-            messages.success(request, 'Group created!')
-            return HttpResponseRedirect(reverse('mygroup-detail', args=[group.pk, ]))
+        context = self.get_context_data(**kwargs)
+        if self.group_profile_form.is_valid() and self.group_admins_form.is_valid():
+            gg = GroupProfile(**self.group_profile_form.cleaned_data)
+            gg.superadmin = self.request.user
+            gg.save()
+            GroupForm(request.POST, instance=gg.admin_group).save()
+            return HttpResponseRedirect(reverse('mygroup-detail', args=[gg.pk, ]))
         return super(GroupCreateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super(GroupCreateView, self).get_context_data(**kwargs)
-
-        group_form = GroupForm(self.request.POST or None)
-        group_profile_form = GroupProfileForm(self.request.POST or None)
-        context["group_form"] = group_form
-        context["group_profile_form"] = group_profile_form
-
+        self.group_profile_form = GroupProfileForm(self.request.POST or None)
+        self.group_admins_form = GroupForm(self.request.POST or None)
+        context["group_profile_form"] = self.group_profile_form
+        context["group_admins_form"] = self.group_admins_form
         return context
 
 
@@ -109,39 +101,36 @@ class GroupUpdateView(TemplateView):
 
     @method_decorator(permission_required_or_403(
         'change_groupprofile',
-        (GroupProfile, 'group__pk', 'pk')
+        (GroupProfile, 'pk', 'pk')
     ))
     def dispatch(self, request, *args, **kwargs):
         return super(GroupUpdateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        self.group_form = GroupForm(self.request.POST, instance=self.object)
-        self.group_profile_form = GroupProfileForm(self.request.POST, instance=self.object.profile)
-        if self.group_form.is_valid() and self.group_profile_form.is_valid():
-            self.group_form.save()
+        self.group_profile_form = GroupProfileForm(self.request.POST, instance=self.object)
+        self.group_admins_form = GroupForm(self.request.POST, instance=self.object.admin_group)
+        if self.group_profile_form.is_valid() and self.group_admins_form.is_valid():
             self.group_profile_form.save()
+            self.group_admins_form.save()
             return HttpResponseRedirect(reverse('mygroup-detail', args=[context['pk'], ]))
         return super(GroupUpdateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super(GroupUpdateView, self).get_context_data(**kwargs)
         self.pk = self.kwargs['pk']
-        qs = Group.objects.all()
+        qs = GroupProfile.objects.all()
         self.object = get_object_or_404(qs, pk=self.pk)
-
-        self.group_form = GroupForm(instance=self.object)
-        self.group_profile_form = GroupProfileForm(instance=self.object.profile)
-
-        context["group_form"] = self.group_form
+        self.group_profile_form = GroupProfileForm(instance=self.object)
+        self.group_admins_form = GroupForm(instance=self.object.admin_group,)
         context["group_profile_form"] = self.group_profile_form
+        context["group_admins_form"] = self.group_admins_form
         context['pk'] = self.pk
-
         return context
 
 
 class GroupDeleteView(DeleteView):
-    model = Group
+    model = GroupProfile
     template_name = 'ojuser/group_confirm_delete.html'
     success_url = reverse_lazy('mygroup-list')
 
@@ -155,16 +144,16 @@ class GroupDeleteView(DeleteView):
 
 class GroupDetailView(DetailView):
 
-    model = Group
+    model = GroupProfile
     template_name = 'ojuser/group_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
         group = context['object']
-        context['admins'] = group.profile.admins.all()
-        context['children'] = group.profile.get_children()
+        context['admins'] = group.admin_group.user_set.all()
+        context['children'] = group.get_children()
 
-        group_users = group.user_set.all()
+        group_users = group.user_group.user_set.all()
         group_users_table = GroupUserTable(group_users)
         RequestConfig(self.request).configure(group_users_table)
         #  add filter here
@@ -177,7 +166,7 @@ class GroupMemberView(TemplateView):
 
     @method_decorator(permission_required_or_403(
         'change_groupprofile',
-        (GroupProfile, 'group__pk', 'pk')
+        (GroupProfile, 'pk', 'pk')
     ))
     def dispatch(self, request, *args, **kwargs):
         return super(GroupMemberView, self).dispatch(request, *args, **kwargs)
@@ -201,6 +190,11 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
@@ -217,14 +211,15 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GroupViewSet(viewsets.ModelViewSet):
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
+class GroupProfileViewSet(viewsets.ModelViewSet):
+    queryset = GroupProfile.objects.all()
+    serializer_class = GroupProfileSerializer
 
     @detail_route(methods=['post', 'get', 'put', ], url_path='members')
     def manage_member(self, request, pk=None):
         qs = self.get_queryset()
         group = get_object_or_404(qs, pk=pk)
+        print group.user_group.user_set
         if request.method == "POST" or request.method == "PUT":
             users = []
             errors = []
@@ -239,9 +234,9 @@ class GroupViewSet(viewsets.ModelViewSet):
                     valid = 0
             if not valid:
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-            group.user_set.clear()
-            group.user_set.add(*users)
-        serializer = UserSlugSerializer(group.user_set, many=True)
+            group.user_group.user_set.clear()
+            group.user_group.user_set.add(*users)
+        serializer = UserSlugSerializer(group.user_group.user_set, many=True)
         return Response(serializer.data)
 
 

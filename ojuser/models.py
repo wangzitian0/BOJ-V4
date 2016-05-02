@@ -13,11 +13,12 @@ class UserProfile(models.Model):
 
 
 class GroupProfile(MPTTModel):
-    nickname = models.CharField(max_length=30)
+    name = models.CharField(max_length=50, unique=True)
+    nickname = models.CharField(max_length=50)
     desc = models.TextField(blank=True)
-    group = models.OneToOneField(Group, related_name='profile')
-    admins = models.ManyToManyField(User, related_name='managed_group_profiles')
-    superadmin = models.ForeignKey(User, default=1, related_name='established_group_profiles')
+    user_group = models.OneToOneField(Group, null=True, blank=True, related_name='user_profile')
+    admin_group = models.OneToOneField(Group, null=True, blank=True, related_name='admin_profile')
+    superadmin = models.ForeignKey(User, null=True, related_name='group_profile')
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
 
     class Meta:
@@ -26,4 +27,4 @@ class GroupProfile(MPTTModel):
         )
 
     def __unicode__(self):
-        return self.group.__unicode__()
+        return self.name + " - " + self.nickname

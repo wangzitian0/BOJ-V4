@@ -15,7 +15,7 @@ class GroupFilter(django_filters.FilterSet):
                 'ojuser.change_groupprofile',
                 with_superuser=True
             )
-            queryset = queryset.filter(profile__in=profiles_can_change)
+            queryset = queryset.filter(pk__in=profiles_can_change)
         return queryset
 
     def __init__(self, *args, **kwargs):

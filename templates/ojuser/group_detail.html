@@ -24,11 +24,11 @@
       {% endfor %}
     </ul>
     <h4>Parents</h4>
-    {{ object.profile.get_ancestors | tree_path:" > " }}
+    {{ object.get_ancestors | tree_path:" > " }}
     <h4>Children</h4>
     <ul>
       {% for profile in children %}
-      <li><a href="{%url 'mygroup-detail' profile.group.pk %}">{{ profile.group.name }}</a></li>
+      <li><a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.name }}</a></li>
       {% empty %}
       <li>No child yet.</li>
       {% endfor %}
@@ -38,7 +38,7 @@
 
   {% render_table group_users_table %}
 
-  {% get_obj_perms request.user for object.profile as "object_perms" %}
+  {% get_obj_perms request.user for object as "object_perms" %}
 
   {% if "change_groupprofile" in object_perms %}
   <div>
