@@ -12,6 +12,13 @@
   <div class="container">
     {% include "_messages.html" %}
     <h1>{{ object.pk }}. {{ object.title }}</h1>
+    <h4>time_limit: {{ object.time_limit }}</h4>
+    <h4>memory_limit: {{ object.memory_limit }}</h4>
+    <h4>code_length_limit: {{ object.code_length_limit }}</h4>
+    <h4>last_updated_time: {{ object.last_updated_time }}</h4>
+    <h4>author: {{ object.superadmin }}</h4>
+    <h4>is_spj: {{ object.is_spj }}</h4>
+    <p>{{ object.problem_desc }}</p>
     <div>
       <a href="{% url 'problem:problem-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
     </div>

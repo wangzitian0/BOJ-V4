@@ -191,10 +191,6 @@ class ProblemUpdateView(UpdateView):
         ).distinct()
         return self.qs
 
-    @method_decorator(permission_required_or_403('change_problem', (Problem, 'pk', 'pk')))
-    def dispatch(self, request, *args, **kwargs):
-        return super(ProblemUpdateView, self).dispatch(request, *args, **kwargs)
-
     def get_success_url(self):
         return reverse('problem:upload-new', args=[self.object.pk])
 
