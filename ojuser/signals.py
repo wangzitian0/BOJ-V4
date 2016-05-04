@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, pre_delete, post_delete
 #  from django.db.models.signals import m2m_changed
 
 from django.contrib.auth.models import User, Group
@@ -40,13 +40,24 @@ def change_perm(func, instance):
 
 
 @receiver(post_save, sender=GroupProfile)
-def handle_group_save(sender, instance, created, **kwargs):
+def handle_group_post_save(sender, instance, created, **kwargs):
     change_perm(assign_perm, instance)
     assign_perm('ojuser.delete_groupprofile', instance.superadmin, instance)
 
 
+@receiver(pre_delete, sender=GroupProfile)
+def handle_group_pre_delete(sender, instance, **kwargs):
+    change_perm(remove_perm, instance)
+
+
+@receiver(post_delete, sender=GroupProfile)
+def handle_group_post_delete(sender, instance, **kwargs):
+    instance.user_group.delete()
+    instance.admin_group.delete()
+
+
 @receiver(pre_save, sender=GroupProfile)
-def handle_group_delete(sender, instance, *args, **kwargs):
+def handle_group_pre_save(sender, instance, *args, **kwargs):
     #  print sender, instance, args, kwargs
     if instance.pk:
         change_perm(remove_perm, instance)

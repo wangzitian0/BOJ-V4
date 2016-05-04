@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 import json
 import mimetypes
@@ -64,10 +65,6 @@ class ProblemListView(ListView):
     model = Problem
     paginate_by = 10
 
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        return super(ProblemListView, self).dispatch(request, *args, **kwargs)
-
     def get_queryset(self):
         gp_can_view = get_objects_for_user(
             self.request.user,
@@ -89,10 +86,19 @@ class ProblemListView(ListView):
             with_superuser=True
         )
         self.problem_can_delete_qs = Problem.objects.filter(pk__in=groups_can_delete).distinct()
-        qs = self.problem_can_view_qs | self.problem_can_change_qs | self.problem_can_delete_qs
-        self.filter = ProblemFilter(self.request.GET, queryset=qs, user=self.request.user)
-        #  self.group_can_change_qs = Problem.objects.filter(profile__in=profiles_can_change)
+
+        self.problem_can_change_qs |= self.problem_can_delete_qs
+        self.problem_can_view_qs |= self.problem_can_change_qs
+        self.filter = ProblemFilter(
+            self.request.GET,
+            queryset=self.problem_can_view_qs,
+            user=self.request.user
+        )
         return self.filter.qs
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(ProblemListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ProblemListView, self).get_context_data(**kwargs)
@@ -112,7 +118,31 @@ class ProblemDetailView(DetailView):
     model = Problem
 
     def get_queryset(self):
-        return get_objects_for_user(self.request.user, 'problem.view_problem')
+        gp_can_view = get_objects_for_user(
+            self.request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True
+        )
+        gp_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        groups_can_delete = get_objects_for_user(
+            self.request.user,
+            'problem.delete_problem',
+            with_superuser=True
+        )
+        self.qs = Problem.objects.filter(
+            Q(groups__in=gp_can_view) |
+            Q(groups__in=gp_can_change) |
+            Q(pk__in=groups_can_delete)
+        ).distinct()
+        return self.qs
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ProblemDetailView, self).get_context_data(**kwargs)
@@ -144,6 +174,23 @@ class ProblemUpdateView(UpdateView):
     form_class = ProblemForm
     template_name_suffix = '_update_form'
 
+    def get_queryset(self):
+        gp_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        groups_can_delete = get_objects_for_user(
+            self.request.user,
+            'problem.delete_problem',
+            with_superuser=True
+        )
+        self.qs = Problem.objects.filter(
+            Q(groups__in=gp_can_change) |
+            Q(pk__in=groups_can_delete)
+        ).distinct()
+        return self.qs
+
     @method_decorator(permission_required_or_403('change_problem', (Problem, 'pk', 'pk')))
     def dispatch(self, request, *args, **kwargs):
         return super(ProblemUpdateView, self).dispatch(request, *args, **kwargs)
@@ -155,6 +202,17 @@ class ProblemUpdateView(UpdateView):
 class ProblemDeleteView(DeleteView):
     model = Problem
     success_url = reverse_lazy('problem:problem-list')
+
+    def get_queryset(self):
+        groups_can_delete = get_objects_for_user(
+            self.request.user,
+            'problem.delete_problem',
+            with_superuser=True
+        )
+        self.qs = Problem.objects.filter(
+            Q(pk__in=groups_can_delete)
+        ).distinct()
+        return self.qs
 
     @method_decorator(permission_required_or_403('delete_problem', (Problem, 'pk', 'pk')))
     def dispatch(self, request, *args, **kwargs):

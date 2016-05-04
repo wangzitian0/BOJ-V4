@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
 from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
@@ -136,7 +137,7 @@ class GroupDeleteView(DeleteView):
 
     @method_decorator(permission_required_or_403(
         'delete_groupprofile',
-        (GroupProfile, 'group__pk', 'pk')
+        (GroupProfile, 'pk', 'pk')
     ))
     def dispatch(self, request, *args, **kwargs):
         return super(GroupDeleteView, self).dispatch(request, *args, **kwargs)
@@ -214,6 +215,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 class GroupProfileViewSet(viewsets.ModelViewSet):
     queryset = GroupProfile.objects.all()
     serializer_class = GroupProfileSerializer
+    permission_classes = [IsAuthenticated, ]
 
     @detail_route(methods=['post', 'get', 'put', ], url_path='members')
     def manage_member(self, request, pk=None):
