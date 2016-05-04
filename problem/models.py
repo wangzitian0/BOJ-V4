@@ -20,7 +20,7 @@ class Problem(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
     allowed_lang = models.ManyToManyField('Language', related_name='problems')
-    groups = models.ManyToManyField(GroupProfile, related_name='problems')
+    groups = models.ManyToManyField(GroupProfile, blank=True, related_name='problems')
 
     def __unicode__(self):
         return str(self.pk) + " " + str(self.title)

@@ -11,6 +11,9 @@ class UserProfile(models.Model):
     gender = models.CharField(max_length=1)
     prefer_lang = models.CharField(max_length=4)
 
+    def __unicode__(self):
+        return self.nickname + " (" + self.user.username + ")"
+
 
 class GroupProfile(MPTTModel):
     name = models.CharField(max_length=50, unique=True)
@@ -27,4 +30,4 @@ class GroupProfile(MPTTModel):
         )
 
     def __unicode__(self):
-        return self.name + " - " + self.nickname
+        return self.nickname + " [" + self.name + "]"

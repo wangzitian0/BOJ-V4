@@ -2,6 +2,7 @@
 
 {% load i18n %}
 {% load bootstrap3 %}
+{% load django_tables2 %}
 
 {% block head_title %}All Submission{% endblock %}
 
@@ -12,14 +13,7 @@
   <div class="container">
     {% include "_messages.html" %}
     <h1>Submissions</h1>
-    <ul>
-      {% for submission in object_list %}
-      <li><a href="{%url 'submission:submission-detail' submission.pk %}">{{ submission.pk }}</a></li>
-      {% empty %}
-      <li>No articles yet.</li>
-      {% endfor %}
-    </ul>
-    {% bootstrap_pagination page_obj %}
+    {% render_table submissions_table %}
   </div>
 </section>
 {% endblock %}

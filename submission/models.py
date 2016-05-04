@@ -14,10 +14,11 @@ class Submission(models.Model):
     running_memory = models.IntegerField(default=0)
     info = models.TextField(blank=True)
     code = models.TextField()
-    Language = models.ForeignKey(Language, related_name='submissions')
+    language = models.ForeignKey(Language, related_name='submissions')
 
     def __unicode__(self):
-        return "-".join([str(self.pk), str(self.user), str(self.problem), str(self.datetime)])
+        return str(self.pk)
+        #  return "-".join([str(self.pk), str(self.user), str(self.problem), str(self.datetime)])
 
     def get_absolute_url(self):
         return reverse('submission:submission-detail', kwargs={'pk': self.pk})

@@ -18,3 +18,8 @@
   </div>
 </section>
 {% endblock %}
+
+{% block extra_body %}
+  {{ form.media.js }}
+  {{ form.media.css }}
+{% endblock %}
