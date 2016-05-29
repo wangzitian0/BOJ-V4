@@ -1,12 +1,11 @@
-#  from django.conf import settings
-#  from django.core import mail
+from django.conf import settings
+from django.core import mail
 from django.core.urlresolvers import reverse
-from django.test import TestCase
-#  from django.test import TestCase, override_settings
+from django.test import TestCase, override_settings
 
 from django.contrib.auth.models import User
 
-#  from account.models import SignupCode, EmailConfirmation
+from account.models import EmailConfirmation
 
 
 class SignupViewTestCase(TestCase):
@@ -94,3 +93,187 @@ class SignupViewTestCase(TestCase):
         }
         response = self.client.post(reverse("account_signup"), data)
         self.assertRedirects(response, next_url, fetch_redirect_response=False)
+
+
+class LoginViewTestCase(TestCase):
+
+    def signup(self):
+        data = {
+            "username": "foo",
+            "password": "bar",
+            "password_confirm": "bar",
+            "email": "foobar@example.com",
+            "nickname": "goo",
+            "gender": "S",
+        }
+        self.client.post(reverse("account_signup"), data)
+        self.client.logout()
+
+    def test_get(self):
+        response = self.client.get(reverse("account_login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name, ["account/login.html"])
+
+    def test_post_empty(self):
+        data = {}
+        response = self.client.post(reverse("account_login"), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["form"].is_valid())
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=[
+            "account.auth_backends.UsernameAuthenticationBackend",
+        ]
+    )
+    def test_post_success(self):
+        self.signup()
+        data = {
+            "username": "foo",
+            "password": "bar",
+        }
+        response = self.client.post(reverse("account_login"), data)
+        self.assertRedirects(
+            response,
+            settings.ACCOUNT_LOGIN_REDIRECT_URL,
+            fetch_redirect_response=False
+        )
+
+
+class LogoutViewTestCase(TestCase):
+
+    def signup(self):
+        data = {
+            "username": "foo",
+            "password": "bar",
+            "password_confirm": "bar",
+            "email": "foobar@example.com",
+            "nickname": "goo",
+            "gender": "S",
+        }
+        self.client.post(reverse("account_signup"), data)
+
+    def test_get_anonymous(self):
+        response = self.client.get(reverse("account_logout"))
+        self.assertRedirects(
+            response,
+            settings.ACCOUNT_LOGOUT_REDIRECT_URL,
+            fetch_redirect_response=False
+        )
+
+    def test_get_authenticated(self):
+        self.signup()
+        response = self.client.get(reverse("account_logout"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name, ["account/logout.html"])
+
+    def test_post_anonymous(self):
+        response = self.client.post(reverse("account_logout"), {})
+        self.assertRedirects(
+            response,
+            settings.ACCOUNT_LOGOUT_REDIRECT_URL,
+            fetch_redirect_response=False
+        )
+
+    def test_post_authenticated(self):
+        self.signup()
+        response = self.client.post(reverse("account_logout"), {})
+        self.assertRedirects(
+            response,
+            settings.ACCOUNT_LOGOUT_REDIRECT_URL,
+            fetch_redirect_response=False
+        )
+
+
+class ConfirmEmailViewTestCase(TestCase):
+
+    def signup(self):
+        data = {
+            "username": "foo",
+            "password": "bar",
+            "password_confirm": "bar",
+            "email": "foobar@example.com",
+            "nickname": "goo",
+            "gender": "S",
+        }
+        self.client.post(reverse("account_signup"), data)
+        return EmailConfirmation.objects.get()
+
+    def test_get_good_key(self):
+        email_confirmation = self.signup()
+        response = self.client.get(
+            reverse("account_confirm_email", kwargs={"key": email_confirmation.key})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name, ["account/email_confirm.html"])
+
+    def test_get_bad_key(self):
+        response = self.client.get(reverse("account_confirm_email", kwargs={"key": "badkey"}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_post_not_required(self):
+        email_confirmation = self.signup()
+        response = self.client.post(
+            reverse("account_confirm_email", kwargs={"key": email_confirmation.key}),
+            {}
+        )
+        self.assertRedirects(
+            response,
+            settings.ACCOUNT_LOGIN_REDIRECT_URL,
+            fetch_redirect_response=False
+        )
+
+
+class ChangePasswordViewTestCase(TestCase):
+
+    def signup(self):
+        data = {
+            "username": "foo",
+            "password": "bar",
+            "password_confirm": "bar",
+            "email": "foobar@example.com",
+            "nickname": "goo",
+            "gender": "S",
+        }
+        self.client.post(reverse("account_signup"), data)
+        mail.outbox = []
+        return User.objects.get(username="foo")
+
+    def test_get_anonymous(self):
+        response = self.client.get(reverse("account_password"))
+        self.assertRedirects(
+            response,
+            reverse("account_password_reset"),
+            fetch_redirect_response=False
+        )
+
+    def test_get_authenticated(self):
+        self.signup()
+        response = self.client.get(reverse("account_password"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name, ["account/password_change.html"])
+
+    def test_post_anonymous(self):
+        data = {
+            "password_current": "password",
+            "password_new": "new-password",
+            "password_new_confirm": "new-password",
+        }
+        response = self.client.post(reverse("account_password"), data)
+        self.assertEqual(response.status_code, 403)
+
+    def test_post_authenticated_success(self):
+        user = self.signup()
+        data = {
+            "password_current": "bar",
+            "password_new": "new-bar",
+            "password_new_confirm": "new-bar",
+        }
+        response = self.client.post(reverse("account_password"), data)
+        self.assertRedirects(
+            response,
+            reverse(settings.ACCOUNT_PASSWORD_CHANGE_REDIRECT_URL),
+            fetch_redirect_response=False
+        )
+        updated_user = User.objects.get(username=user.username)
+        self.assertNotEqual(user.password, updated_user.password)
+        self.assertEqual(len(mail.outbox), 1)
