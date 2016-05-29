@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-
+from bojv4.conf import CONST
 from django.db import models
 from django.contrib.auth.models import User, Group
 from mptt.models import MPTTModel, TreeForeignKey
@@ -8,7 +8,11 @@ from mptt.models import MPTTModel, TreeForeignKey
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile')
     nickname = models.CharField(max_length=30)
-    gender = models.CharField(max_length=1)
+    gender = models.CharField(
+        max_length=1,
+        choices=CONST.GENDER,
+        default=CONST.GENDER[0][0],
+    )
     prefer_lang = models.ForeignKey('Language', default=1)
 
     def __unicode__(self):

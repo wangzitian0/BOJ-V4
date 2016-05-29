@@ -1,6 +1,6 @@
-from account.views import SignupView, SettingsView
-from django.contrib import messages
+from account.views import SignupView
 from django.shortcuts import redirect
+from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
 from django.contrib.admin.views.decorators import staff_member_required
@@ -19,7 +19,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from django_tables2 import RequestConfig
 
-from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
+from .forms import UserProfileForm, UserProfilesForm
 from .forms import GroupProfileForm, GroupForm, GroupSearchForm
 from .serializers import LanguageSerializer, UserSerializer, UserProfileSerializer
 from .serializers import GroupProfileSerializer, UserSlugSerializer, GroupSerializer
@@ -263,22 +263,6 @@ class OjUserSignupView(SignupView):
         profile.save()
 
 
-class OjUserSettingsView(SettingsView):
-    form_class = UserSettingsForm
-
-    def update_account(self, form):
-        profile = self.request.user.profile
-        profile.nickname = form.cleaned_data["nickname"]
-        profile.save()
-        super(OjUserSettingsView, self).update_account(form)
-
-    def get_initial(self):
-        initial = super(OjUserSettingsView, self).get_initial()
-        profile = self.request.user.profile
-        initial["nickname"] = profile.nickname
-        return initial
-
-
 class OjUserProfilesView(FormView):
     template_name = 'account/profiles.html'
     form_class = UserProfilesForm
@@ -294,6 +278,7 @@ class OjUserProfilesView(FormView):
     def get_initial(self):
         initial = super(OjUserProfilesView, self).get_initial()
         profile = self.request.user.profile
+        initial["nickname"] = profile.nickname
         initial["gender"] = profile.gender
         initial["prefer_lang"] = profile.prefer_lang
         return initial
@@ -301,6 +286,7 @@ class OjUserProfilesView(FormView):
     def form_valid(self, form):
         profile = self.request.user.profile
         profile.gender = form.cleaned_data["gender"]
+        profile.nickname = form.cleaned_data["nickname"]
         profile.prefer_lang = form.cleaned_data["prefer_lang"]
         profile.save()
         if self.messages.get("profiles_updated"):

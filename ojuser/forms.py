@@ -1,7 +1,7 @@
 from django import forms
 import account.forms
-from .models import UserProfile, GroupProfile
 from bojv4.conf import CONST
+from .models import UserProfile, GroupProfile
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
 from django_select2.forms import ModelSelect2MultipleWidget, ModelSelect2Widget
@@ -19,19 +19,7 @@ class UserProfileForm(account.forms.SignupForm):
     )
 
 
-class UserSettingsForm(account.forms.SettingsForm):
-    nickname = forms.CharField(
-        label=_("Your Nickname"),
-        max_length=30
-    )
-
-
 class UserProfilesForm(forms.ModelForm):
-    gender = forms.ChoiceField(
-        label=_("Your Gender"),
-        choices=CONST.GENDER,
-        initial=CONST.GENDER[0][0],
-    )
 
     class Meta:
         model = UserProfile

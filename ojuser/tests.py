@@ -1,8 +1,9 @@
 from django.conf import settings
-from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
 
+from django.core import mail
+from .models import Language
 from django.contrib.auth.models import User
 
 from account.models import EmailConfirmation
@@ -210,11 +211,23 @@ class ConfirmEmailViewTestCase(TestCase):
         response = self.client.get(reverse("account_confirm_email", kwargs={"key": "badkey"}))
         self.assertEqual(response.status_code, 404)
 
+    @override_settings(ACCOUNT_EMAIL_CONFIRMATION_REQUIRED=True)
+    def test_post_required(self):
+        email_confirmation = self.signup()
+        response = self.client.post(
+            reverse("account_confirm_email", kwargs={"key": email_confirmation.key}), {}
+        )
+        self.assertRedirects(
+            response,
+            reverse(settings.ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL),
+            fetch_redirect_response=False
+        )
+
+    @override_settings(ACCOUNT_EMAIL_CONFIRMATION_REQUIRED=False)
     def test_post_not_required(self):
         email_confirmation = self.signup()
         response = self.client.post(
-            reverse("account_confirm_email", kwargs={"key": email_confirmation.key}),
-            {}
+            reverse("account_confirm_email", kwargs={"key": email_confirmation.key}), {}
         )
         self.assertRedirects(
             response,
@@ -277,3 +290,53 @@ class ChangePasswordViewTestCase(TestCase):
         updated_user = User.objects.get(username=user.username)
         self.assertNotEqual(user.password, updated_user.password)
         self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(ACCOUNT_NOTIFY_ON_PASSWORD_CHANGE=False)
+    def test_post_authenticated_success_no_mail(self):
+        self.signup()
+        data = {
+            "password_current": "bar",
+            "password_new": "new-bar",
+            "password_new_confirm": "new-bar",
+        }
+        response = self.client.post(reverse("account_password"), data)
+        self.assertRedirects(
+            response,
+            reverse(settings.ACCOUNT_PASSWORD_CHANGE_REDIRECT_URL),
+            fetch_redirect_response=False
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
+
+class ProfilesTestCase(TestCase):
+
+    def setUp(self):
+        data = {
+            "username": "foo",
+            "password": "bar",
+            "password_confirm": "bar",
+            "email": "foobar@example.com",
+            "nickname": "goo",
+            "gender": "S",
+        }
+        self.client.post(reverse("account_signup"), data)
+        Language.objects.create(key="gcc", name='GUN C', desc='gcc 11')
+        self.client.login(username='foo', password='bar')
+
+    def test_get(self):
+        response = self.client.get(reverse("account_profiles"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name, ["account/profiles.html"])
+
+    def test_post_success(self):
+        data = {
+            "nickname": "google",
+            "gender": "F",
+            "prefer_lang": 1,
+        }
+        response = self.client.post(reverse("account_profiles"), data)
+        self.assertRedirects(
+            response,
+            reverse("account_profiles"),
+            fetch_redirect_response=False
+        )
