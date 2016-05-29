@@ -11,4 +11,5 @@ install:
   - pip install -q Django==$DJANGO_VERSION
   - pip install -r requirements.txt
 # command to run tests
-script: nosetests
+script:
+  - python manage test
