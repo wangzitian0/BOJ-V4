@@ -17,11 +17,6 @@ class UserProfileForm(account.forms.SignupForm):
         choices=CONST.GENDER,
         initial=CONST.GENDER[0][0],
     )
-    prefer_lang = forms.ChoiceField(
-        label=_("Your Perfer Language"),
-        choices=CONST.LANGUAGE,
-        initial=CONST.LANGUAGE[0],
-    )
 
 
 class UserSettingsForm(account.forms.SettingsForm):
@@ -37,15 +32,10 @@ class UserProfilesForm(forms.ModelForm):
         choices=CONST.GENDER,
         initial=CONST.GENDER[0][0],
     )
-    prefer_lang = forms.ChoiceField(
-        label=_("Your Perfer Language"),
-        choices=CONST.LANGUAGE,
-        initial=CONST.LANGUAGE[0],
-    )
 
     class Meta:
         model = UserProfile
-        fields = ['gender', 'prefer_lang', ]
+        exclude = ['user', ]
 
 """
 class GroupSearchWidget(ModelSelect2Widget):

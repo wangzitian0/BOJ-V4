@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, GroupProfile
+from .models import UserProfile, GroupProfile, Language
 from guardian.admin import GuardedModelAdmin
 
 from mptt.admin import MPTTModelAdmin
@@ -16,3 +16,4 @@ class UserProfileAdmin(GuardedModelAdmin):
 
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(GroupProfile, GroupProfileAdmin)
+admin.site.register(Language)

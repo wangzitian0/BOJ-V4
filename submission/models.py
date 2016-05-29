@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from problem.models import Problem, Language
+from problem.models import Problem
+from ojuser.models import Language
 from django.core.urlresolvers import reverse
 
 

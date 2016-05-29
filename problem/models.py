@@ -19,7 +19,7 @@ class Problem(models.Model):
     superadmin = models.ForeignKey(User)
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
-    allowed_lang = models.ManyToManyField('Language', related_name='problems')
+    allowed_lang = models.ManyToManyField('ojuser.Language', related_name='problems')
     groups = models.ManyToManyField(GroupProfile, blank=True, related_name='problems')
 
     def __unicode__(self):
@@ -32,15 +32,6 @@ class Problem(models.Model):
         permissions = (
             ('view_problem', 'Can view problem'),
         )
-
-
-class Language(models.Model):
-    key = models.CharField(max_length=6, unique=True)
-    name = models.CharField(max_length=30)
-    desc = models.TextField(default='None')
-
-    def __unicode__(self):
-        return str(self.name)
 
 
 def upload_dir(instance, filename):

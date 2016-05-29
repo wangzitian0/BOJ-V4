@@ -21,14 +21,20 @@ from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserSettingsForm, UserProfilesForm
 from .forms import GroupProfileForm, GroupForm, GroupSearchForm
-from .serializers import UserSerializer, UserProfileSerializer
+from .serializers import LanguageSerializer, UserSerializer, UserProfileSerializer
 from .serializers import GroupProfileSerializer, UserSlugSerializer, GroupSerializer
 from .tables import GroupUserTable, GroupTable
-from .models import GroupProfile
+from .models import GroupProfile, Language
 from .filters import GroupFilter
 
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
+
+
+class LanguageViewSet(viewsets.ModelViewSet):
+    queryset = Language.objects.all()
+    serializer_class = LanguageSerializer
+    permission_classes = (IsAuthenticated,)
 
 
 class GroupListView(ListView):
@@ -254,7 +260,6 @@ class OjUserSignupView(SignupView):
         profile = self.created_user.profile
         profile.nickname = form.cleaned_data["nickname"]
         profile.gender = form.cleaned_data["gender"]
-        profile.prefer_lang = form.cleaned_data["prefer_lang"]
         profile.save()
 
 

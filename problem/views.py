@@ -21,11 +21,11 @@ from rest_framework.decorators import detail_route
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
 
-from .models import Problem, ProblemDataInfo, Language
+from .models import Problem, ProblemDataInfo
 from .filters import ProblemFilter
 from .tables import ProblemTable
 from .serializers import ProblemSerializer, ProblemDataInfoSerializer
-from .serializers import LanguageSerializer, FileSerializer, ProblemDataSerializer
+from .serializers import FileSerializer, ProblemDataSerializer
 from .forms import ProblemForm
 
 
@@ -51,12 +51,6 @@ class ProblemViewSet(viewsets.ModelViewSet):
 class ProblemDataInfoViewSet(viewsets.ModelViewSet):
     queryset = ProblemDataInfo.objects.all()
     serializer_class = ProblemDataInfoSerializer
-    permission_classes = (IsAuthenticated,)
-
-
-class LanguageViewSet(viewsets.ModelViewSet):
-    queryset = Language.objects.all()
-    serializer_class = LanguageSerializer
     permission_classes = (IsAuthenticated,)
 
 

@@ -9,7 +9,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile')
     nickname = models.CharField(max_length=30)
     gender = models.CharField(max_length=1)
-    prefer_lang = models.CharField(max_length=4)
+    prefer_lang = models.ForeignKey('Language', default=1)
 
     def __unicode__(self):
         return self.nickname + " (" + self.user.username + ")"
@@ -31,3 +31,12 @@ class GroupProfile(MPTTModel):
 
     def __unicode__(self):
         return self.nickname + " [" + self.name + "]"
+
+
+class Language(models.Model):
+    key = models.CharField(max_length=6, unique=True)
+    name = models.CharField(max_length=30)
+    desc = models.TextField(default='None')
+
+    def __unicode__(self):
+        return str(self.name)

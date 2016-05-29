@@ -1,7 +1,12 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
-from .models import GroupProfile
+from .models import GroupProfile, Language
 #  from .models import UserProfile
+
+
+class LanguageSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Language
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
