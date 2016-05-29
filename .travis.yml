@@ -12,5 +12,5 @@ install:
   - pip install -r requirements.txt
 # command to run tests
 script:
-  - cp scr_settings.py secret_settings.py
+  - cp bojv4/scr_settings.py bojv4/secret_settings.py
   - python manage.py test
