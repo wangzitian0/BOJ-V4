@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
 
 from django.core import mail
-from .models import Language
+from .models import Language, GroupProfile
 from django.contrib.auth.models import User
 
 from account.models import EmailConfirmation
@@ -316,8 +316,8 @@ class ProfilesTestCase(TestCase):
             "password": "bar",
             "password_confirm": "bar",
             "email": "foobar@example.com",
-            "nickname": "goo",
-            "gender": "S",
+            "nickname": "foobar",
+            "gender": "M",
         }
         self.client.post(reverse("account_signup"), data)
         Language.objects.create(key="gcc", name='GUN C', desc='gcc 11')
@@ -327,6 +327,19 @@ class ProfilesTestCase(TestCase):
         response = self.client.get(reverse("account_profiles"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.template_name, ["account/profiles.html"])
+        self.assertContains(response, 'foo')
+        self.assertContains(
+            response,
+            '''name="nickname" type="text" value="foobar"'''
+        )
+        self.assertContains(
+            response,
+            '''<option value="M" selected="selected">Male</option>'''
+        )
+        self.assertContains(
+            response,
+            '''<option value="1" selected="selected">GUN C</option>'''
+        )
 
     def test_post_success(self):
         data = {
@@ -340,3 +353,165 @@ class ProfilesTestCase(TestCase):
             reverse("account_profiles"),
             fetch_redirect_response=False
         )
+
+
+class MyGroupsCreateTestCase(TestCase):
+
+    def setUp(self):
+        xx = 'admin_A0'
+        user = User.objects.create_user(xx, xx, xx)
+        user.is_superuser = True
+        user.is_staff = True
+        user.save()
+        for ch in range(ord('a'), ord('b') + 1):
+            xx = 'admin_' + chr(ch) + '0'
+            user = User.objects.create_user(xx, xx, xx)
+            user.is_staff = True
+            user.save()
+
+            gp = 0
+
+            xx = 'group_' + chr(ch)
+            if ch == ord('a'):
+                gp = GroupProfile.objects.create(name=xx, nickname=xx, superadmin=user)
+            else:
+                pr = (ch - ord('a') + 1) / 2
+                pr = GroupProfile.objects.get(pk=pr)
+                gp = GroupProfile.objects.create(name=xx, nickname=xx, superadmin=user, parent=pr)
+
+            xx = 'admin_' + chr(ch) + '1'
+            user = User.objects.create_user(xx, xx, xx)
+            user.is_staff = True
+            user.save()
+            gp.admin_group.user_set.add(user)
+
+            xx = 'admin_' + chr(ch) + '2'
+            user = User.objects.create_user(xx, xx, xx)
+            gp.admin_group.user_set.add(user)
+
+            xx = 'user_' + chr(ch) + '0'
+            user = User.objects.create_user(xx, xx, xx)
+            gp.admin_group.user_set.add(user)
+
+            xx = 'user_' + chr(ch) + '1'
+            user = User.objects.create_user(xx, xx, xx)
+            gp.admin_group.user_set.add(user)
+
+    def test_admin_create_group(self):
+        self.client.login(username='admin_A0', password='admin_A0')
+        response = self.client.get(reverse("mygroup-create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name, ["ojuser/group_create_form.html"])
+
+    def test_staff_create_group(self):
+        self.client.login(username='admin_a0', password='admin_a0')
+        response = self.client.get(reverse("mygroup-create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name, ["ojuser/group_create_form.html"])
+
+    def test_user_create_group(self):
+        self.client.login(username='user_a0', password='user_a0')
+        response = self.client.get(reverse("mygroup-create"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_post_success(self):
+        self.client.login(username='admin_a0', password='admin_a0')
+        data = {
+            "name": "gc1",
+            "nickname": "gc2",
+            "parent": 1,
+            "admins": 2,
+        }
+        response = self.client.post(reverse("mygroup-create"), data)
+        self.assertRedirects(
+            response,
+            reverse("mygroup-detail", kwargs={"pk": GroupProfile.objects.count()}),
+            fetch_redirect_response=False
+        )
+
+
+class MyGroupsListTestCase(TestCase):
+
+    def setUp(self):
+        xx = 'admin_A0'
+        user = User.objects.create_user(xx, xx, xx)
+        user.is_superuser = True
+        user.is_staff = True
+        user.save()
+        for ch in range(ord('a'), ord('g') + 1):
+            xx = 'admin_' + chr(ch) + '0'
+            user = User.objects.create_user(xx, xx, xx)
+            user.is_staff = True
+            user.save()
+
+            gp = 0
+
+            xx = 'group_' + chr(ch)
+            if ch == ord('a'):
+                gp = GroupProfile.objects.create(name=xx, nickname=xx, superadmin=user)
+            else:
+                pr = (ch - ord('a') + 1) / 2
+                pr = GroupProfile.objects.get(pk=pr)
+                gp = GroupProfile.objects.create(name=xx, nickname=xx, superadmin=user, parent=pr)
+
+            xx = 'admin_' + chr(ch) + '1'
+            user = User.objects.create_user(xx, xx, xx)
+            user.is_staff = True
+            user.save()
+            gp.admin_group.user_set.add(user)
+
+            xx = 'admin_' + chr(ch) + '2'
+            user = User.objects.create_user(xx, xx, xx)
+            gp.admin_group.user_set.add(user)
+
+            xx = 'user_' + chr(ch) + '0'
+            user = User.objects.create_user(xx, xx, xx)
+            gp.admin_group.user_set.add(user)
+
+            xx = 'user_' + chr(ch) + '1'
+            user = User.objects.create_user(xx, xx, xx)
+            gp.admin_group.user_set.add(user)
+
+        Language.objects.create(key="gcc", name='GUN C', desc='gcc 11')
+
+    def test_admin_group(self):
+        self.client.login(username='admin_A0', password='admin_A0')
+        response = self.client.get(reverse("mygroup-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.template_name,
+            ["ojuser/group_list.html", "ojuser/groupprofile_list.html"]
+        )
+
+    def test_staff_group(self):
+        self.client.login(username='admin_a0', password='admin_a0')
+        response = self.client.get(reverse("mygroup-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.template_name,
+            ["ojuser/group_list.html", "ojuser/groupprofile_list.html"]
+        )
+
+    def test_user_group(self):
+        self.client.login(username='user_a0', password='user_a0')
+        response = self.client.get(reverse("mygroup-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.template_name,
+            ["ojuser/group_list.html", "ojuser/groupprofile_list.html"]
+        )
+
+"""
+    def test_post_success(self):
+        data = {
+            "nickname": "google",
+            "gender": "F",
+            "prefer_lang": 1,
+        }
+        response = self.client.post(reverse("account_profiles"), data)
+        self.assertRedirects(
+            response,
+            reverse("account_profiles"),
+            fetch_redirect_response=False
+        )
+"""

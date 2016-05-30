@@ -32,8 +32,9 @@ def change_perm(func, instance):
 
     for ans in ancestors:
         for des in descendants:
-            func('ojuser.change_groupprofile', ans.superadmin, des)
-            func('ojuser.view_groupprofile', ans.superadmin, des)
+            if ans.superadmin:
+                func('ojuser.change_groupprofile', ans.superadmin, des)
+                func('ojuser.view_groupprofile', ans.superadmin, des)
             func('ojuser.change_groupprofile', ans.admin_group, des)
             func('ojuser.view_groupprofile', ans.admin_group, des)
             func('ojuser.view_groupprofile', des.user_group, ans)
@@ -42,7 +43,8 @@ def change_perm(func, instance):
 @receiver(post_save, sender=GroupProfile)
 def handle_group_post_save(sender, instance, created, **kwargs):
     change_perm(assign_perm, instance)
-    assign_perm('ojuser.delete_groupprofile', instance.superadmin, instance)
+    if instance.superadmin:
+        assign_perm('ojuser.delete_groupprofile', instance.superadmin, instance)
 
 
 @receiver(pre_delete, sender=GroupProfile)
