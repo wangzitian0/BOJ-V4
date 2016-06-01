@@ -1,4 +1,4 @@
-# {{ project_name }}
+# BOJv4
 
 ## Getting Started
 
