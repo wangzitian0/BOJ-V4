@@ -466,11 +466,11 @@ class MyGroupsListTestCase(TestCase):
 
             xx = 'user_' + chr(ch) + '0'
             user = User.objects.create_user(xx, xx, xx)
-            gp.admin_group.user_set.add(user)
+            gp.user_group.user_set.add(user)
 
             xx = 'user_' + chr(ch) + '1'
             user = User.objects.create_user(xx, xx, xx)
-            gp.admin_group.user_set.add(user)
+            gp.user_group.user_set.add(user)
 
         Language.objects.create(key="gcc", name='GUN C', desc='gcc 11')
 
@@ -484,12 +484,16 @@ class MyGroupsListTestCase(TestCase):
         )
 
     def test_staff_group(self):
-        self.client.login(username='admin_a0', password='admin_a0')
+        self.client.login(username='admin_c0', password='admin_c0')
         response = self.client.get(reverse("mygroup-list"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.template_name,
             ["ojuser/group_list.html", "ojuser/groupprofile_list.html"]
+        )
+        self.assertSequenceEqual(
+            list(response.context['group_can_view']),
+            list(GroupProfile.objects.filter(pk__in=[1, 3, 6, 7, ])),
         )
 
     def test_user_group(self):

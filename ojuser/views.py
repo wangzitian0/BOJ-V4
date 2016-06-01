@@ -49,6 +49,12 @@ class GroupListView(ListView):
     def get_queryset(self):
         qs = super(GroupListView, self).get_queryset()
         self.filter = GroupFilter(self.request.GET, queryset=qs, user=self.request.user)
+        profiles_can_view = get_objects_for_user(
+            self.request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True
+        )
+        self.group_can_view_qs = profiles_can_view
         profiles_can_change = get_objects_for_user(
             self.request.user,
             'ojuser.change_groupprofile',
@@ -72,6 +78,7 @@ class GroupListView(ListView):
         context["group_search_form"] = group_search_form
         context['groups_table'] = groups_table
         context['filter'] = self.filter
+        context['group_can_view'] = self.group_can_view_qs
         context['group_can_change'] = self.group_can_change_qs
         context['group_can_delete'] = self.group_can_delete_qs
         return context

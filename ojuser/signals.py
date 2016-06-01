@@ -27,7 +27,7 @@ def change_perm(func, instance):
     ancestors = instance.get_ancestors(include_self=True)
     descendants = instance.get_descendants(include_self=True)
 
-    #  print ancestors, descendants
+    #  print ancestors, "->", descendants
     #  here should use cache,  all of  anc,admin,des
 
     for ans in ancestors:
@@ -37,7 +37,11 @@ def change_perm(func, instance):
                 func('ojuser.view_groupprofile', ans.superadmin, des)
             func('ojuser.change_groupprofile', ans.admin_group, des)
             func('ojuser.view_groupprofile', ans.admin_group, des)
+            if des.superadmin:
+                func('ojuser.view_groupprofile', des.superadmin, ans)
+            func('ojuser.view_groupprofile', des.admin_group, ans)
             func('ojuser.view_groupprofile', des.user_group, ans)
+            #  print ans, des, func
 
 
 @receiver(post_save, sender=GroupProfile)

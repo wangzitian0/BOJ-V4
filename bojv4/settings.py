@@ -136,6 +136,7 @@ INSTALLED_APPS = [
     "guardian",
     "rest_framework",
     #  "bootstrap_pagination",
+    "avatar",
     "easy_thumbnails",
     "filer",
     "mptt",
