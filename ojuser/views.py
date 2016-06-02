@@ -16,7 +16,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserProfilesForm
@@ -34,7 +34,7 @@ from guardian.decorators import permission_required_or_403
 class LanguageViewSet(viewsets.ModelViewSet):
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
 
 
 class GroupListView(ListView):

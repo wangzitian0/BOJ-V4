@@ -4,6 +4,9 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
 
+from rest_framework import status
+from rest_framework.test import APITestCase
+
 from django.core import mail
 from .models import Language, GroupProfile
 from django.contrib.auth.models import User
@@ -586,17 +589,43 @@ class MyGroupsListTestCase(TestCase):
         )
 
 
-"""
-    def test_post_success(self):
+class AccountTests(APITestCase):
+
+    def setUp(self):
+        xx = 'admin_A0'
+        user = User.objects.create_user(xx, xx, xx)
+        user.is_superuser = True
+        user.is_staff = True
+        user.save()
+
+        xx = 'admin_a0'
+        user = User.objects.create_user(xx, xx, xx)
+        user.is_staff = True
+        user.save()
+
+        xx = 'user_a0'
+        user = User.objects.create_user(xx, xx, xx)
+
+    def test_admin_create_account(self):
+        url = reverse('language-list')
         data = {
-            "nickname": "google",
-            "gender": "F",
-            "prefer_lang": 1,
+            "key": "gcc",
+            "name": "GUN C",
+            "desc": "gcc -o a a.c"
         }
-        response = self.client.post(reverse("account_profiles"), data)
-        self.assertRedirects(
-            response,
-            reverse("account_profiles"),
-            fetch_redirect_response=False
-        )
-"""
+        self.client.login(username='admin_a0', password='admin_a0')
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Language.objects.count(), 1)
+        self.assertEqual(Language.objects.get().key, 'gcc')
+
+    def test_user_create_account(self):
+        url = reverse('language-list')
+        data = {
+            "key": "gcc",
+            "name": "GUN C",
+            "desc": "gcc -o a a.c"
+        }
+        self.client.login(username='user_a0', password='user_a0')
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
