@@ -474,16 +474,7 @@ class MyGroupsListTestCase(TestCase):
 
         Language.objects.create(key="gcc", name='GUN C', desc='gcc 11')
 
-    def test_admin_group(self):
-        self.client.login(username='admin_A0', password='admin_A0')
-        response = self.client.get(reverse("mygroup-list"))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.template_name,
-            ["ojuser/group_list.html", "ojuser/groupprofile_list.html"]
-        )
-
-    def test_staff_group(self):
+    def test_get(self):
         self.client.login(username='admin_c0', password='admin_c0')
         response = self.client.get(reverse("mygroup-list"))
         self.assertEqual(response.status_code, 200)
@@ -491,18 +482,85 @@ class MyGroupsListTestCase(TestCase):
             response.template_name,
             ["ojuser/group_list.html", "ojuser/groupprofile_list.html"]
         )
+
+    def test_superadmin_group(self):
+        self.client.login(username='admin_A0', password='admin_A0')
+        response = self.client.get(reverse("mygroup-list"))
+        self.assertSequenceEqual(
+            list(response.context['group_can_view']),
+            list(GroupProfile.objects.filter(pk__in=[1, 2, 3, 4, 5, 6, 7, ])),
+        )
+        self.assertSequenceEqual(
+            list(response.context['group_can_change']),
+            list(GroupProfile.objects.filter(pk__in=[1, 2, 3, 4, 5, 6, 7, ])),
+        )
+        self.assertSequenceEqual(
+            list(response.context['group_can_delete']),
+            list(GroupProfile.objects.filter(pk__in=[1, 2, 3, 4, 5, 6, 7, ])),
+        )
+        self.assertContains(
+            response,
+            '''<a href="/accounts/mygroups/add" class="btn btn-large btn-primary">New </a>'''
+        )
+
+    def test_creater_group(self):
+        self.client.login(username='admin_c0', password='admin_c0')
+        response = self.client.get(reverse("mygroup-list"))
         self.assertSequenceEqual(
             list(response.context['group_can_view']),
             list(GroupProfile.objects.filter(pk__in=[1, 3, 6, 7, ])),
         )
+        self.assertSequenceEqual(
+            list(response.context['group_can_change']),
+            list(GroupProfile.objects.filter(pk__in=[3, 6, 7, ])),
+        )
+        self.assertSequenceEqual(
+            list(response.context['group_can_delete']),
+            list(GroupProfile.objects.filter(pk__in=[3, ])),
+        )
+        self.assertContains(
+            response,
+            '''<a href="/accounts/mygroups/add" class="btn btn-large btn-primary">New </a>'''
+        )
+
+    def test_staff_group(self):
+        self.client.login(username='admin_c1', password='admin_c1')
+        response = self.client.get(reverse("mygroup-list"))
+        self.assertContains(
+            response,
+            '''<a href="/accounts/mygroups/add" class="btn btn-large btn-primary">New </a>'''
+        )
+
+    def test_admin_group(self):
+        self.client.login(username='admin_c2', password='admin_c2')
+        response = self.client.get(reverse("mygroup-list"))
+        self.assertSequenceEqual(
+            list(response.context['group_can_view']),
+            list(GroupProfile.objects.filter(pk__in=[1, 3, 6, 7, ])),
+        )
+        self.assertSequenceEqual(
+            list(response.context['group_can_change']),
+            list(GroupProfile.objects.filter(pk__in=[3, 6, 7, ])),
+        )
+        self.assertSequenceEqual(
+            list(response.context['group_can_delete']),
+            list(GroupProfile.objects.filter(pk__in=[])),
+        )
 
     def test_user_group(self):
-        self.client.login(username='user_a0', password='user_a0')
+        self.client.login(username='user_c0', password='user_c0')
         response = self.client.get(reverse("mygroup-list"))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.template_name,
-            ["ojuser/group_list.html", "ojuser/groupprofile_list.html"]
+        self.assertSequenceEqual(
+            list(response.context['group_can_view']),
+            list(GroupProfile.objects.filter(pk__in=[1, 3, ])),
+        )
+        self.assertSequenceEqual(
+            list(response.context['group_can_change']),
+            list(GroupProfile.objects.filter(pk__in=[])),
+        )
+        self.assertSequenceEqual(
+            list(response.context['group_can_delete']),
+            list(GroupProfile.objects.filter(pk__in=[])),
         )
 
 """

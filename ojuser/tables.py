@@ -21,6 +21,7 @@ class GroupTable(tables.Table):
 
     class Meta:
         model = GroupProfile
+        order_by = ['name']
         fields = ('name', 'nickname', 'superadmin', 'desc', 'status',)
         template = 'django_tables2/bootstrap.html'
 
