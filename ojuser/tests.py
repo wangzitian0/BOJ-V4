@@ -1,3 +1,5 @@
+#  -*- coding: utf-8 -*-
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
@@ -562,6 +564,27 @@ class MyGroupsListTestCase(TestCase):
             list(response.context['group_can_delete']),
             list(GroupProfile.objects.filter(pk__in=[])),
         )
+
+    def test_group_link(self):
+        self.client.login(username='admin_c0', password='admin_c0')
+        response = self.client.get(reverse("mygroup-list"))
+        self.assertContains(
+            response,
+            '''<a href="/accounts/mygroups/3/" title="查看组资源">'''
+        )
+        self.assertContains(
+            response,
+            '''<a href="/accounts/mygroups/3/members/" title="成员管理">'''
+        )
+        self.assertContains(
+            response,
+            '''<a href="/accounts/mygroups/3/update/" title="修改组信息">'''
+        )
+        self.assertContains(
+            response,
+            '''<a href="/accounts/mygroups/3/delete/" title="删除组">'''
+        )
+
 
 """
     def test_post_success(self):
