@@ -24,7 +24,7 @@ cp bojv4/scr_settings.py bojv4/secret_settings.py
 
 ```
 
-姿势汇总
+## 姿势汇总
 ```
 TemplateView实现多个表单的验证
 ojuser/views.py
