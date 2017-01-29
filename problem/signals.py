@@ -41,4 +41,9 @@ def handle_problem_group_save(sender, instance, action, pk_set, reverse, **kwarg
 @receiver(post_save, sender=Problem)
 def handle_problem_save(sender, instance, created, **kwargs):
     if created:
-        assign_perm('ojuser.delete_problem', instance.superadmin, instance)
+        assign_perm('problem.delete_problem', instance.superadmin, instance)
+        assign_perm('problem.change_problem', instance.superadmin, instance)
+        print "=====create===permission"
+        for g in instance.groups.all():
+            assign_perm('problem.view_problem', g, instance)
+

@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Submission
 from .serializers import SubmissionSerializer
 
+from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
 from django.utils.decorators import method_decorator
@@ -21,7 +22,6 @@ class SubmissionViewSet(viewsets.ModelViewSet):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
     permission_classes = (IsAuthenticated,)
-
 
 class SubmissionListView(ListView):
 
@@ -54,6 +54,7 @@ class SubmissionCreateView(CreateView):
     def dispatch(self, request, pid=None, *args, **kwargs):
         pid = self.kwargs['pid']
         self.problem = get_object_or_404(Problem.objects.all(), pk=pid)
+        self.user = request.user
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -71,3 +72,8 @@ class SubmissionCreateView(CreateView):
         self.object.problem = self.problem
         self.object.user = self.request.user
         return super(SubmissionCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('submission:submission-list')
+
+

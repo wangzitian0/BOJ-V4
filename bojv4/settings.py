@@ -151,6 +151,7 @@ INSTALLED_APPS = [
     "ojuser",
     "problem",
     "submission",
+    "common",
 ]
 
 # A sample logging configuration. The only tangible logging

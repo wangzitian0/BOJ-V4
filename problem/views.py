@@ -110,6 +110,7 @@ class ProblemListView(ListView):
 class ProblemDetailView(DetailView):
 
     model = Problem
+#    template_name = 'problem/problem_detail.html'
 
     def get_queryset(self):
         gp_can_view = get_objects_for_user(
@@ -136,10 +137,15 @@ class ProblemDetailView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        print "===================dispatch=========="
         return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ProblemDetailView, self).get_context_data(**kwargs)
+        if self.request.user.has_perm('problem.change_problem', self.object): 
+            print "----------------ACCESS!--------------------"
+            context['has_change_perm'] = 1
+        print context
         return context
 
 

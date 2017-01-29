@@ -7,3 +7,4 @@ node_modules/*
 static/_build/*
 site_media/*
 nohup.out
+*.idea

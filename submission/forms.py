@@ -6,7 +6,7 @@ from django_select2.forms import ModelSelect2Widget
 class SubmissionForm(forms.ModelForm):
     class Meta:
         model = Submission
-        fields = ('code', 'language')
+        fields = ('code', 'language', 'user')
         widgets = {
             'language': ModelSelect2Widget(
                 search_fields=[

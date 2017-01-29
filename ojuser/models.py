@@ -13,7 +13,7 @@ class UserProfile(models.Model):
         choices=CONST.GENDER,
         default=CONST.GENDER[0][0],
     )
-    prefer_lang = models.ForeignKey('Language', default=1)
+    prefer_lang = models.ForeignKey('Language', default=1, related_name='user_profiles')
 
     def __unicode__(self):
         return self.nickname + " (" + self.user.username + ")"

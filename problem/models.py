@@ -15,7 +15,7 @@ class Problem(models.Model):
     memory_limit = models.IntegerField(default=65536)
     code_length_limit = models.IntegerField(default=65536)
     problem_desc = models.TextField(default='None')
-    is_spj = models.IntegerField(default=0)
+    is_spj = models.BooleanField(default=False)
     superadmin = models.ForeignKey(User)
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)

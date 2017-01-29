@@ -10,7 +10,9 @@
 <section class="jumbotron">
   <div class="container">
     {% include "_messages.html" %}
-    <h1>{{ object.pk }}. {{ object.title }}</h1>
+    <h1>{{ object.pk }}. {{ object.problem.title }}</h1>
+	<h2>{{ object.user.username }}</h2>
+	<h3>{{ object.code }}</h3>
   </div>
 </section>
 {% endblock %}
