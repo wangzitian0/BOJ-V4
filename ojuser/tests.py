@@ -120,6 +120,16 @@ class LoginViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.template_name, ["account/login.html"])
 
+    def test_post_wrong_password(self):
+        self.signup()
+        data = {
+            "username": "foo",
+            "password": "1234",
+        }
+        response = self.client.post(reverse("account_login"), data)
+        self.assertEqual(response.status_code, 200)
+
+
     def test_post_empty(self):
         data = {}
         response = self.client.post(reverse("account_login"), data)

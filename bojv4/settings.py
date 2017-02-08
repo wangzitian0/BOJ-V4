@@ -202,7 +202,7 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "account.auth_backends.UsernameAuthenticationBackend",
     "guardian.backends.ObjectPermissionBackend",
-    "filer.server.backends.default.DefaultServer",
+    # "filer.server.backends.default.DefaultServer",
 ]
 
 
