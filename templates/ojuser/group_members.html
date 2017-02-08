@@ -26,7 +26,7 @@
         </div>
       </div>
       <div class="col-lg-offset-6 col-lg-2">
-        <a href="{% url 'user-add' %}" target="_blank" class="btn btn-large btn-warning">New Users</a>
+		  <a href="{% url 'user-add' %}?group_pk={{ pk }}" target="_blank" class="btn btn-large btn-warning">New Users</a>
       </div>
       <div class="col-lg-offset-1">
         <button class="btn btn-primary" id="submit-btn">Add Users</button>

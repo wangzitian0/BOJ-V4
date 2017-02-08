@@ -207,8 +207,23 @@ class GroupResetView(DetailView):
 class UserAddView(TemplateView):
     template_name = 'ojuser/user_add.html'
 
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(UserAddView, self).dispatch(request, *args, **kwargs)
+
+
     def get_context_data(self, **kwargs):
+        profiles_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
         context = super(UserAddView, self).get_context_data(**kwargs)
+        context['group_can_change'] = profiles_can_change.all()
+        if self.request.GET.has_key('group_pk'):
+            context['select_group'] = int(self.request.GET['group_pk'])
+            # print "================select_group"
+            # print context['select_group']
         return context
 
 
@@ -228,20 +243,25 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'], url_path='bulk_create')
     def create_users(self, request):
-        print "================="
         mp = {}
-        for m in request.data:
+        for m in request.data['users']:
             if not hasattr(m, 'password'):
                 m['password'] = get_rand_password()
-        mp[m['username']] = m['password']
+            mp[m['username']] = m['password']
         serializer = UserProfileSerializer(
-            data=request.data, many=True, context={'request': request}
+            data=request.data['users'], many=True, context={'request': request}
         )
         if serializer.is_valid():
-            serializer.save()
+            users = serializer.save()
             for r in serializer.data:
                 r['password'] = mp[r['username']]
-                print r['password']
+            if request.data.has_key('group_pk'):
+                try:
+                    group = GroupProfile.objects.get(pk=int(request.data['group_pk']))
+                    group.user_group.user_set.add(*users)
+                    group.save()
+                except Exception, ex:
+                    print ex
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -255,7 +275,6 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
     def manage_member(self, request, pk=None):
         qs = self.get_queryset()
         group = get_object_or_404(qs, pk=pk)
-        print group.user_group.user_set
         if request.method == "POST" or request.method == "PUT":
             users = []
             errors = []

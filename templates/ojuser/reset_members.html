@@ -84,13 +84,11 @@
         }
       });
     });
-    $("#btn-add-line").click(function(){
-      var number=$("#new-lines-number").val();
-      table.handsontable('alter', 'insert_row',null,number);
+    $("#btn-select").click(function(){
+		$("input[name='select_checked']:checkbox").prop("checked", true); 
     });
-    $("#btn-del-line").click(function(){
-      var number=$("#new-lines-number").val();
-      table.handsontable('alter', 'remove_row',_data.length-number,number);
+    $("#btn-cancel").click(function(){
+		$("input[name='select_checked']:checkbox").prop("checked", false); 
     });
   });
 </script>
