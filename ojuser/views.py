@@ -1,3 +1,4 @@
+import json
 from account.views import SignupView
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -6,7 +7,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic import TemplateView, ListView, DetailView, DeleteView
 from django.views.generic.edit import FormView
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
@@ -21,8 +22,9 @@ from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserProfilesForm
 from .forms import GroupProfileForm, GroupForm, GroupSearchForm
-from .serializers import LanguageSerializer, UserSerializer, UserProfileSerializer
-from .serializers import GroupProfileSerializer, UserSlugSerializer, GroupSerializer
+from .serializers import LanguageSerializer, UserSerializer, UserProfileSerializer, \
+        get_rand_password, GroupProfileSerializer, UserSlugSerializer, GroupSerializer, \
+        UserResetSerializer
 from .tables import GroupUserTable, GroupTable
 from .models import GroupProfile, Language
 from .filters import GroupFilter
@@ -191,6 +193,17 @@ class GroupMemberView(TemplateView):
         return context
 
 
+class GroupResetView(DetailView):
+    template_name = 'ojuser/reset_members.html'
+    model = GroupProfile
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupResetView, self).get_context_data(**kwargs)
+        group = context['object']
+        group_users = group.user_group.user_set.all()
+        context['users'] = group_users
+        return context
+
 class UserAddView(TemplateView):
     template_name = 'ojuser/user_add.html'
 
@@ -215,12 +228,20 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'], url_path='bulk_create')
     def create_users(self, request):
+        print "================="
+        mp = {}
+        for m in request.data:
+            if not hasattr(m, 'password'):
+                m['password'] = get_rand_password()
+        mp[m['username']] = m['password']
         serializer = UserProfileSerializer(
             data=request.data, many=True, context={'request': request}
         )
-        #  print request.data
         if serializer.is_valid():
             serializer.save()
+            for r in serializer.data:
+                r['password'] = mp[r['username']]
+                print r['password']
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -253,6 +274,38 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
             group.user_group.user_set.add(*users)
         serializer = UserSlugSerializer(group.user_group.user_set, many=True)
         return Response(serializer.data)
+
+    @detail_route(methods=['post', 'get', 'put', ], url_path='reset')
+    def reset_member(self, request, pk=None):
+        qs = self.get_queryset()
+        group = get_object_or_404(qs, pk=pk)
+        if request.method == "POST":
+            users = []
+            errors = []
+            valid = 1
+            for x in request.data:
+                try:
+                    user = User.objects.get(pk=int(x))
+                    users.append(user)
+                    errors.append({})
+                except User.DoesNotExist:
+                    errors.append({"pk": "user do not exsit"})
+                    valid = 0
+            if not valid:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            resp = []
+            for u in users:
+                pwd = get_rand_password()
+                u.set_password(pwd)
+                u.save()
+                resp.append({
+                    'pk': u.pk,
+                    'password': pwd,
+                    })
+            serializer = UserResetSerializer(resp, many=True)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class OjUserSignupView(SignupView):

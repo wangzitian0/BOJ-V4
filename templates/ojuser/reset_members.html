@@ -1,0 +1,97 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load bootstrap3 %}
+
+{% block head_title %}My Groups{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block body_base %}
+<section class="jumbotron">
+  <div class="container">
+    <h3>Reset Password</h3>
+    <div id="reset_conteiner">
+		<table id="table_id" class="table">
+			<thead>
+			<tr>
+				<th>select</th>
+				<th>id</th>
+				<th>username</th>
+				<th>new password</th>
+			</tr>
+			</thead>
+			<tbody>
+			{% for u in users %}
+				<tr>
+			<td><input type="checkbox" value="{{ u.pk }}" name="select_checked"></td>
+			<td>{{ u.pk }}</td>
+			<td>{{ u.username }}</td>
+			<td id="pwd_{{u.pk}}"></td>
+				</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+    <br>
+    <div class="row">
+      <div class="col-lg-2">
+        <div class="input-group">
+          <span class="input-group-btn">
+            <button id="btn-select" class="btn btn-warning btn-sm" type="button">Select All</button>
+          </span>
+          <span class="input-group-btn">
+            <button id="btn-cancel" class="btn btn-info btn-sm" type="button">Cancel All</button>
+          </span>
+        </div>
+      </div>
+      <div class="col-lg-offset-1">
+        <button class="btn btn-primary" id="btn-submit">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+  $(document).ready(function(){
+	  function get_select_checkbox() {
+		  var res = [];
+		  $("input:checkbox[name=select_checked]:checked").each(function(i){
+			  res.push($(this).val());
+		  });
+		  return JSON.stringify(res);
+	  }
+    var pk = window.location.pathname.split('/').slice(-3,-2);
+    var _url = '/api/groups/'+pk+'/reset/';
+    $("#btn-submit").click( function() {
+      $.ajax({
+        type: "POST",
+        url: _url,
+        data: get_select_checkbox(),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(res){
+          for (var i=0;i<res.length;i++){
+			  $("#pwd_"+res[i].pk).html(res[i].password);
+          }
+          alert("Selected user's password has been reset!");
+        },
+        error: function(errors) {
+          errors=errors.responseJSON;
+          alert("error!");
+        }
+      });
+    });
+    $("#btn-add-line").click(function(){
+      var number=$("#new-lines-number").val();
+      table.handsontable('alter', 'insert_row',null,number);
+    });
+    $("#btn-del-line").click(function(){
+      var number=$("#new-lines-number").val();
+      table.handsontable('alter', 'remove_row',_data.length-number,number);
+    });
+  });
+</script>
+{% endblock %}

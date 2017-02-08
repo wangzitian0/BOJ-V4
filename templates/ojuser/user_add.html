@@ -87,6 +87,7 @@
             }
             for (var i=0;i<res.length;i++){
               _data[i].status="added"
+			  _data[i].password=res[i].password
             }
             table.handsontable('render');
             alert("All is added!");

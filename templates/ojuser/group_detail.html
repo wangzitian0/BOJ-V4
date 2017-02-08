@@ -44,6 +44,7 @@
   <div>
     <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">Members</a>
     <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
+    <a href="{% url 'mygroup-reset-password' object.pk %}" class="btn btn-large btn-primary">Reset</a>
   </div>
   {% endif %}
 </section>

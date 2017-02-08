@@ -3,6 +3,12 @@ from django.contrib.auth.models import User, Group
 from .models import GroupProfile, Language
 #  from .models import UserProfile
 
+def get_rand_password():
+    import random
+    numbers = '1234567890abcdefghijklmn'
+    return ''.join([random.choice(numbers) for i in range(6)])
+    
+
 
 class LanguageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -20,6 +26,11 @@ class UserSlugSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', )
+
+
+class UserResetSerializer(serializers.Serializer):
+    pk = serializers.IntegerField()
+    password = serializers.CharField(max_length=20)
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
@@ -44,10 +55,12 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = ('url', 'username', 'password', 'nickname', )
+        fields = ('url', 'username', 'password', 'nickname')
 
     def create(self, validated_data):
         profile = validated_data.pop('profile')
+        print 'password============', validated_data['password']
+        # self.new_pwd = validated_data['password']
         user = User.objects.create_user(**validated_data)
 
         for (k, v) in profile.items():
