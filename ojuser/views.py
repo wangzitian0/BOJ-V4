@@ -50,7 +50,6 @@ class GroupListView(ListView):
 
     def get_queryset(self):
         qs = super(GroupListView, self).get_queryset()
-        self.filter = GroupFilter(self.request.GET, queryset=qs, user=self.request.user)
         profiles_can_view = get_objects_for_user(
             self.request.user,
             'ojuser.view_groupprofile',
@@ -69,6 +68,8 @@ class GroupListView(ListView):
             with_superuser=True
         )
         self.group_can_delete_qs = profiles_can_delete
+        # self.filter = GroupFilter(self.request.GET, queryset=qs, user=self.request.user)
+        self.filter = GroupFilter(self.request.GET, queryset=profiles_can_view, user=self.request.user)
         return self.filter.qs
 
     def get_context_data(self, **kwargs):
@@ -245,7 +246,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def create_users(self, request):
         mp = {}
         for m in request.data['users']:
-            if not hasattr(m, 'password'):
+            if not m.has_key('password'):
                 m['password'] = get_rand_password()
             mp[m['username']] = m['password']
         serializer = UserProfileSerializer(
@@ -375,3 +376,5 @@ class OjUserProfilesView(FormView):
                 self.messages["profiles_updated"]["text"]
             )
         return redirect(self.get_success_url())
+
+

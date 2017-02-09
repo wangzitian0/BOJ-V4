@@ -135,9 +135,9 @@ class ProblemDetailView(DetailView):
         ).distinct()
         return self.qs
 
-    @method_decorator(login_required)
+    # @method_decorator(login_required)
+    @method_decorator(permission_required_or_403('problem.view_problem', (Problem, 'pk', 'pk')))
     def dispatch(self, request, *args, **kwargs):
-        print "===================dispatch=========="
         return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -145,7 +145,6 @@ class ProblemDetailView(DetailView):
         if self.request.user.has_perm('problem.change_problem', self.object): 
             print "----------------ACCESS!--------------------"
             context['has_change_perm'] = 1
-        print context
         return context
 
 
@@ -303,3 +302,4 @@ class FileListView(ListView):
         response = JSONResponse(data, mimetype=response_mimetype(self.request))
         response['Content-Disposition'] = 'inline; filename=files.json'
         return response
+

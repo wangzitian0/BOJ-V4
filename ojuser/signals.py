@@ -11,7 +11,7 @@ from guardian.shortcuts import assign_perm, remove_perm
 @receiver(post_save, sender=User)
 def handle_user_save(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance)
+        user = UserProfile.objects.create(user=instance)
 
 
 """

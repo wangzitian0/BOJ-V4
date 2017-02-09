@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from guardian.shortcuts import assign_perm
 from .models import Problem
 #  from django.db.models.signals import post_save, m2m_changed
@@ -7,16 +7,11 @@ from .models import Problem
 #  from django.contrib.auth.models import Group
 #  from guardian.shortcuts import assign_perm, remove_perm
 
-"""
-def change_perm(func, instance, pk_set):
-    if not pk_set:
+def change_perm(func, group, instance):
+    if not group:
         return
-    ancestors = set()
-    descendants = set()
-    groups = GroupProfile.objects.filter(pk__in=pk_set)
-    for group in groups:
-        ancestors.update(group.get_ancestors(include_self=True))
-        descendants.update(group.get_descendants(include_self=True))
+    ancestors = group.get_ancestors(include_self=False)
+    descendants = group.get_descendants(include_self=True)
     print ancestors, descendants
     #  here should use cache,  all of  anc,admin,des
     for ans in ancestors:
@@ -27,7 +22,7 @@ def change_perm(func, instance, pk_set):
     for des in descendants:
         func('ojuser.view_problem', des.user_group, instance)
 
-
+'''
 @receiver(m2m_changed, sender=Problem.groups.through)
 def handle_problem_group_save(sender, instance, action, pk_set, reverse, **kwargs):
     print instance, action, pk_set, reverse
@@ -35,7 +30,7 @@ def handle_problem_group_save(sender, instance, action, pk_set, reverse, **kwarg
         change_perm(assign_perm, instance, pk_set)
     elif action == "pre_clear" and not reverse:
         change_perm(remove_perm, instance, pk_set)
-"""
+'''
 
 
 @receiver(post_save, sender=Problem)
@@ -45,5 +40,13 @@ def handle_problem_save(sender, instance, created, **kwargs):
         assign_perm('problem.change_problem', instance.superadmin, instance)
         print "=====create===permission"
         for g in instance.groups.all():
-            assign_perm('problem.view_problem', g, instance)
+            # assign_perm('problem.view_problem', g, instance)
+            change_perm(assign_perm, g, instance)
+
+@receiver(pre_save, sender=Problem)
+def handle_group_pre_save(sender, instance, *args, **kwargs):
+    #  print sender, instance, args, kwargs
+    if instance.pk:
+        for g in instance.groups.all():
+            change_perm(remove_perm, g, instance)
 
