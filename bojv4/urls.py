@@ -27,6 +27,7 @@ urlpatterns = [
     url(r"^admin/", include(admin.site.urls)),
     url(r"^accounts/", include("ojuser.urls")),
     url(r"^problem/", include("problem.urls", namespace="problem")),
+    url(r"^contest/", include("contest.urls", namespace="contest")),
     url(r"^submission/", include("submission.urls", namespace="submission")),
     url(r'^select2/', include('django_select2.urls')),
     url(r"^filer/", include("filer.urls")),
