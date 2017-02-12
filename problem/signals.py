@@ -38,15 +38,13 @@ def handle_problem_save(sender, instance, created, **kwargs):
     if created:
         assign_perm('problem.delete_problem', instance.superadmin, instance)
         assign_perm('problem.change_problem', instance.superadmin, instance)
-        print "=====create===permission"
-        for g in instance.groups.all():
-            # assign_perm('problem.view_problem', g, instance)
-            change_perm(assign_perm, g, instance)
-
+        assign_perm('problem.view_problem', instance.superadmin, instance)
+  
+'''
 @receiver(pre_save, sender=Problem)
 def handle_group_pre_save(sender, instance, *args, **kwargs):
     #  print sender, instance, args, kwargs
     if instance.pk:
         for g in instance.groups.all():
             change_perm(remove_perm, g, instance)
-
+'''

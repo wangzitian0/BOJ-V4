@@ -38,9 +38,6 @@
 		</div>
     <div>
 	<div class="row">
-	{% if has_change_perm %}
-      <a href="{% url 'problem:problem-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
-	{% endif %}
       <a href="{% url 'submission:submission-add' object.pk %}" class="btn btn-large btn-primary">Submit</a>
     <div>
   </div>

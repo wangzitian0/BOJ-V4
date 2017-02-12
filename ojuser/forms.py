@@ -67,8 +67,15 @@ class GroupForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
+        queryset = None
+        if kwargs.has_key('user_queryset'):
+            queryset = kwargs.pop('user_queryset') 
         super(GroupForm, self).__init__(*args, **kwargs)
+        if queryset:
+            self.fields['admins'].widget.queryset = queryset
         if self.instance.pk:
+            print "instance user_set============="
+            print self.instance.user_set.all()
             self.fields['admins'].initial = self.instance.user_set.all()
 
     def save(self, commit=True):
@@ -97,7 +104,17 @@ class GroupProfileForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        print '=============kwargs========'
+        print kwargs
+        queryset = None
+        if kwargs.has_key('my_queryset'):
+            queryset = kwargs.pop('my_queryset')
         super(GroupProfileForm, self).__init__(*args, **kwargs)
+        print args
         if self.instance.pk:
             my_children = self.instance.get_descendants(include_self=True)
-            self.fields['parent'].queryset = GroupProfile.objects.all().exclude(pk__in=my_children)
+            if queryset:
+                self.fields['parent'].queryset = queryset.exclude(pk__in=my_children)
+            else:
+                self.fields['parent'].queryset = GroupProfile.objects.all().exclude(pk__in=my_children)
+

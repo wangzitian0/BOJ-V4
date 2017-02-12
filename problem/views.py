@@ -1,6 +1,6 @@
 
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
@@ -135,15 +135,27 @@ class ProblemDetailView(DetailView):
         ).distinct()
         return self.qs
 
-    # @method_decorator(login_required)
-    @method_decorator(permission_required_or_403('problem.view_problem', (Problem, 'pk', 'pk')))
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        print kwargs
+        '''
+        try:
+            problem = Problem.objects.get(pk=kwargs['pk'])
+            print problem.title
+            groups = problem.groups.all() 
+            print groups
+            for g in groups:
+                if request.user.has_perm('ojuser.view_groupprofile', g):
+                    return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
+        except Exception, ex:
+            print ex
+        return HttpResponseForbidden()
+        '''
         return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ProblemDetailView, self).get_context_data(**kwargs)
         if self.request.user.has_perm('problem.change_problem', self.object): 
-            print "----------------ACCESS!--------------------"
             context['has_change_perm'] = 1
         return context
 
@@ -158,10 +170,21 @@ class ProblemCreateView(CreateView):
         return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        print '=========form valid==============='
         self.object = form.save(commit=False)
         self.object.superadmin = self.request.user
         self.object.save()
         return super(ProblemCreateView, self).form_valid(form)
+
+    def get_form(self):
+        groups = get_objects_for_user(
+                self.request.user,
+                'ojuser.change_groupprofile',
+                with_superuser=True
+            )
+        form = ProblemForm(**self.get_form_kwargs())
+        form.fields['groups'].widget.queryset = groups
+        return form 
 
     def get_success_url(self):
         return reverse('problem:upload-new', args=[self.object.pk])
