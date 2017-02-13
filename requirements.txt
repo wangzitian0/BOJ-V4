@@ -28,3 +28,4 @@ pytz==2016.3
 six==1.10.0
 sqlparse==0.1.19
 Unidecode==0.4.19
+redis-server
