@@ -148,10 +148,10 @@ class GroupUpdateView(TemplateView):
         self.object = get_object_or_404(qs, pk=self.pk)
         self.group_profile_form = GroupProfileForm(instance=self.object,
                 my_queryset=profiles_can_change)
-        user_in_groups = User.objects.filter(pk__in=self.object.user_group.user_set.all())
-        user_is_staff = User.objects.filter(is_staff=True)
+        user_queryset = User.objects.filter(Q(pk__in=self.object.user_group.user_set.all()) |
+                Q(is_staff=True))
         self.group_admins_form = GroupForm(instance=self.object.admin_group, 
-                user_queryset=(user_in_groups | user_is_staff))
+                user_queryset=user_queryset)
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
         context['pk'] = self.pk

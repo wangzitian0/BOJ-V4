@@ -4,6 +4,7 @@ from problem.models import Problem
 from ojuser.models import Language
 from django.core.urlresolvers import reverse
 from contest.models import Contest, ContestProblem
+from bojv4.conf import CONST 
 
 
 class Submission(models.Model):
@@ -11,7 +12,7 @@ class Submission(models.Model):
     problem = models.ForeignKey(Problem)
     datetime = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
-    status = models.CharField(max_length=3, default="QUE")
+    status = models.CharField(max_length=3, default="QUE", choices=CONST.STATUS_CODE)
     running_time = models.IntegerField(default=0)
     running_memory = models.IntegerField(default=0)
     info = models.TextField(blank=True)
