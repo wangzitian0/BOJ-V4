@@ -5,6 +5,7 @@ from ojuser.models import Language
 from django.core.urlresolvers import reverse
 from contest.models import Contest, ContestProblem
 from bojv4.conf import CONST 
+import json
 
 
 class Submission(models.Model):
@@ -45,4 +46,15 @@ class Submission(models.Model):
             return True
         return False
 
+    def set_info(self, key, value):
+        if not self.info or self.info == '':
+            info = {}
+        else:
+            try:
+                info = json.loads(self.info)
+            except Exception, ex:
+                print ex
+                return
+        info[key] = value
+        self.info = json.dumps(info)
 

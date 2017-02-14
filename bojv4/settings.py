@@ -168,17 +168,43 @@ LOGGING = {
             "()": "django.utils.log.RequireDebugFalse"
         }
     },
+    'formatters': { 
+        'standard': { 
+            'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s:%(lineno)d] [%(levelname)s]- %(message)s' 
+        }, 
+    }, 
     "handlers": {
         "mail_admins": {
             "level": "ERROR",
             "filters": ["require_debug_false"],
             "class": "django.utils.log.AdminEmailHandler"
-        }
+        },
+	'default': { 
+            'level':'INFO', 
+            'class':'logging.handlers.RotatingFileHandler', 
+            'filename': '/var/log/oj/all.log',
+            'maxBytes': 1024*1024*5, 
+            'backupCount': 5,
+            'formatter':'standard', 
+        }, 
+        'warning_handler': { 
+            'level':'WARNING', 
+            'class':'logging.handlers.RotatingFileHandler', 
+            'filename': '/var/log/oj/warning.log',
+	    'maxBytes': 1024*1024*5, 
+            'backupCount': 5, 
+            'formatter':'standard',
+        }, 
     },
     "loggers": {
         "django.request": {
             "handlers": ["mail_admins"],
             "level": "ERROR",
+            "propagate": True,
+        },
+        "django": {
+            "handlers": ["default", "warning_handler"],
+            "level": "INFO",
             "propagate": True,
         },
     }

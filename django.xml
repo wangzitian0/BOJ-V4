@@ -1,0 +1,6 @@
+<uwsgi>
+    <socket>127.0.0.1:8630</socket>
+    <chdir>/home/liuwei/BOJ-V4/</chdir>
+    <pythonpath>..</pythonpath>
+    <module>wsgi</module>
+</uwsgi>

@@ -25,7 +25,18 @@ def handler(message):
     print s_pk
     try:
         s = Submission.objects.get(pk=s_pk)
-        s.status = mp['status']
+        s.status = mp.get('status', 'SE')
+        s.running_time = mp.get('running_time', 0)
+        s.running_memery = mp.get('running_memory', 0)
+        if s.status == 'CE':
+            s.set_info('CE_REASON', mp.get('CE_REASON', ''))
+        else if s.status != 'JD':
+            info = json.loads(s.info)
+            if not info or info == '':
+                info = {}
+            for res in mp.get('case_result'):
+                info[res['index']] = res['result']
+            s.info = json.dumps(info)
         s.save()
         calc_contest_score(s)
     except Exception, ex:

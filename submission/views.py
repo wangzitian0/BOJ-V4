@@ -15,6 +15,8 @@ from django.shortcuts import get_object_or_404
 from .forms import SubmissionForm
 from django_tables2 import RequestConfig
 from .tables import SubmissionTable
+import logging
+logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
 
 
@@ -41,6 +43,11 @@ class SubmissionDetailView(DetailView):
     model = Submission
 
     def get_context_data(self, **kwargs):
+        print __name__
+        logger.warning('============test===============')
+        print 'warning test'
+        logger.info('==================test=========info=======')
+        print 'info test'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         return context
 
