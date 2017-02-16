@@ -40,9 +40,18 @@ def upload_dir(instance, filename):
 
 class ProblemDataInfo(models.Model):
     problem = models.ForeignKey(Problem, related_name="datainfo")
-    score = models.IntegerField(default=0)
     data = models.OneToOneField(File, null=True, blank=True, related_name="datainfo")
-    info = models.TextField(blank=True)
 
     def __unicode__(self):
         return str(self.problem.pk) + " " + str(self.pk)
+
+class ProblemCase(models.Model):
+    problem = models.ForeignKey(Problem, related_name="case")
+    input_data = models.OneToOneField(File, null=True, blank=True, related_name="incase")
+    output_data = models.OneToOneField(File, null=True, blank=True, related_name="outcase")
+    score = models.IntegerField(default=0)
+    info = models.TextField(blank=True)
+
+    def __unicode__(self):
+        return str(self.problem.pk) + ":" + str(self.pk)
+

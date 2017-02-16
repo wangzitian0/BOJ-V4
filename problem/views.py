@@ -47,7 +47,6 @@ class ProblemViewSet(viewsets.ModelViewSet):
         serializer = ProblemDataSerializer(problem, context={'request': request})
         return Response(serializer.data)
 
-
 class ProblemDataInfoViewSet(viewsets.ModelViewSet):
     queryset = ProblemDataInfo.objects.all()
     serializer_class = ProblemDataInfoSerializer
@@ -313,6 +312,7 @@ class FileDeleteView(DeleteView):
 
 class FileListView(ListView):
     model = File
+    template_name = 'problem/problemdata_list.html'
 
     def get_queryset(self):
         _problem = Problem.objects.get(pk=self.kwargs['pid'])
