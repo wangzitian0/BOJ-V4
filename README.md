@@ -40,3 +40,6 @@ https://django-guardian.readthedocs.org/en/stable/api/guardian.shortcuts.html
 ojuser/forms.py
 class GroupProfileForm(forms.ModelForm):
 ```
+```
+apt-get install libjpeg-turbo8-dev
+apt-get install zlib1g-dev

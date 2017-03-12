@@ -24,7 +24,13 @@
       {% endfor %}
     </ul>
     <h4>Parents</h4>
-    {{ object.get_ancestors | tree_path:" > " }}
+	<ul>
+      {% for profile in object.get_ancestors %}
+		<a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.name }}</a>
+	  {% empty %}
+	  <li> No Parents </li>
+      {% endfor %}
+	</ul>
     <h4>Children</h4>
     <ul>
       {% for profile in children %}
@@ -33,6 +39,8 @@
       <li>No child yet.</li>
       {% endfor %}
     </ul>
+	<div id="jstree_id">
+	</div>
   </div>
   <h3>group member</h3>
 
@@ -48,4 +56,38 @@
   </div>
   {% endif %}
 </section>
+{% endblock %}
+
+{% block extra_body %}
+<script src="{{ STATIC_URL }}jstree.min.js"></script>
+<link rel="stylesheet" media="screen" href="{{ STATIC_URL }}themes/default/style.min.css"></script>
+<script>
+$(function(){
+	var data = {{ tree_list | safe }};
+	var dic = {};
+	for (r in data) {
+		dic[r.id] = r.state;
+	}
+
+	$('#jstree_id').jstree({
+		"core" : {
+		"animation" : 0,
+		"check_callback" : true,
+		"themes" : { "stripes" : true },
+		"data": data,
+	  },
+		
+	  "plugins" : [
+		"contextmenu", "dnd", "search",
+		"state", "types", "wholerow"
+	  ]
+	});
+	$.jstree.reference("#jstree_id").select_node("{{ object.name }}");
+	
+	// $('#jstree_id').on('click.jstree', function(e){
+	//	alert(e.id);
+	//});
+
+});
+</script>
 {% endblock %}

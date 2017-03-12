@@ -179,6 +179,7 @@ class GroupDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
         group = context['object']
+        print group.get_ancestors()
         context['admins'] = group.admin_group.user_set.all()
         context['children'] = group.get_children()
         group_users = group.user_group.user_set.all()
@@ -186,6 +187,47 @@ class GroupDetailView(DetailView):
         RequestConfig(self.request).configure(group_users_table)
         #  add filter here
         context['group_users_table'] = group_users_table
+        tree_list = []
+        for u in group.get_ancestors():
+            p_name = '#'
+            if u.parent:
+                p_name = u.parent.name
+            url = reverse('mygroup-detail', args=[u.pk, ])
+            tree_list.append({
+                'id': u.name,
+                'parent': p_name,
+                'text': u.nickname,
+                'state': {
+                    'opened': True,
+                    'disabled': True,
+                },
+            })
+        p_name = '#'
+        if group.parent:
+            p_name = group.parent.name
+        url = reverse('mygroup-detail', args=[group.pk, ])
+        tree_list.append({
+            'id': group.name, 
+            'parent':p_name, 
+            'text': group.nickname,
+            'state':{
+                'opened':True, 
+                'selected': True,
+                }
+            })
+        for u in context['children']:
+            url = reverse('mygroup-detail', args=[u.pk, ])
+            tree_list.append({
+                'id': u.name,
+                'parent': group.name,
+                'text': u.nickname,
+                'state': {
+                    'opened': False,
+                },
+            })
+        context['tree_list'] = json.dumps(tree_list)
+        print context['tree_list']
+        
         return context
 
 

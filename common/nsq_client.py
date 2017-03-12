@@ -1,5 +1,9 @@
 
 import requests
+import threading
+import json
+from datetime import datetime
+
 
 
 def send_to_nsq(topic, message):
@@ -15,8 +19,20 @@ def send_to_nsq(topic, message):
     else:
         return {'code': -1, 'reason': r.text}
 
+class NsqThread(threading.Thread):
+    
+    def __init__(self, name='xixi'):
+        threading.Thread.__init__(self)
+        self.name=name
+
+    def run(self):
+        print self.name + ":" + str(datetime.now())
+        send_to_nsq('test_topic', json.dumps({'name':self.name}))
+
 if __name__ == '__main__':
-    send_to_nsq('test_topic', 'xixihaha')
-    send_to_nsq('test_topic', 'haha')
-    send_to_nsq('test_topic', 'xixi')
+    res = []
+    for i in range(0, 100):
+        res.append(NsqThread(name=str(i)+'th player'))
+    for x in res:
+        x.start()
 

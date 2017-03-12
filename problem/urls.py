@@ -12,3 +12,4 @@ urlpatterns = [
     url(r'^(?P<pid>[0-9]+)/view/$', views.FileListView.as_view(), name='file-list'),
     url(r'^delete/(?P<pk>\d+)$', views.FileDeleteView.as_view(), name='upload-delete'),
 ]
+
