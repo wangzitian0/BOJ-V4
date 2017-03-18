@@ -176,19 +176,33 @@ class GroupDetailView(DetailView):
     model = GroupProfile
     template_name = 'ojuser/group_detail.html'
 
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(GroupDetailView, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        qs = super(GroupDetailView, self).get_queryset()
+        profiles_can_view = get_objects_for_user(
+            self.request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True
+        )
+        self.group_can_view_qs = profiles_can_view
+        profiles_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        self.group_can_change_qs = profiles_can_change
+        # self.filter = GroupFilter(self.request.GET, queryset=qs, user=self.request.user)
+        self.filter = GroupFilter(self.request.GET, queryset=profiles_can_view, user=self.request.user)
+        return self.filter.qs
+
     def get_context_data(self, **kwargs):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
-        group = context['object']
-        print group.get_ancestors()
-        context['admins'] = group.admin_group.user_set.all()
-        context['children'] = group.get_children()
-        group_users = group.user_group.user_set.all()
-        group_users_table = GroupUserTable(group_users)
-        RequestConfig(self.request).configure(group_users_table)
-        #  add filter here
-        context['group_users_table'] = group_users_table
+        context['group_pk'] = context['object'].pk
         tree_list = []
-        for u in group.get_ancestors():
+        for u in self.get_queryset():
             p_name = '#'
             if u.parent:
                 p_name = u.parent.name
@@ -202,32 +216,8 @@ class GroupDetailView(DetailView):
                     'disabled': True,
                 },
             })
-        p_name = '#'
-        if group.parent:
-            p_name = group.parent.name
-        url = reverse('mygroup-detail', args=[group.pk, ])
-        tree_list.append({
-            'id': group.name, 
-            'parent':p_name, 
-            'text': group.nickname,
-            'state':{
-                'opened':True, 
-                'selected': True,
-                }
-            })
-        for u in context['children']:
-            url = reverse('mygroup-detail', args=[u.pk, ])
-            tree_list.append({
-                'id': u.name,
-                'parent': group.name,
-                'text': u.nickname,
-                'state': {
-                    'opened': False,
-                },
-            })
         context['tree_list'] = json.dumps(tree_list)
         print context['tree_list']
-        
         return context
 
 
@@ -324,6 +314,26 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
     queryset = GroupProfile.objects.all()
     serializer_class = GroupProfileSerializer
     permission_classes = [IsAuthenticated, ]
+
+    @detail_route(methods=['get'], url_path='detail')
+    def get_detail(self, request, pk=None):
+        if request.method == "GET":
+            print "==================start"
+            context = {}
+            # group = get_object_or_404(qs=self.get_queryset(), pk=pk) 
+            group = GroupProfile.objects.get(pk=pk)
+            print "group_id", group.pk
+            group_users = group.user_group.user_set.all()
+            group_users_table = GroupUserTable(group_users)
+            # RequestConfig(self.request).configure(group_users_table)
+            #  add filter here
+            # context['group_users_table'] = group_users_table
+            try:
+                context['table'] = group_users_table.as_html(request)
+            except Exception, ex:
+                print ex
+            return Response(context)
+     
 
     @detail_route(methods=['post', 'get', 'put', ], url_path='members')
     def manage_member(self, request, pk=None):
