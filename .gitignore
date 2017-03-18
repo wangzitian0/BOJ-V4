@@ -1,6 +1,7 @@
 *.py[co]
 *.sw[nop]
 dev.db
+dump.rdb
 *~*
 bojv4/secret_settings.py
 node_modules/*
