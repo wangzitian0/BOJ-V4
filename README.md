@@ -1,4 +1,5 @@
-# BOJv4
+BOJv4
+===
 
 ## Getting Started
 
@@ -43,3 +44,6 @@ class GroupProfileForm(forms.ModelForm):
 ```
 apt-get install libjpeg-turbo8-dev
 apt-get install zlib1g-dev
+
+## 人员
+刘蛤玮
