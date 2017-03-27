@@ -27,12 +27,9 @@ class NsqThread(threading.Thread):
 
     def run(self):
         print self.name + ":" + str(datetime.now())
-        send_to_nsq('test_topic', json.dumps({'name':self.name}))
+        send_to_nsq('judge', json.dumps({'name':self.name}))
 
 if __name__ == '__main__':
-    res = []
-    for i in range(0, 100):
-        res.append(NsqThread(name=str(i)+'th player'))
-    for x in res:
-        x.start()
+    with open('/home/liuwei/BOJ-V4/submission.json', 'rb') as f:
+        send_to_nsq('judge', f.read())
 
