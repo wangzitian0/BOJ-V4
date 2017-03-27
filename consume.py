@@ -3,6 +3,9 @@ import time
 import requests
 import json
 from datetime import datetime
+import threading
+import multiprocessing
+
 def handler(message):
     print datetime.now() 
     print "===="
@@ -19,7 +22,31 @@ def handler(message):
             return {'status': 'OK', 'msg': 'success'}
     return {'status': 'Failed', 'reason': r.text}
 
-r = nsq.Reader(message_handler=handler, nsqd_tcp_addresses=['127.0.0.1:4150'],
-        topic='test_topic', channel='asdfxx', lookupd_poll_interval=15)
+class TestProc(object):
+    def __init__(self):
+        self.proc = multiprocessing.Process(target=self.run,kwargs={'test':0})
 
-nsq.run()
+    def judge(self, message):
+        print message.body
+        return True
+
+    def run(self, test):
+        print "start", test
+
+        def thehandler(message):
+            print "receive"
+            self.judge(message)
+            return True
+
+        r = nsq.Reader(message_handler=self.judge, nsqd_tcp_addresses=['127.0.0.1:4150'],
+                topic='test_topic', channel='asdfxx', lookupd_poll_interval=15)
+
+        nsq.run()
+
+    def start(self):
+        self.proc.start()
+
+
+if __name__ == '__main__':
+    t = TestProc()
+    t.start()

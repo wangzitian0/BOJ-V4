@@ -1,5 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import detail_route
+from rest_framework.response import Response
 
 from .models import Submission
 from .serializers import SubmissionSerializer
@@ -7,6 +9,7 @@ from .serializers import SubmissionSerializer
 from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
@@ -20,10 +23,16 @@ logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
 
 
+def receive_judge_result(request):
+    print request.POST
+    return JsonResponse
+
+
 class SubmissionViewSet(viewsets.ModelViewSet):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
     permission_classes = (IsAuthenticated,)
+
 
 class SubmissionListView(ListView):
 
