@@ -14,21 +14,37 @@
 <section class="jumbotron">
   <div class="container">
     {% include "_messages.html" %}
-	<h1>Group: {{ object.nickname }}</h1>
-	<div class="container">
-		<div class="row">
-			<div class="col-md-6">
-				<div id="jstree_id">
-				</div>
-			</div>
-			<div class="col-md-6">
-				<div class="container" id="detail">
-				</div>
-			</div>
-		</div>
+    <h1>Groups {{ object.name }} - {{ object.profile.nickname }}</h1>
+    <h4>Admins</h4>
+    <ul>
+      {% for admin in admins %}
+      <li>{{ admin.username }}</li>
+      {% empty %}
+      <li>No admin yet.</li>
+      {% endfor %}
+    </ul>
+    <h4>Parents</h4>
+	<ul>
+      {% for profile in object.get_ancestors %}
+		<a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.name }}</a>
+	  {% empty %}
+	  <li> No Parents </li>
+      {% endfor %}
+	</ul>
+    <h4>Children</h4>
+    <ul>
+      {% for profile in children %}
+      <li><a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.name }}</a></li>
+      {% empty %}
+      <li>No child yet.</li>
+      {% endfor %}
+    </ul>
+	<div id="jstree_id">
 	</div>
   </div>
   <h3>group member</h3>
+
+  {% render_table group_users_table %}
 
   {% get_obj_perms request.user for object as "object_perms" %}
 
@@ -46,18 +62,12 @@
 <script src="{{ STATIC_URL }}jstree.min.js"></script>
 <link rel="stylesheet" media="screen" href="{{ STATIC_URL }}themes/default/style.min.css"></script>
 <script>
-function get_detail(group_pk) {
-	$.get('/api/groups/' + group_pk + '/detail/', function(data){
-		$("#detail").html(data.table);
-	});
-}
-
 $(function(){
 	var data = {{ tree_list | safe }};
-	var group_id = {{ group_pk | safe }};
-	$.get('/api/groups/' + group_id + '/detail/', function(data){
-		$("#detail").html(data.table);
-	});
+	var dic = {};
+	for (r in data) {
+		dic[r.id] = r.state;
+	}
 
 	$('#jstree_id').jstree({
 		"core" : {
@@ -68,16 +78,15 @@ $(function(){
 	  },
 		
 	  "plugins" : [
-		"wholerow"
+		"contextmenu", "dnd", "search",
+		"state", "types", "wholerow"
 	  ]
 	});
 	$.jstree.reference("#jstree_id").select_node("{{ object.name }}");
-	$('#jstree_id').on('click.jstree', function(e){
-		alert(e);
-		$.get('/api/groups/' + e.text + '/detail/', function(ans){
-			$("#detail").html(ans.table);
-		});
-	});
+	
+	// $('#jstree_id').on('click.jstree', function(e){
+	//	alert(e.id);
+	//});
 
 });
 </script>
