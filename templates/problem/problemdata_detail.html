@@ -1,0 +1,82 @@
+{% extends "site_base.html" %}
+{% load upload_tags %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/style.css">
+<!-- blueimp Gallery styles -->
+<link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/blueimp-gallery.min.css">
+<!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+<link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/jquery.fileupload-ui.css">
+<!-- CSS adjustments for browsers with JavaScript disabled -->
+<noscript><link rel="stylesheet" href="{{ STATIC_URL }}jfu/css/jquery.fileupload-ui-noscript.css"></noscript>
+{% endblock %}
+
+{% block head_title %}pinax-project-account{% endblock %}
+
+{% block body_class %}home{% endblock %}
+
+{% block body %}
+<!-- The file upload form used as target for the file upload widget -->
+<form id="fileupload" method="post" action="." enctype="multipart/form-data">{% csrf_token %}
+  <!-- Redirect browsers with JavaScript disabled to the origin page -->
+  <!--<noscript><input type="hidden" name="redirect" value="http://blueimp.github.io/jQuery-File-Upload/"></noscript>-->
+  <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+  <div class="row fileupload-buttonbar">
+    <div class="col-lg-7">
+      <!-- The fileinput-button span is used to style the file input field as button -->
+	  <button type="button" class="btn btn-success success" onclick="check_data()">
+        <i class="glyphicon glyphicon-upload"></i>
+        <span>Check Data</span>
+	  </button>
+      <!-- The loading indicator is shown during file processing -->
+    </div>
+    <!-- The global progress information -->
+  </div>
+  <!-- The table listing the files available for upload/download -->
+  <table role="presentation" class="table table-striped">
+	  <thead>
+		  <tr>
+			  <th>input file</th>
+			  <th>output file</th>
+			</tr>
+	  </thead>
+	  <tbody class="files">
+		  {% for cas in cases %}
+		  <tr>
+			  <td>{{ cas.get_input_name }}</td>
+			  <td>{{ cas.get_output_name }}</td>
+		  </tr>
+		  {% endfor %}
+	  </tbody></table>
+</form>
+<!-- The blueimp Gallery widget -->
+
+<div>
+  <a href="{% url 'problem:problem-detail' pk %}" class="btn btn-large btn-primary">Finished</a>
+</div>
+{% endblock %}
+{% block extra_body %}
+{% upload_js %}
+<script>
+	var url = '/api/datainfo/' + {{ pk }} + '/check/';
+	function check_data() {
+		$.get(url, function(result) {
+			if (result.code == 0) {
+				alert(result.msg);
+				location.reload();
+			}
+			else{
+				alert(result.msg);
+			}
+		});
+	}
+</script>
+<!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->
+<!--[if gte IE 8]>
+<script src="{{ STATIC_URL }}jfu/js/cors/jquery.xdr-transport.js"></script>
+<![endif]-->
+{% endblock %}
