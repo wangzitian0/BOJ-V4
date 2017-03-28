@@ -45,6 +45,10 @@
         <i class="glyphicon glyphicon-trash"></i>
         <span>Delete</span>
       </button>
+	  <button type="button" class="btn btn-success success" onclick="check_data()">
+        <i class="glyphicon glyphicon-upload"></i>
+        <span>Check Data</span>
+	  </button>
       <input type="checkbox" class="toggle">
       <!-- The loading indicator is shown during file processing -->
       <span class="fileupload-loading"></span>
@@ -79,7 +83,8 @@
 {% block extra_body %}
 {% upload_js %}
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="{{ STATIC_URL }}jfu/js/jquery.min.js"></script>
+
 <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
 <script src="{{ STATIC_URL }}jfu/js/vendor/jquery.ui.widget.js"></script>
 <!-- The Templates plugin is included to render the upload/download listings -->
@@ -116,5 +121,19 @@
 <!--[if gte IE 8]>
 <script src="{{ STATIC_URL }}jfu/js/cors/jquery.xdr-transport.js"></script>
 <![endif]-->
+<script>
+	var url = '/api/datainfo/' + {{ pid }} + '/check/';
+	function check_data() {
+		$.get(url, function(result) {
+			if (result.code == 0) {
+				alert(result.msg);
+				location.href= "{% url 'problem:problem-data' pid %}";
+			}
+			else{
+				alert(result.msg);
+			}
+		});
+	}
+</script>
 
 {% endblock %}
