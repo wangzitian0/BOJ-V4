@@ -11,3 +11,4 @@ nohup.out
 *.idea
 *.dat
 *.xml
+*.sock
