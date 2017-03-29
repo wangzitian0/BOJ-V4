@@ -86,6 +86,23 @@ class GroupListView(ListView):
         context['group_can_view'] = self.group_can_view_qs
         context['group_can_change'] = self.group_can_change_qs
         context['group_can_delete'] = self.group_can_delete_qs
+        tree_list = []
+        for u in self.get_queryset():
+            p_name = '#'
+            if u.parent:
+                p_name = str(u.parent.pk)
+            url = reverse('mygroup-detail', args=[u.pk, ])
+            tree_list.append({
+                'id': str(u.pk),
+                'parent': p_name,
+                'text': u.nickname,
+                'state': {
+                    'opened': True,
+                },
+            })
+        context['tree_list'] = json.dumps(tree_list)
+        print context['tree_list']
+
         return context
 
 
@@ -176,8 +193,31 @@ class GroupDetailView(DetailView):
     model = GroupProfile
     template_name = 'ojuser/group_detail.html'
 
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(GroupDetailView, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        qs = super(GroupDetailView, self).get_queryset()
+        profiles_can_view = get_objects_for_user(
+            self.request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True
+        )
+        self.group_can_view_qs = profiles_can_view
+        profiles_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        self.group_can_change_qs = profiles_can_change
+        # self.filter = GroupFilter(self.request.GET, queryset=qs, user=self.request.user)
+        self.filter = GroupFilter(self.request.GET, queryset=profiles_can_view, user=self.request.user)
+        return self.filter.qs
+
     def get_context_data(self, **kwargs):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
+        context['group_pk'] = context['object'].pk
         group = context['object']
         print group.get_ancestors()
         context['admins'] = group.admin_group.user_set.all()
@@ -187,47 +227,6 @@ class GroupDetailView(DetailView):
         RequestConfig(self.request).configure(group_users_table)
         #  add filter here
         context['group_users_table'] = group_users_table
-        tree_list = []
-        for u in group.get_ancestors():
-            p_name = '#'
-            if u.parent:
-                p_name = u.parent.name
-            url = reverse('mygroup-detail', args=[u.pk, ])
-            tree_list.append({
-                'id': u.name,
-                'parent': p_name,
-                'text': u.nickname,
-                'state': {
-                    'opened': True,
-                    'disabled': True,
-                },
-            })
-        p_name = '#'
-        if group.parent:
-            p_name = group.parent.name
-        url = reverse('mygroup-detail', args=[group.pk, ])
-        tree_list.append({
-            'id': group.name, 
-            'parent':p_name, 
-            'text': group.nickname,
-            'state':{
-                'opened':True, 
-                'selected': True,
-                }
-            })
-        for u in context['children']:
-            url = reverse('mygroup-detail', args=[u.pk, ])
-            tree_list.append({
-                'id': u.name,
-                'parent': group.name,
-                'text': u.nickname,
-                'state': {
-                    'opened': False,
-                },
-            })
-        context['tree_list'] = json.dumps(tree_list)
-        print context['tree_list']
-        
         return context
 
 

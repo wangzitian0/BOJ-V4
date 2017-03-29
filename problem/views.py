@@ -47,10 +47,29 @@ class ProblemViewSet(viewsets.ModelViewSet):
         serializer = ProblemDataSerializer(problem, context={'request': request})
         return Response(serializer.data)
 
+
 class ProblemDataInfoViewSet(viewsets.ModelViewSet):
     queryset = ProblemDataInfo.objects.all()
     serializer_class = ProblemDataInfoSerializer
     permission_classes = (IsAuthenticated,)
+
+
+    @detail_route(methods=['get'], url_path='check')
+    def check_problem_data(self, request, pk=None):
+        problem = get_object_or_404(Problem.objects.all(), pk=pk)
+        if problem.is_checked:
+            return Response({'code': 0, 'msg': 'Have checked before!'}) 
+        print "start"
+        try:
+            if problem.check_data():
+                problem.is_checked = True
+                problem.save()
+            else:
+                return Response({'code': -1, 'msg': 'check data failed'})
+        except Exception as ex:
+            print ex
+            return Response({'code': -1, 'msg': 'check data failed'})
+        return Response({'code': 0, 'msg': 'Check Success !'}) 
 
 
 class ProblemListView(ListView):
@@ -104,6 +123,41 @@ class ProblemListView(ListView):
         context['problem_can_delete'] = self.problem_can_delete_qs
         context['problem_can_change'] = self.problem_can_change_qs
         return context
+
+
+class ProblemDataView(DetailView):
+    model = Problem
+    template_name = 'problem/problemdata_detail.html'
+
+    def get_queryset(self):
+        gp_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        groups_can_delete = get_objects_for_user(
+            self.request.user,
+            'problem.delete_problem',
+            with_superuser=True
+        )
+        self.qs = Problem.objects.filter(
+            Q(groups__in=gp_can_change) |
+            Q(pk__in=groups_can_delete)
+        ).distinct()
+        return self.qs
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        print kwargs
+        return super(ProblemDataView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemDataView, self).get_context_data(**kwargs)
+        context['cases'] = self.object.case.all()
+        print self.object.case.count()
+        context['pk'] = self.kwargs['pk']
+        return context
+
 
 
 class ProblemDetailView(DetailView):
@@ -279,12 +333,15 @@ class FileCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(FileCreateView, self).get_context_data(**kwargs)
+        print "hello"
         context['pid'] = self.kwargs['pid']
         return context
 
     def form_valid(self, form):
         pid = self.kwargs['pid']
         _problem = Problem.objects.get(pk=pid)
+        _problem.is_checked = False
+        _problem.save()
         self.object = form.save()
         #  print _problem, self.object
         ProblemDataInfo.objects.create(data=self.object, problem=_problem)
@@ -304,6 +361,8 @@ class FileDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
+        self.object.problem.is_checked = False
+        self.object.problem.save()
         self.object.delete()
         response = JSONResponse(True, mimetype=response_mimetype(request))
         response['Content-Disposition'] = 'inline; filename=files.json'

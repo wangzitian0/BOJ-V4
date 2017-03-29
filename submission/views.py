@@ -1,5 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import detail_route
+from rest_framework.response import Response
 
 from .models import Submission
 from .serializers import SubmissionSerializer
@@ -7,6 +9,7 @@ from .serializers import SubmissionSerializer
 from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
+from django.http import JsonResponse, HttpResponseNotAllowed
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
@@ -15,15 +18,23 @@ from django.shortcuts import get_object_or_404
 from .forms import SubmissionForm
 from django_tables2 import RequestConfig
 from .tables import SubmissionTable
+from common.nsq_client import send_to_nsq 
 import logging
+import json
 logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
+
+
+def receive_judge_result(request):
+    print request.POST
+    return JsonResponse
 
 
 class SubmissionViewSet(viewsets.ModelViewSet):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
     permission_classes = (IsAuthenticated,)
+
 
 class SubmissionListView(ListView):
 
@@ -45,9 +56,7 @@ class SubmissionDetailView(DetailView):
     def get_context_data(self, **kwargs):
         print __name__
         logger.warning('============test===============')
-        print 'warning test'
         logger.info('==================test=========info=======')
-        print 'info test'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         return context
 
@@ -60,7 +69,15 @@ class SubmissionCreateView(CreateView):
     @method_decorator(login_required)
     def dispatch(self, request, pid=None, *args, **kwargs):
         pid = self.kwargs['pid']
-        self.problem = get_object_or_404(Problem.objects.all(), pk=pid)
+        self.problem = Problem.objects.filter(pk=pid).first()
+        if not self.problem:
+            print "no problem"
+        else:
+            print "have p, ", request.user.username
+        if not self.problem or not self.problem.view_by_user(request.user):
+            raise Http404("Problem does not exist")
+        if not self.problem.is_checked:
+            return HttpResponseForbidden()
         self.user = request.user
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 
@@ -78,6 +95,21 @@ class SubmissionCreateView(CreateView):
         self.object = form.save(commit=False)
         self.object.problem = self.problem
         self.object.user = self.request.user
+        print self.object.code
+        self.object.save()
+        try:
+            req = {
+                'submission_id': self.object.id, 
+                'problem_id': self.problem.id,
+                'source': self.object.code,
+                'language': self.object.language.key,
+                'time_limit': self.problem.time_limit,
+                'memory_limit': self.problem.memory_limit,
+                'problem_data': self.problem.get_problem_data()
+            }
+            send_to_nsq('judge', json.dumps(req))
+        except Exception as ex:
+            print ex
         return super(SubmissionCreateView, self).form_valid(form)
 
     def get_success_url(self):

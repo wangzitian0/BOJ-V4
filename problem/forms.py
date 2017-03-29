@@ -10,7 +10,7 @@ class ProblemForm(forms.ModelForm):
 
     class Meta:
         model = Problem
-        exclude = ["superadmin", ]
+        exclude = ["superadmin", "is_checked"]
         widgets = {
             'allowed_lang': ModelSelect2MultipleWidget(
                 search_fields=[
