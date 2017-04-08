@@ -29,7 +29,7 @@ class NsqThread(threading.Thread):
         send_to_nsq('judge', json.dumps({'name':self.name}))
 
 if __name__ == '__main__':
-    with open('/home/liuwei/BOJ-V4/submission.json', 'rb') as f:
-        send_to_nsq('submission', f.read())
+    #with open('/home/liuwei/BOJ-V4/submission.json', 'rb') as f:
+    #    send_to_nsq('submission', f.read())
     send_to_nsq('cheat', json.dumps({'test': 'xixihaha', 'id': '123'}))
 

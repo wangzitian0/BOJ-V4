@@ -62,6 +62,7 @@ class Problem(models.Model):
             case = ProblemCase()
             case.problem = self
             case.input_data = mp[x]
+            case.position = len(cases)
             outfile = x.rstrip('.in') + '.out'
             if outfile in out_set:
                 case.output_data = mp[outfile]
@@ -121,6 +122,7 @@ class ProblemCase(models.Model):
     input_data = models.OneToOneField(File, null=True, blank=True, related_name="incase")
     output_data = models.OneToOneField(File, null=True, blank=True, related_name="outcase")
     score = models.IntegerField(default=0)
+    position = models.IntegerField(default=0)
     info = models.TextField(blank=True)
 
     def __unicode__(self):

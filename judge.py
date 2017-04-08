@@ -5,13 +5,15 @@ import nsq
 import json
 import requests
 from bojv4 import conf
+import time
+import threading
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 os.environ['DJANGO_SETTINGS_MODULE'] = 'bojv4.settings'
 django.setup()
 
-from submission.models import Submission
+from submission.models import Submission, CaseResult
 
 
 class NsqQueue(object):
@@ -32,17 +34,18 @@ class NsqQueue(object):
 def submission_handler(message):
     try:
         mp = json.loads(message.body)
-        url = "http://127.0.0.1:4151/pub?topic=cheat"
-        print "start queueue"
-        r = requests.post(url, data='xixihaha')
-        print "end nsqqueque", r.text
         print mp
         sub_pk = mp.get('submission-id', None)
         sub = Submission.objects.filter(pk=sub_pk).first()
         status = mp.get('status', None)
         if not status or status not in conf.STATUS_CODE.keys():
             return True
-        sub.status = status
+        position = mp.get('position', None)
+        if position:
+            CaseResult.deal_case_result(mp)
+        elif not position or status != 'AC':
+            sub.status = status
+            # sub.status = result.get('status', 'JD')
         sub.running_time = mp.get('running_time', 0)
         sub.running_memory = mp.get('running_memory', 0)
         sub.save()
