@@ -21,7 +21,7 @@ class Problem(models.Model):
     superadmin = models.ForeignKey(User)
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
-    allowed_lang = models.ManyToManyField('ojuser.Language', related_name='problems')
+    # allowed_lang = models.ManyToManyField('ojuser.Language', related_name='problems')
     groups = models.ManyToManyField(GroupProfile, blank=True, related_name='problems')
 
     def __unicode__(self):
@@ -29,7 +29,6 @@ class Problem(models.Model):
 
     def get_absolute_url(self):
         return reverse('problem:problem-detail', kwargs={'pk': self.pk})
-
 
     def view_by_user(self, user):
         for g in self.groups.all():

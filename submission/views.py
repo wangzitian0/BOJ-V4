@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
+from bojv4.conf import LANGUAGE
 
 from .models import Submission
 from .serializers import SubmissionSerializer
@@ -9,7 +10,7 @@ from .serializers import SubmissionSerializer
 from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.http import JsonResponse, HttpResponseNotAllowed, Http404, HttpResponseForbidden
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
@@ -23,11 +24,6 @@ import logging
 import json
 logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
-
-
-def receive_judge_result(request):
-    print request.POST
-    return JsonResponse
 
 
 class SubmissionViewSet(viewsets.ModelViewSet):
@@ -83,7 +79,7 @@ class SubmissionCreateView(CreateView):
 
     def get_form_kwargs(self):
         kw = super(SubmissionCreateView, self).get_form_kwargs()
-        kw['qs'] = self.problem.allowed_lang.all()
+        kw['qs'] = LANGUAGE.choice()
         return kw
 
     def get_context_data(self, **kwargs):
@@ -97,12 +93,14 @@ class SubmissionCreateView(CreateView):
         self.object.user = self.request.user
         print self.object.code
         self.object.save()
+        print 'language: ', self.object.language
         try:
             req = {
+                'grader': 'custom',
                 'submission_id': self.object.id, 
                 'problem_id': self.problem.id,
                 'source': self.object.code,
-                'language': self.object.language.key,
+                'language': self.object.language,
                 'time_limit': self.problem.time_limit,
                 'memory_limit': self.problem.memory_limit,
                 'problem_data': self.problem.get_problem_data()

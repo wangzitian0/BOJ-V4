@@ -379,7 +379,6 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class OjUserSignupView(SignupView):
 
     form_class = UserProfileForm
@@ -393,6 +392,9 @@ class OjUserSignupView(SignupView):
         profile.nickname = form.cleaned_data["nickname"]
         profile.gender = form.cleaned_data["gender"]
         profile.save()
+        group = GroupProfile.objects.filter(name='public').first()
+        if group:
+            group.user_group.user_set.add(self.created_user)
 
 
 class OjUserProfilesView(FormView):

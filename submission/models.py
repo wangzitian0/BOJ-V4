@@ -4,7 +4,7 @@ from problem.models import Problem
 from ojuser.models import Language
 from django.core.urlresolvers import reverse
 from contest.models import Contest, ContestProblem
-from bojv4.conf import CONST 
+from bojv4 import conf
 import json
 
 
@@ -13,15 +13,12 @@ class Submission(models.Model):
     problem = models.ForeignKey(Problem)
     datetime = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
-    status = models.CharField(max_length=3, default="QUE", choices=CONST.STATUS_CODE)
+    status = models.CharField(max_length=3, default="QUE", choices=conf.STATUS_CODE.choice())
     running_time = models.IntegerField(default=0)
     running_memory = models.IntegerField(default=0)
     info = models.TextField(blank=True)
     code = models.TextField()
-    language = models.ForeignKey(Language, related_name='submissions')
-    contest = models.ForeignKey(Contest, null=True, related_name='submissions')
-    contest_problem = models.ForeignKey(ContestProblem, null=True, \
-            related_name='submissions')
+    language = models.CharField(max_length=10, default='gcc', choices=conf.LANGUAGE.choice())
 
     def __unicode__(self):
         return str(self.pk)

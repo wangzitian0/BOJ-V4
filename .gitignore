@@ -11,3 +11,5 @@ nohup.out
 *.idea
 *.dat
 *.xml
+fabfile.py
+test.py

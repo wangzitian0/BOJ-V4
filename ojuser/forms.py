@@ -1,6 +1,6 @@
 from django import forms
 import account.forms
-from bojv4.conf import CONST
+from bojv4.conf import GENDER
 from .models import UserProfile, GroupProfile
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
@@ -14,8 +14,8 @@ class UserProfileForm(account.forms.SignupForm):
     )
     gender = forms.ChoiceField(
         label=_("Your Gender"),
-        choices=CONST.GENDER,
-        initial=CONST.GENDER[0][0],
+        choices=GENDER.choice(),
+        initial=GENDER.choice()[0][0],
     )
 
 

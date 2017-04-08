@@ -15,7 +15,7 @@ import mimetypes
 from django_tables2 import RequestConfig
 from filer.models.filemodels import File
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 from guardian.shortcuts import get_objects_for_user
@@ -29,6 +29,19 @@ from .serializers import FileSerializer, ProblemDataSerializer
 from .forms import ProblemForm
 
 
+class ProblemUpdatePermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if not isinstance(obj, Problem):
+            print "Not Problem"
+            return False
+        groups = obj.groups.all()
+        for g in groups:
+            if request.user.has_perm('ojuser.change_groupprofile', g):
+                return True
+        return False
+
+
 class FileViewSet(viewsets.ModelViewSet):
     queryset = File.objects.all()
     serializer_class = FileSerializer
@@ -38,7 +51,7 @@ class FileViewSet(viewsets.ModelViewSet):
 class ProblemViewSet(viewsets.ModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, ProblemUpdatePermission)
 
     @detail_route(methods=['get'], url_path='datas')
     def get_problem_datas(self, request, pk=None):
@@ -52,7 +65,6 @@ class ProblemDataInfoViewSet(viewsets.ModelViewSet):
     queryset = ProblemDataInfo.objects.all()
     serializer_class = ProblemDataInfoSerializer
     permission_classes = (IsAuthenticated,)
-
 
     @detail_route(methods=['get'], url_path='check')
     def check_problem_data(self, request, pk=None):
@@ -159,10 +171,10 @@ class ProblemDataView(DetailView):
         return context
 
 
-
 class ProblemDetailView(DetailView):
 
     model = Problem
+    permission_classes = (IsAuthenticated, )
 #    template_name = 'problem/problem_detail.html'
 
     def get_queryset(self):
