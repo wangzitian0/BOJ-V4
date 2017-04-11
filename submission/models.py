@@ -4,7 +4,10 @@ from problem.models import Problem
 from ojuser.models import Language
 from django.core.urlresolvers import reverse
 from contest.models import Contest, ContestProblem
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from bojv4 import conf
+from common.nsq_client import send_to_nsq
 import json
 
 
@@ -19,6 +22,10 @@ class Submission(models.Model):
     info = models.TextField(blank=True)
     code = models.TextField()
     language = models.CharField(max_length=10, default='gcc', choices=conf.LANGUAGE.choice())
+
+    def __init__(self, *args, **kwargs):
+        super(Submission, self).__init__(*args, **kwargs)
+        self._info = None
 
     def __unicode__(self):
         return str(self.pk)
@@ -44,35 +51,56 @@ class Submission(models.Model):
         return False
 
     def set_info(self, key, value):
-        if not self.info or self.info == '':
-            info = {}
-        else:
+        if not self._info:
+            self._info = {}
             try:
-                info = json.loads(self.info)
-            except Exception, ex:
+                self._info = json.loads(self.info)
+            except Exception as ex:
+                self._info = {}
                 print ex
-                return
-        info[key] = value
-        self.info = json.dumps(info)
+        self._info[key] = value
+
+    def deal_case_result(self, case):
+        if case.status == 'AC' and self.cases.count() != self.problem.cases.count():
+            return
+        self.status = case.status
+        for c in self.cases.all():
+            self.running_time = max(self.running_time, c.running_time)
+            self.running_memory = max(self.running_memory, c.running_memory)
+        self.save()
+
+    def judge(self):
+        req = {
+            'grader': 'custom',
+            'submission_id': self.id,
+            'problem_id': self.problem.id,
+            'source': self.code,
+            'language': self.language,
+            'time_limit': self.problem.time_limit,
+            'memory_limit': self.problem.memory_limit,
+            'problem_data': self.problem.get_problem_data()
+        }
+        self.score = 0
+        self.status = 'PD'
+        self.save()
+        send_to_nsq('judge', json.dumps(req))
+
+    def rejudge(self):
+        for c in self.cases.all():
+            c.delete()
+        self.judge()
 
 
 class CaseResult(models.Model):
     submission = models.ForeignKey(Submission, related_name='cases')
-    score = models.IntegerField(default=0)
+    running_time = models.IntegerField(default=0)
+    running_memory = models.IntegerField(default=0)
     status = models.CharField(max_length=3, default="QUE", choices=conf.STATUS_CODE.choice())
     position = models.IntegerField()
-
-    @classmethod
-    def deal_case_result(cls, sub, result):
-        position = result.get('position')
-        case = cls.objects.filter(submission=sub, position=position).first()
-        status = result.get('status')
-        if not case:
-            case = cls(position=position)
-            case.submission = sub
-        if result.get('status', None) == 'AC':
-            sub.score += sub.problem.get_score(position)
-        case.status = status
-        case.save()
+    output = models.CharField(max_length=128, default=0)
 
 
+@receiver(pre_save, sender=Submission)
+def dumps_info_callback(sender, instance, created, **kwargs):
+    if instance._info:
+        instance.info = json.dumps(instance._info)

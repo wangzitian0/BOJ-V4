@@ -2,9 +2,11 @@ from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
 from filer.models.filemodels import File
+from filer.fields.file import FilerFileField
 from django.core.urlresolvers import reverse
 from django.db import models
 from ojuser.models import GroupProfile
+from django.core.cache import cache
 from bojv4.settings import BASE_DIR
 
 #  from filer.fields.file import FilerFileField
@@ -35,7 +37,6 @@ class Problem(models.Model):
             if user.has_perm('ojuser.view_groupprofile', g):
                 return True
         return False
-
 
     def check_data(self):
         data_info = self.datainfo
@@ -68,6 +69,7 @@ class Problem(models.Model):
                 case.output_data = mp[outfile]
             else:
                 return False
+            case.gen_sample_data()
             cases.append(case)
 
         for cas in cases:
@@ -76,7 +78,6 @@ class Problem(models.Model):
             print 'input: ', cas.input_data.path
             print 'output: ', cas.output_data.path
         return True
-
 
     def get_problem_data(self):
         resp = []
@@ -99,6 +100,11 @@ class Problem(models.Model):
             print in_data['path']
         return resp
 
+    def get_position_data(self, position):
+        if not self.cases or self.cases.count() <= position:
+            return None, None
+        case = self.cases.all()[position]
+        return case.sample_in, case.sample_out
 
     class Meta:
         permissions = (
@@ -117,10 +123,13 @@ class ProblemDataInfo(models.Model):
     def __unicode__(self):
         return str(self.problem.pk) + " " + str(self.pk)
 
+
 class ProblemCase(models.Model):
-    problem = models.ForeignKey(Problem, related_name="case")
+    problem = models.ForeignKey(Problem, related_name="cases")
     input_data = models.OneToOneField(File, null=True, blank=True, related_name="incase")
     output_data = models.OneToOneField(File, null=True, blank=True, related_name="outcase")
+    sample_in = models.CharField(max_length=256, blank=True, null=True)
+    sample_out = models.CharField(max_length=256, blank=True, null=True)
     score = models.IntegerField(default=0)
     position = models.IntegerField(default=0)
     info = models.TextField(blank=True)
@@ -137,6 +146,18 @@ class ProblemCase(models.Model):
     def get_output_name(self):
         path = self.output_data.path
         return path[path.rfind('/') + 1:]
+
+    @staticmethod
+    def get_data_from_file(path, limit=200):
+        data = ''
+        i = 0
+        with open(path, 'r') as f:
+            data = f.read(limit)
+        return data
+
+    def gen_sample_data(self):
+        self.sample_in = self.get_data_from_file(self.input_data.path, 200)
+        self.sample_out = self.get_data_from_file(self.output_data.path, 200)
 
 
 

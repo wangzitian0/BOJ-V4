@@ -12,7 +12,35 @@
     {% include "_messages.html" %}
     <h1>{{ object.pk }}. {{ object.problem.title }}</h1>
 	<h2>{{ object.user.username }}</h2>
-	<h3>{{ object.code }}</h3>
+      <textarea id="code-text">{{ object.code }}</textarea>
   </div>
 </section>
+{% endblock %}
+{% block extra_body %}
+<link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/animate.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/plugins/codemirror/codemirror.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/plugins/codemirror/ambiance.css" rel="stylesheet">
+
+<script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+
+<!-- CodeMirror -->
+<script src="{{ STATIC_URL }}js/plugins/codemirror/codemirror.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/codemirror/mode/javascript/javascript.js"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{{ STATIC_URL }}js/plugins/pace/pace.min.js"></script>
+<script>
+    var editor_one = CodeMirror.fromTextArea(document.getElementById("code-text"), {
+     lineNumbers: true,
+     matchBrackets: true,
+     styleActiveLine: true,
+     readOnly: true
+    });
+
+</script>
+
 {% endblock %}

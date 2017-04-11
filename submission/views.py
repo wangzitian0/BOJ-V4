@@ -13,17 +13,28 @@ from django.views.generic.edit import CreateView
 from django.http import JsonResponse, HttpResponseNotAllowed, Http404, HttpResponseForbidden
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from rest_framework.permissions import BasePermission
 
 from problem.models import Problem
 from django.shortcuts import get_object_or_404
 from .forms import SubmissionForm
 from django_tables2 import RequestConfig
 from .tables import SubmissionTable
-from common.nsq_client import send_to_nsq 
 import logging
 import json
 logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
+
+
+class SubmissionPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.user:
+            return True
+        for g in obj.problem.groups.all():
+            if request.user.has_perm('change_groupprofile', g):
+                return True
+        return False
 
 
 class SubmissionViewSet(viewsets.ModelViewSet):
@@ -48,12 +59,30 @@ class SubmissionListView(ListView):
 class SubmissionDetailView(DetailView):
 
     model = Submission
+    permission_classes = (IsAuthenticated, SubmissionPermission)
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pid=None, *args, **kwargs):
+        self.user = request.user
+        return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        print __name__
         logger.warning('============test===============')
-        logger.info('==================test=========info=======')
+        status = self.object.get_status_display()
+        if self.object.status == 'JD':
+            status = 'Judging in ' + str(self.object.cases.count()) + 'th case'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
+        context['status'] = status
+        cases = []
+        data_cases = self.object.problem.cases.all()
+        for c in self.object.cases.all():
+            cases.append({
+                'status': c.status,
+                'stdin': data_cases[c.position].sample_in,
+                'stdout': data_cases[c.position].sample_out,
+                'answer': c.output,
+            })
+        context['cases'] = cases
         return context
 
 
@@ -95,17 +124,7 @@ class SubmissionCreateView(CreateView):
         self.object.save()
         print 'language: ', self.object.language
         try:
-            req = {
-                'grader': 'custom',
-                'submission_id': self.object.id, 
-                'problem_id': self.problem.id,
-                'source': self.object.code,
-                'language': self.object.language,
-                'time_limit': self.problem.time_limit,
-                'memory_limit': self.problem.memory_limit,
-                'problem_data': self.problem.get_problem_data()
-            }
-            send_to_nsq('judge', json.dumps(req))
+            self.object.judge()
         except Exception as ex:
             print ex
         return super(SubmissionCreateView, self).form_valid(form)

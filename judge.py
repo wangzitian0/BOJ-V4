@@ -21,8 +21,8 @@ class NsqQueue(object):
     handlers = []
 
     @classmethod
-    def add_callback(cls, handler, topic, channel, address='127.0.0.1:4150'):
-        r = nsq.Reader(message_handler=handler, nsqd_tcp_addresses=[address],
+    def add_callback(cls, handler, topic, channel, address='http://127.0.0.1:4161'):
+        r = nsq.Reader(message_handler=handler, lookupd_http_addresses=[address],
                 topic=topic, channel=channel, lookupd_poll_interval=15)
         cls.handlers.append(r)
 
@@ -38,17 +38,26 @@ def submission_handler(message):
         sub_pk = mp.get('submission-id', None)
         sub = Submission.objects.filter(pk=sub_pk).first()
         status = mp.get('status', None)
-        if not status or status not in conf.STATUS_CODE.keys():
+        if not sub or not status or status not in conf.STATUS_CODE.keys():
             return True
         position = mp.get('position', None)
         if position:
-            CaseResult.deal_case_result(mp)
-        elif not position or status != 'AC':
+            # CaseResult.deal_case_result(mp)
+            case = CaseResult(position=int(position))
+            case.submission = sub
+            case.running_time = mp.get('running_time', 0)
+            case.running_memory = mp.get('running_memory', 0)
+            case.status = status
+            case.save()
+            if status == 'AC':
+                sub.score += sub.problem.get_score(position)
+                sub.save()
+            sub.deal_case_result(case)
+        else:
+            if 'compile-message' in mp:
+                sub.set_info('compile-message', mp['compile-message'])
             sub.status = status
-            # sub.status = result.get('status', 'JD')
-        sub.running_time = mp.get('running_time', 0)
-        sub.running_memory = mp.get('running_memory', 0)
-        sub.save()
+            sub.save()
     except Exception as ex:
         print ex
     return True
