@@ -10,7 +10,7 @@ class SubmissionForm(forms.ModelForm):
 
     class Meta:
         model = Submission
-        fields = ('code', 'language', 'user')
+        fields = ('code', 'language')
 
     def __init__(self, qs=None, *args, **kwargs):
         super(SubmissionForm, self).__init__(*args, **kwargs)

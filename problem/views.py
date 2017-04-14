@@ -165,8 +165,8 @@ class ProblemDataView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ProblemDataView, self).get_context_data(**kwargs)
-        context['cases'] = self.object.case.all()
-        print self.object.case.count()
+        context['cases'] = self.object.cases.all()
+        print self.object.cases.count()
         context['pk'] = self.kwargs['pk']
         return context
 
@@ -203,19 +203,6 @@ class ProblemDetailView(DetailView):
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         print kwargs
-        '''
-        try:
-            problem = Problem.objects.get(pk=kwargs['pk'])
-            print problem.title
-            groups = problem.groups.all() 
-            print groups
-            for g in groups:
-                if request.user.has_perm('ojuser.view_groupprofile', g):
-                    return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
-        except Exception, ex:
-            print ex
-        return HttpResponseForbidden()
-        '''
         return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

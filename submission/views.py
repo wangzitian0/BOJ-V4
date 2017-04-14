@@ -1,10 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import detail_route
-from rest_framework.response import Response
 from bojv4.conf import LANGUAGE
 
-from .models import Submission
+from .models import Submission, CaseResult
 from .serializers import SubmissionSerializer
 
 from django.core.urlresolvers import reverse
@@ -20,8 +19,8 @@ from django.shortcuts import get_object_or_404
 from .forms import SubmissionForm
 from django_tables2 import RequestConfig
 from .tables import SubmissionTable
-import logging
 import json
+import logging
 logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
 
@@ -31,10 +30,15 @@ class SubmissionPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user == obj.user:
             return True
-        for g in obj.problem.groups.all():
-            if request.user.has_perm('change_groupprofile', g):
-                return True
-        return False
+        return obj.problem.view_by_user(user=request.user)
+
+
+class CaseResultPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.user:
+            return True
+        return obj.submission.problem.view_by_user(user=request.user)
 
 
 class SubmissionViewSet(viewsets.ModelViewSet):
@@ -74,13 +78,19 @@ class SubmissionDetailView(DetailView):
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
         cases = []
-        data_cases = self.object.problem.cases.all()
         for c in self.object.cases.all():
             cases.append({
                 'status': c.status,
-                'stdin': data_cases[c.position].sample_in,
-                'stdout': data_cases[c.position].sample_out,
-                'answer': c.output,
+                'position': c.position,
+                'time': c.running_time,
+                'memory': c.running_memory,
+            })
+        if self.object.cases.count() < self.object.problem.cases.count():
+            cases.append({
+                'status': 'Judging',
+                'position': self.object.cases.count(),
+                'time': 0,
+                'memory': 0,
             })
         context['cases'] = cases
         return context
@@ -117,16 +127,19 @@ class SubmissionCreateView(CreateView):
         return context
 
     def form_valid(self, form):
+        logger.warning("=================form save===============\n")
         self.object = form.save(commit=False)
         self.object.problem = self.problem
         self.object.user = self.request.user
         print self.object.code
+        logger.warning("=================start save===============\n")
         self.object.save()
-        print 'language: ', self.object.language
+        logger.warning("=================judge===============\n")
         try:
             self.object.judge()
+            logger.warning("=================judge end===============\n")
         except Exception as ex:
-            print ex
+            logger.warning(ex)
         return super(SubmissionCreateView, self).form_valid(form)
 
     def get_success_url(self):

@@ -14,7 +14,6 @@ class UserProfile(models.Model):
         choices=conf.GENDER.choice(),
         default=conf.GENDER.choice()[0][0],
     )
-    prefer_lang = models.ForeignKey('Language', default=1, related_name='user_profiles')
 
     def __unicode__(self):
         return self.nickname + " (" + self.user.username + ")"
@@ -38,10 +37,3 @@ class GroupProfile(MPTTModel):
         return self.nickname + " [" + self.name + "]"
 
 
-class Language(models.Model):
-    key = models.CharField(max_length=6, unique=True)
-    name = models.CharField(max_length=30)
-    desc = models.TextField(default='None')
-
-    def __unicode__(self):
-        return str(self.name)

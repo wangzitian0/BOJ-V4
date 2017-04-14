@@ -35,21 +35,11 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Language',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('key', models.CharField(unique=True, max_length=6)),
-                ('name', models.CharField(max_length=30)),
-                ('desc', models.TextField(default='None')),
-            ],
-        ),
-        migrations.CreateModel(
             name='UserProfile',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('nickname', models.CharField(max_length=30)),
                 ('gender', models.CharField(default=b'S', max_length=1, choices=[(b'S', 'Secret'), (b'F', 'Female'), (b'M', 'Male')])),
-                ('prefer_lang', models.ForeignKey(related_name='user_profiles', default=1, to='ojuser.Language')),
                 ('user', models.OneToOneField(related_name='profile', to=settings.AUTH_USER_MODEL)),
             ],
         ),

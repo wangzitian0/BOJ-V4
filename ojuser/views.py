@@ -24,21 +24,15 @@ from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserProfilesForm
 from .forms import GroupProfileForm, GroupForm, GroupSearchForm
-from .serializers import LanguageSerializer, UserSerializer, UserProfileSerializer, \
+from .serializers import UserSerializer, UserProfileSerializer, \
         get_rand_password, GroupProfileSerializer, UserSlugSerializer, GroupSerializer, \
         UserResetSerializer
 from .tables import GroupUserTable, GroupTable
-from .models import GroupProfile, Language
+from .models import GroupProfile
 from .filters import GroupFilter
 
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
-
-
-class LanguageViewSet(viewsets.ModelViewSet):
-    queryset = Language.objects.all()
-    serializer_class = LanguageSerializer
-    permission_classes = (IsAdminUser,)
 
 
 class GroupListView(ListView):

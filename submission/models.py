@@ -1,20 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
 from problem.models import Problem
-from ojuser.models import Language
 from django.core.urlresolvers import reverse
-from contest.models import Contest, ContestProblem
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from bojv4 import conf
 from common.nsq_client import send_to_nsq
 import json
-
+import logging
+logger = logging.getLogger('django')
 
 class Submission(models.Model):
     user = models.ForeignKey(User)
     problem = models.ForeignKey(Problem)
-    datetime = models.DateTimeField(auto_now_add=True)
+    create_time = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
     status = models.CharField(max_length=3, default="QUE", choices=conf.STATUS_CODE.choice())
     running_time = models.IntegerField(default=0)
@@ -83,7 +82,12 @@ class Submission(models.Model):
         self.score = 0
         self.status = 'PD'
         self.save()
-        send_to_nsq('judge', json.dumps(req))
+        logger.warning("start pending judge for submission")
+        resp = send_to_nsq('judge', json.dumps(req))
+        if resp.get('code', None) == -1:
+            logger.warning("result of pending judge for submission is False, message is " + resp.get('msg'))
+        else:
+            logger.warning("result of pending judge for submission is True, " + resp.get('msg'))
 
     def rejudge(self):
         for c in self.cases.all():
@@ -101,6 +105,8 @@ class CaseResult(models.Model):
 
 
 @receiver(pre_save, sender=Submission)
-def dumps_info_callback(sender, instance, created, **kwargs):
-    if instance._info:
+def dumps_info_callback(sender, instance, **kwargs):
+    if instance.pk:
+        instance.info = json.dumps({})
+    elif hasattr(instance, '_info'):
         instance.info = json.dumps(instance._info)

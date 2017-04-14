@@ -82,7 +82,7 @@ class Problem(models.Model):
     def get_problem_data(self):
         resp = []
         p_count = 0
-        for cas in self.case.all():
+        for cas in self.cases.all():
             in_data = {
                     'filename': cas.input_data.sha1,
                     'path': '/' + cas.input_data.path.lstrip(BASE_DIR)

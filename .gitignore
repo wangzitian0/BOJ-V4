@@ -13,3 +13,4 @@ nohup.out
 *.xml
 fabfile.py
 test.py
+my.cnf

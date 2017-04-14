@@ -27,7 +27,6 @@ class Migration(migrations.Migration):
                 ('is_checked', models.BooleanField(default=False)),
                 ('created_time', models.DateTimeField(auto_now_add=True)),
                 ('last_updated_time', models.DateTimeField(auto_now=True)),
-                ('allowed_lang', models.ManyToManyField(related_name='problems', to='ojuser.Language')),
                 ('groups', models.ManyToManyField(related_name='problems', to='ojuser.GroupProfile', blank=True)),
                 ('superadmin', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
@@ -39,11 +38,14 @@ class Migration(migrations.Migration):
             name='ProblemCase',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('sample_in', models.CharField(max_length=256, null=True, blank=True)),
+                ('sample_out', models.CharField(max_length=256, null=True, blank=True)),
                 ('score', models.IntegerField(default=0)),
+                ('position', models.IntegerField(default=0)),
                 ('info', models.TextField(blank=True)),
                 ('input_data', models.OneToOneField(related_name='incase', null=True, blank=True, to='filer.File')),
                 ('output_data', models.OneToOneField(related_name='outcase', null=True, blank=True, to='filer.File')),
-                ('problem', models.ForeignKey(related_name='case', to='problem.Problem')),
+                ('problem', models.ForeignKey(related_name='cases', to='problem.Problem')),
             ],
         ),
         migrations.CreateModel(

@@ -16,7 +16,7 @@ def send_to_nsq(topic, message):
     if r.text == 'OK':
         return {'code': 0, 'msg': 'success'}
     else:
-        return {'code': -1, 'reason': r.text}
+        return {'code': -1, 'msg': r.text}
 
 class NsqThread(threading.Thread):
     
