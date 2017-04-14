@@ -35,7 +35,7 @@ class EnumChoice(object):
 LANGUAGE = EnumChoice(
     ('CPP03', 'GNU C++'),
     ('C', 'GNU C'),
-    ('JAVA8', 'java'),
+    ('JAVA8', 'JAVA 8'),
     ('CPP11', 'GNU C++ 11'),
     ('PY2', 'Python 2.7')
 )

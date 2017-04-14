@@ -34,21 +34,27 @@ class NsqQueue(object):
 def submission_handler(message):
     try:
         mp = json.loads(message.body)
-        print mp
+        # print json.dumps(mp, indent=4)
         sub_pk = mp.get('submission-id', None)
         sub = Submission.objects.filter(pk=sub_pk).first()
         status = mp.get('status', None)
+        print "================, ", status
         if not sub or not status or status not in conf.STATUS_CODE.keys():
+            print conf.STATUS_CODE.keys()
             return True
-        position = mp.get('position', None)
-        if position:
+        position = mp.get('position', '')
+        print "================, ", position
+        if position != '':
             # CaseResult.deal_case_result(mp)
-            case = CaseResult(position=int(position))
+            case = CaseResult()
+            case.position = int(position)
             case.submission = sub
             case.running_time = mp.get('running_time', 0)
             case.running_memory = mp.get('running_memory', 0)
             case.status = status
+            print "============create=========="
             case.save()
+            print "============create success, pk is ", case.pk
             if status == 'AC':
                 sub.score += sub.problem.get_score(position)
                 sub.save()

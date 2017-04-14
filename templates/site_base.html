@@ -4,6 +4,11 @@
 {% load pinax_webanalytics_tags %}
 
 
+{% block styles %}
+  {% include "_styles.html" %}
+{% endblock %}
+
+
 {% block extra_head_base %}
   {% block extra_head %}{% endblock %}
 {% endblock %}
@@ -13,6 +18,10 @@
   {% include "_footer.html" %}
 {% endblock %}
 
+
+{% block scripts %}
+  {% include "_scripts.html" %}
+{% endblock %}
 
 {% block extra_body_base %}
   {% analytics %}

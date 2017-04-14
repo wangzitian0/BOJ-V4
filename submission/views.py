@@ -4,7 +4,9 @@ from rest_framework.decorators import detail_route
 from bojv4.conf import LANGUAGE
 
 from .models import Submission, CaseResult
+from .forms import SubmissionForm
 from .serializers import SubmissionSerializer
+from .tables import SubmissionTable
 
 from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
@@ -12,14 +14,14 @@ from django.views.generic.edit import CreateView
 from django.http import JsonResponse, HttpResponseNotAllowed, Http404, HttpResponseForbidden
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.contrib.messages.views import SuccessMessageMixin
 from rest_framework.permissions import BasePermission
+from django.shortcuts import get_object_or_404
+from guardian.shortcuts import get_objects_for_user
+from django_tables2 import RequestConfig
 
 from problem.models import Problem
-from django.shortcuts import get_object_or_404
-from .forms import SubmissionForm
-from django_tables2 import RequestConfig
-from .tables import SubmissionTable
-import json
+from ojuser.models import GroupProfile
 import logging
 logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
@@ -50,6 +52,19 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 class SubmissionListView(ListView):
 
     model = Submission
+
+    def get_queryset(self):
+        groups = get_objects_for_user(self.user, 'ojuser.change_groupprofile', GroupProfile)
+        ans = self.user.submissions.all()
+        for g in groups:
+            for p in g.problems.all():
+                ans |= p.submissions.all()
+        return ans
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        self.user = request.user
+        return super(SubmissionListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SubmissionListView, self).get_context_data(**kwargs)
@@ -85,7 +100,7 @@ class SubmissionDetailView(DetailView):
                 'time': c.running_time,
                 'memory': c.running_memory,
             })
-        if self.object.cases.count() < self.object.problem.cases.count():
+        if self.object.status == 'JD' and self.object.cases.count() < self.object.problem.cases.count():
             cases.append({
                 'status': 'Judging',
                 'position': self.object.cases.count(),
@@ -96,10 +111,11 @@ class SubmissionDetailView(DetailView):
         return context
 
 
-class SubmissionCreateView(CreateView):
+class SubmissionCreateView(SuccessMessageMixin, CreateView):
     model = Submission
     form_class = SubmissionForm
     template_name_suffix = '_create_form'
+    success_message = "%(calculated_field)s was created successfully"
 
     @method_decorator(login_required)
     def dispatch(self, request, pid=None, *args, **kwargs):
@@ -127,17 +143,13 @@ class SubmissionCreateView(CreateView):
         return context
 
     def form_valid(self, form):
-        logger.warning("=================form save===============\n")
         self.object = form.save(commit=False)
         self.object.problem = self.problem
         self.object.user = self.request.user
         print self.object.code
-        logger.warning("=================start save===============\n")
-        self.object.save()
-        logger.warning("=================judge===============\n")
         try:
+            self.object.save()
             self.object.judge()
-            logger.warning("=================judge end===============\n")
         except Exception as ex:
             logger.warning(ex)
         return super(SubmissionCreateView, self).form_valid(form)

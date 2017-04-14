@@ -106,6 +106,11 @@ class Problem(models.Model):
         case = self.cases.all()[position]
         return case.sample_in, case.sample_out
 
+    def get_score(self, position):
+        if not isinstance(position, int) or position >= self.cases.count():
+            raise Exception("param 'position' is invalid.")
+        return self.cases.all()[position].score
+
     class Meta:
         permissions = (
             ('view_problem', 'Can view problem'),

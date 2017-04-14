@@ -11,8 +11,8 @@ import logging
 logger = logging.getLogger('django')
 
 class Submission(models.Model):
-    user = models.ForeignKey(User)
-    problem = models.ForeignKey(Problem)
+    user = models.ForeignKey(User, related_name='submissions')
+    problem = models.ForeignKey(Problem, related_name='submissions')
     create_time = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
     status = models.CharField(max_length=3, default="QUE", choices=conf.STATUS_CODE.choice())
