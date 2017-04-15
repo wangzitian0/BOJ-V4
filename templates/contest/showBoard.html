@@ -1,0 +1,44 @@
+{% extends "contest/contestBase.html" %}
+{% block body_extra_attributes %}onload="activateTag('contest_board')"{% endblock %}
+{% block contest_body %}
+    {%if tpl.has_priv or contest.status != 'scheduled'%}
+        <div>
+            <h2>排行榜</h2>
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <th>排名</th>
+                    <th>用户</th>
+                    <th>题数</th>
+                    <th>分数</th>
+                    <th>罚时</th>
+                    {% for p in problem_list %}
+                    <th>{{ p.cp_index }}</th>
+                    {% endfor %}
+                </thead>
+                {% for s in board_list %}
+                    <tr>
+                        <td>{{ s.rank}}</td>
+                        <td><a href="">{{ s.username }}</a></td>
+                        <td>{{ s.solve }}</td>
+                        <td><a href="">{{ s.score }}</td>
+                        <td>{{ s.penalty}}</td>
+                        {% for pinfo in s.info %}
+                            <td class="{%if pinfo.ac_time >= 0%}{%if pinfo.fb%}kari-board-fb{%else%}kari-board-ac{%endif%}{%elif pinfo.sub_times > 0%}kari-board-noac{%endif%}">
+                                {%if pinfo.ac_time < 0 and pinfo.sub_times > 0 %}
+                                    -{{pinfo.sub_times}}
+                                {% else %}
+                                    {{ pinfo.sub_times }}
+                                {% endif %}
+                                {%if pinfo.ac_time >= 0%}
+                                    ({{pinfo.ac_time}}{%if pinfo.sub_times > 1 %}+20*{{pinfo.sub_times|add:"-1"}}{%endif%})
+                                {%endif%}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
