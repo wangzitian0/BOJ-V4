@@ -1,4 +1,5 @@
 import json
+import copy
 from itertools import chain
 from account.views import SignupView
 from django.shortcuts import redirect
@@ -111,7 +112,7 @@ class GroupCreateView(TemplateView):
         context = self.get_context_data(**kwargs)
         if self.group_profile_form.is_valid() and self.group_admins_form.is_valid():
             gg = GroupProfile(**self.group_profile_form.cleaned_data)
-            gg.superadmin = self.request.user
+            # gg.superadmin = self.request.user
             gg.save()
             GroupForm(request.POST, instance=gg.admin_group).save()
             return HttpResponseRedirect(reverse('mygroup-detail', args=[gg.pk, ]))
@@ -120,8 +121,23 @@ class GroupCreateView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(GroupCreateView, self).get_context_data(**kwargs)
         self.group_profile_form = GroupProfileForm(self.request.POST or None)
-        self.group_admins_form = GroupForm(self.request.POST or None,
-                user_queryset=User.objects.filter(is_staff=True))
+        self.group_admins_form = GroupForm(self.request.POST or None)
+        group = GroupProfile.objects.filter(name='root').first()
+        groups = get_objects_for_user(
+            user=self.request.user,
+            perms='ojuser.delete_groupprofile',
+            with_superuser=True)
+        queryset = User.objects.filter(pk=self.request.user.pk)
+        superadmin_queryset = copy.copy(queryset)
+        if group:
+            superadmin_queryset |= group.user_group.user_set.all()
+        self.group_profile_form.fields['superadmin'].queryset = superadmin_queryset
+
+        for g in groups.all():
+            queryset |= g.user_group.user_set.all()
+
+        self.group_admins_form.fields["admins"].widget.queryset = queryset
+
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
         return context
@@ -148,21 +164,22 @@ class GroupUpdateView(TemplateView):
         return super(GroupUpdateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
-        profiles_can_change = get_objects_for_user(
-            self.request.user,
-            'ojuser.change_groupprofile',
-            with_superuser=True
-        )
         context = super(GroupUpdateView, self).get_context_data(**kwargs)
         self.pk = self.kwargs['pk']
         qs = GroupProfile.objects.all()
         self.object = get_object_or_404(qs, pk=self.pk)
-        self.group_profile_form = GroupProfileForm(instance=self.object,
-                my_queryset=profiles_can_change)
-        user_queryset = User.objects.filter(Q(pk__in=self.object.user_group.user_set.all()) |
-                Q(is_staff=True))
-        self.group_admins_form = GroupForm(instance=self.object.admin_group, 
-                user_queryset=user_queryset)
+        my_children = self.object.get_descendants(include_self=True)
+        profiles_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        ).exclude(pk__in=my_children)
+        self.group_profile_form = GroupProfileForm(instance=self.object)
+        self.group_profile_form.fields['parent'].queryset = profiles_can_change
+        self.group_profile_form.fields['parent'].widget.queryset = profiles_can_change
+        user_queryset = User.objects.filter(pk__in=self.object.user_group.user_set.all())
+        self.group_admins_form = GroupForm(instance=self.object.admin_group)
+        self.group_admins_form.fields['admins'].widget.queryset = user_queryset
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
         context['pk'] = self.pk

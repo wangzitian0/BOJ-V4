@@ -37,7 +37,12 @@ LANGUAGE = EnumChoice(
     ('C', 'GNU C'),
     ('JAVA8', 'JAVA 8'),
     ('CPP11', 'GNU C++ 11'),
-    ('PY2', 'Python 2.7')
+    ('CPP14', 'GNU C++ 14'),
+    ('PY2', 'Python 2.7'),
+    ('PY3', 'Python 3.5'),
+    ('NASM', 'Assembly 32bit'),
+    ('NASM64', 'Assembly 64bit')
+
 )
 
 GENDER = EnumChoice(

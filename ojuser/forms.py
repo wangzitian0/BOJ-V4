@@ -67,12 +67,7 @@ class GroupForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
-        queryset = None
-        if kwargs.has_key('user_queryset'):
-            queryset = kwargs.pop('user_queryset') 
         super(GroupForm, self).__init__(*args, **kwargs)
-        if queryset:
-            self.fields['admins'].widget.queryset = queryset
         if self.instance.pk:
             print "instance user_set============="
             print self.instance.user_set.all()
@@ -96,25 +91,21 @@ class GroupForm(forms.ModelForm):
 class GroupProfileForm(forms.ModelForm):
     class Meta:
         model = GroupProfile
-        fields = ['name', 'nickname', 'parent', ]
+        fields = ['name', 'nickname', 'parent', 'superadmin']
         widgets = {
             'parent': ModelSelect2Widget(
                 search_fields=['name__icontains', ]
             ),
+            'superadmin': ModelSelect2Widget(
+                search_fields=['username__icontains',]
+            )
         }
 
     def __init__(self, *args, **kwargs):
         print '=============kwargs========'
         print kwargs
-        queryset = None
-        if kwargs.has_key('my_queryset'):
-            queryset = kwargs.pop('my_queryset')
         super(GroupProfileForm, self).__init__(*args, **kwargs)
-        print args
         if self.instance.pk:
             my_children = self.instance.get_descendants(include_self=True)
-            if queryset:
-                self.fields['parent'].queryset = queryset.exclude(pk__in=my_children)
-            else:
-                self.fields['parent'].queryset = GroupProfile.objects.all().exclude(pk__in=my_children)
+            self.fields['parent'].queryset = GroupProfile.objects.all().exclude(pk__in=my_children)
 
