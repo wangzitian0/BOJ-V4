@@ -1,33 +1,46 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import detail_route
-from rest_framework.response import Response
+from bojv4.conf import LANGUAGE
 
-from .models import Submission
+from .models import Submission, CaseResult
+from .forms import SubmissionForm
 from .serializers import SubmissionSerializer
+from .tables import SubmissionTable
 
 from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.http import JsonResponse, HttpResponseNotAllowed, Http404, HttpResponseForbidden
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.contrib.messages.views import SuccessMessageMixin
+from rest_framework.permissions import BasePermission
+from django.shortcuts import get_object_or_404
+from guardian.shortcuts import get_objects_for_user
+from django_tables2 import RequestConfig
 
 from problem.models import Problem
-from django.shortcuts import get_object_or_404
-from .forms import SubmissionForm
-from django_tables2 import RequestConfig
-from .tables import SubmissionTable
-from common.nsq_client import send_to_nsq 
+from ojuser.models import GroupProfile
 import logging
-import json
 logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
 
 
-def receive_judge_result(request):
-    print request.POST
-    return JsonResponse
+class SubmissionPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.user:
+            return True
+        return obj.problem.view_by_user(user=request.user)
+
+
+class CaseResultPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.user:
+            return True
+        return obj.submission.problem.view_by_user(user=request.user)
 
 
 class SubmissionViewSet(viewsets.ModelViewSet):
@@ -39,6 +52,19 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 class SubmissionListView(ListView):
 
     model = Submission
+
+    def get_queryset(self):
+        groups = get_objects_for_user(self.user, 'ojuser.change_groupprofile', GroupProfile)
+        ans = self.user.submissions.all()
+        for g in groups:
+            for p in g.problems.all():
+                ans |= p.submissions.all()
+        return ans
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        self.user = request.user
+        return super(SubmissionListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SubmissionListView, self).get_context_data(**kwargs)
@@ -52,19 +78,44 @@ class SubmissionListView(ListView):
 class SubmissionDetailView(DetailView):
 
     model = Submission
+    permission_classes = (IsAuthenticated, SubmissionPermission)
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pid=None, *args, **kwargs):
+        self.user = request.user
+        return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        print __name__
         logger.warning('============test===============')
-        logger.info('==================test=========info=======')
+        status = self.object.get_status_display()
+        if self.object.status == 'JD':
+            status = 'Judging in ' + str(self.object.cases.count()) + 'th case'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
+        context['status'] = status
+        cases = []
+        for c in self.object.cases.all():
+            cases.append({
+                'status': c.status,
+                'position': c.position,
+                'time': c.running_time,
+                'memory': c.running_memory,
+            })
+        if self.object.status == 'JD' and self.object.cases.count() < self.object.problem.cases.count():
+            cases.append({
+                'status': 'Judging',
+                'position': self.object.cases.count(),
+                'time': 0,
+                'memory': 0,
+            })
+        context['cases'] = cases
         return context
 
 
-class SubmissionCreateView(CreateView):
+class SubmissionCreateView(SuccessMessageMixin, CreateView):
     model = Submission
     form_class = SubmissionForm
     template_name_suffix = '_create_form'
+    success_message = "%(calculated_field)s was created successfully"
 
     @method_decorator(login_required)
     def dispatch(self, request, pid=None, *args, **kwargs):
@@ -83,7 +134,7 @@ class SubmissionCreateView(CreateView):
 
     def get_form_kwargs(self):
         kw = super(SubmissionCreateView, self).get_form_kwargs()
-        kw['qs'] = self.problem.allowed_lang.all()
+        kw['qs'] = LANGUAGE.choice()
         return kw
 
     def get_context_data(self, **kwargs):
@@ -96,20 +147,11 @@ class SubmissionCreateView(CreateView):
         self.object.problem = self.problem
         self.object.user = self.request.user
         print self.object.code
-        self.object.save()
         try:
-            req = {
-                'submission_id': self.object.id, 
-                'problem_id': self.problem.id,
-                'source': self.object.code,
-                'language': self.object.language.key,
-                'time_limit': self.problem.time_limit,
-                'memory_limit': self.problem.memory_limit,
-                'problem_data': self.problem.get_problem_data()
-            }
-            send_to_nsq('judge', json.dumps(req))
+            self.object.save()
+            self.object.judge()
         except Exception as ex:
-            print ex
+            logger.warning(ex)
         return super(SubmissionCreateView, self).form_valid(form)
 
     def get_success_url(self):
