@@ -332,6 +332,7 @@ class FileCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(FileCreateView, self).get_context_data(**kwargs)
+        print "hello"
         context['pid'] = self.kwargs['pid']
         return context
 
