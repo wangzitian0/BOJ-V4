@@ -1,8 +1,0 @@
-<uwsgi>
-	<socket>/home/elder/BOJ-V4/oj.sock</socket>
-	<chdir>/home/elder/BOJ-V4/</chdir>
-	<processes>4</processes>
-	<pythonpath>..</pythonpath>
-	<plugins>python</plugins>
-    <module>wsgi</module>
-</uwsgi>

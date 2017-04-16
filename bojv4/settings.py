@@ -272,4 +272,4 @@ FILER_CANONICAL_URL = 'sharing/'
 #  ==============================================
 
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
-INTERNAL_IPS = ["10.105.243.4", "10.205.24.165"]
+INTERNAL_IPS = ["10.105.243.4", "10.205.242.83"]
