@@ -131,12 +131,12 @@ class GroupCreateView(TemplateView):
         superadmin_queryset = copy.copy(queryset)
         if group:
             superadmin_queryset |= group.user_group.user_set.all()
-        self.group_profile_form.fields['superadmin'].queryset = superadmin_queryset
+        self.group_profile_form.fields['superadmin'].queryset = superadmin_queryset.distinct()
 
         for g in groups.all():
             queryset |= g.user_group.user_set.all()
 
-        self.group_admins_form.fields["admins"].widget.queryset = queryset
+        self.group_admins_form.fields["admins"].queryset = queryset.distinct()
 
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
