@@ -115,7 +115,7 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
     model = Submission
     form_class = SubmissionForm
     template_name_suffix = '_create_form'
-    success_message = "%(calculated_field)s was created successfully"
+    success_message = "your submission has been created successfully"
 
     @method_decorator(login_required)
     def dispatch(self, request, pid=None, *args, **kwargs):
