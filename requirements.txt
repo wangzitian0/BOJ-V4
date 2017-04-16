@@ -29,3 +29,6 @@ six==1.10.0
 sqlparse==0.1.19
 Unidecode==0.4.19
 Fabric==1.13.1
+django-redis
+mongoengine
+requests

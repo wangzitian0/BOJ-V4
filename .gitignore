@@ -14,3 +14,4 @@ nohup.out
 fabfile.py
 test.py
 my.cnf
+*.sock
