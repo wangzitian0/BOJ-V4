@@ -67,6 +67,7 @@ class SubmissionListView(ListView):
         return super(SubmissionListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        print "template_name: ", self.get_template_names()
         context = super(SubmissionListView, self).get_context_data(**kwargs)
         submissions_table = SubmissionTable(self.get_queryset())
         RequestConfig(self.request).configure(submissions_table)

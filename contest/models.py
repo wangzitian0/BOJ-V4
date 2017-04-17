@@ -10,10 +10,10 @@ from bojv4 import conf
 
 class Contest(models.Model):
 
-    superadmin = models.ForeignKey(User, related_name='contests')
-    group = models.ForeignKey(GroupProfile)
+    author = models.ForeignKey(User, related_name='contests')
+    group = models.ForeignKey(GroupProfile, related_name='contests')
     name = models.CharField(max_length=30)
-    start_time = models.DateTimeField()
+    start_time = models.DateTimeField(null=True, blank=True)
     length = models.IntegerField(default=300)
     board_stop = models.IntegerField(default=300)
 
@@ -32,3 +32,27 @@ class ContestSubmission(models.Model):
     submission = models.ForeignKey(Submission, related_name='contest_submissions')
 
 
+"""
+class ContestNotification(models.Model):
+
+    TITLE_MIN_LEN = 1
+    TITLE_MAX_LEN = 128
+
+    contest = models.ForeignKey(Contest)
+    title = models.CharField(max_length=TITLE_MAX_LEN)
+    content = models.TextField()
+    time = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return self.title
+
+
+
+class Clarification(models.Model):
+    Q&A in contest
+    author = models.ForeignKey(User)
+    question = models.TextField()
+    answer = models.TextField()
+    time = models.DateTimeField(auto_now_add=True)
+
+"""

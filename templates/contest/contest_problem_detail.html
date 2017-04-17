@@ -1,0 +1,50 @@
+{% extends "contest/contestBase.html" %}
+{% block contest_body %}
+
+    {%if tpl.has_priv or contest.status != 'scheduled'%}
+        <div class="container">
+        <div class="row">
+            <div class="page-header">
+                <div class="prob-title-contest">
+                    <h2>{{ contest_problem.cp_index }}-{{ contest_problem.cp_title }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="problem_page" class="col-md-9">
+                <iframe id="problem_content" class="contest-problem" src="{% url 'contest:testproblem'%}" scrolling="no" frameborder="0" width="100%" onload="changeFrameHeight('problem_content')"></iframe>
+            </div>
+            <div class="col-md-3">
+                <div class="well">
+                    <a class="btn btn-primary btn-block" href="">提交代码</a>
+                    <a class="btn btn-info btn-block" href="">题目统计信息</a>
+                    {%if tpl.has_priv%}
+                    <a class="btn btn-warning btn-block" href="">修改题目</a>
+                    <a class="btn btn-warning btn-block" href="">修改测验</a>
+                    {%endif%}
+                </div>
+                <div class="well">
+                    <h3>题目列表</h3>
+                    <table class="table table-bordered table-condensed">
+                        <thead>
+                            <th></th>
+                            <th>ID</th>
+                            <th>通过数 / 提交数</th>
+                        </thead>
+                        {% for cp in problem_list %}
+                        <tr>
+                            <td>{%if cp.user_res == 1%}<strong><font color=red><center>Yes</center></font></strong>{%endif%}</td>
+                            <td><a href="{%url 'contest:contest_problem' contest.cid cp.cp_index%}">{{ cp.cp_index }}</a></td>
+                            <td><center>{{cp.ac}} / {{cp.sub}}</center></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+    {% endif %}
+
+{% endblock %}
+
+

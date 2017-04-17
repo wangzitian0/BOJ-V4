@@ -425,14 +425,12 @@ class OjUserProfilesView(FormView):
         profile = self.request.user.profile
         initial["nickname"] = profile.nickname
         initial["gender"] = profile.gender
-        initial["prefer_lang"] = profile.prefer_lang
         return initial
 
     def form_valid(self, form):
         profile = self.request.user.profile
         profile.gender = form.cleaned_data["gender"]
         profile.nickname = form.cleaned_data["nickname"]
-        profile.prefer_lang = form.cleaned_data["prefer_lang"]
         profile.save()
         if self.messages.get("profiles_updated"):
             messages.add_message(
