@@ -1,16 +1,15 @@
 # encoding: utf-8
 import django_tables2 as tables
-from .models import Submission
+from .models import Contest
 from django_tables2.utils import A
 
 
 class ContestTable(tables.Table):
-    pk = tables.LinkColumn('submission:submission-detail', args=[A('pk')])
-    author = tables.LinkColumn('ojuser:account-profile', args=[A('author.pk')])
-    group = tables.LinkColumn('ojuser:mygroup-detail', args=[A('group.pk')])
+    pk = tables.LinkColumn('contest:contest-detail', args=[A('pk')])
+    group = tables.LinkColumn('mygroup-detail', args=[A('group.pk')])
 
 
     class Meta:
-        model = Submission
-        fields = ('pk', 'problem', 'user', 'group', 'start_time')
+        model = Contest
+        fields = ('pk', 'author', 'group', 'start_time')
         template = 'django_tables2/bootstrap.html'

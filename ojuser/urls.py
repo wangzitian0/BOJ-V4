@@ -17,5 +17,6 @@ urlpatterns = [
     url(r'^myusers/add/$', views.UserAddView.as_view(), name='user-add'),
     url(r"^signup/$", views.OjUserSignupView.as_view(), name="account_signup"),
     url(r"^profiles/$", views.OjUserProfilesView.as_view(), name="account-profile"),
-    url(r"^", include("account.urls")),
+    url(r"^", include("account.urls"))
+    ,
 ]

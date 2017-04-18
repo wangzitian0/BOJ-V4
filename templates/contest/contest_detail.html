@@ -13,7 +13,7 @@
         <th>通过数 / 提交数</th>
         <th>通过率</th>
     </thead>
-    {% for p in problem_list %}
+    {% for p in object.problems.all() %}
     <tr>
         {% comment %}
         <td>{%if p.user_res == 1%}<strong><center><font color=red>Yes</font></center></strong>{%endif%}</td>

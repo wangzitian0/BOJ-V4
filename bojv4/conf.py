@@ -42,8 +42,20 @@ LANGUAGE = EnumChoice(
     ('PY3', 'Python 3.5'),
     ('NASM', 'Assembly 32bit'),
     ('NASM64', 'Assembly 64bit')
-
 )
+
+LANGUAGE_MASK = EnumChoice(
+    (1, 'CPP03'),
+    (2, 'C'),
+    (4, 'JAVA8'),
+    (8, 'CPP11'),
+    (16, 'CPP14'),
+    (32, 'PY2'),
+    (64, 'PY3'),
+    (128, 'NASM'),
+    (256, 'NASM64')
+)
+
 
 GENDER = EnumChoice(
     ('S', _('Secret')),

@@ -12,10 +12,13 @@ class Contest(models.Model):
 
     author = models.ForeignKey(User, related_name='contests')
     group = models.ForeignKey(GroupProfile, related_name='contests')
-    name = models.CharField(max_length=30)
+    title = models.CharField(max_length=30)
     start_time = models.DateTimeField(null=True, blank=True)
     length = models.IntegerField(default=300)
     board_stop = models.IntegerField(default=300)
+    desc = models.TextField(default='')
+    lang_limit = models.IntegerField(default=0)
+    contest_type = models.IntegerField(default=0)
 
 
 class ContestProblem(models.Model):
@@ -25,6 +28,7 @@ class ContestProblem(models.Model):
     index = models.CharField(default='A',max_length=2)
     ac_sub = models.IntegerField(default=0)
     all_sub = models.IntegerField(default=0)
+    title = models.CharField(max_length=64, default='')
 
 
 class ContestSubmission(models.Model):

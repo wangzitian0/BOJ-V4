@@ -60,6 +60,11 @@ class ProblemViewSet(viewsets.ModelViewSet):
         serializer = ProblemDataSerializer(problem, context={'request': request})
         return Response(serializer.data)
 
+    @detail_route(methods=['get'], url_path='info')
+    def get_problem_title(self, request, pk=None):
+        qs = self.get_queryset()
+        p = get_object_or_404(qs, pk=pk)
+        return Response({'code': 0, 'title': p.title})
 
 class ProblemDataInfoViewSet(viewsets.ModelViewSet):
     queryset = ProblemDataInfo.objects.all()
