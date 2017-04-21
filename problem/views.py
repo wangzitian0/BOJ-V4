@@ -27,6 +27,7 @@ from .tables import ProblemTable
 from .serializers import ProblemSerializer, ProblemDataInfoSerializer
 from .serializers import FileSerializer, ProblemDataSerializer
 from .forms import ProblemForm
+from ojuser.models import GroupProfile
 
 
 class ProblemUpdatePermission(BasePermission):
@@ -134,6 +135,7 @@ class ProblemListView(ListView):
         context['problem_can_view'] = self.problem_can_view_qs
         context['problem_can_delete'] = self.problem_can_delete_qs
         context['problem_can_change'] = self.problem_can_change_qs
+        context['rootGroup'] = GroupProfile.objects.filter(name='root').first()
         return context
 
 
