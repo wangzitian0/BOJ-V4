@@ -59,7 +59,7 @@ class SubmissionListView(ListView):
         for g in groups:
             for p in g.problems.all():
                 ans |= p.submissions.all()
-        return ans
+        return ans.order_by('-pk').distinct()
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -92,6 +92,7 @@ class SubmissionDetailView(DetailView):
             status = 'Judging in ' + str(self.object.cases.count()) + 'th case'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
+        context['compile_message'] = self.object.get_info('compile-message')
         cases = []
         for c in self.object.cases.all():
             cases.append({

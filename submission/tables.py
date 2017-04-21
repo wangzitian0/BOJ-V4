@@ -8,12 +8,10 @@ class SubmissionTable(tables.Table):
     pk = tables.LinkColumn('submission:submission-detail', args=[A('pk')])
     problem = tables.LinkColumn('problem:problem-detail', args=[A('problem.pk')])
     status = tables.Column(verbose_name=u'运行结果')
-    external = tables.TemplateColumn(
-        template_name='submission/submission_list_external.html',
-        orderable=False,
-    )
 
     class Meta:
         model = Submission
-        fields = ('pk', 'problem', 'status', 'user', 'external',)
+        fields = ('pk', 'problem', 'status', 'running_time', 'running_memory', 'language', 'user',
+        'create_time')
         template = 'django_tables2/bootstrap.html'
+
