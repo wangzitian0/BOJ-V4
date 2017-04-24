@@ -1,7 +1,7 @@
-{% extends "contest/contestBase.html" %}
+{% extends "contest/contest_base.html" %}
 {% block body_extra_attributes %}onload="activateTag('contest_home')"{% endblock %}
 {% block contest_body %}
-{%if tpl.has_priv or contest.status != 'scheduled'%}
+{%if tpl.has_priv or object.status != 'scheduled'%}
 <div>
 <h2>题目列表</h2>
 <table class="table table-bordered table-striped table-hover">
@@ -11,19 +11,17 @@
         <th>时间限制</th>
         <th>内存限制</th>
         <th>通过数 / 提交数</th>
-        <th>通过率</th>
     </thead>
-    {% for p in object.problems.all() %}
+    {% for p in object.problems.all %}
     <tr>
         {% comment %}
         <td>{%if p.user_res == 1%}<strong><center><font color=red>Yes</font></center></strong>{%endif%}</td>
         {% endcomment %}
-        <td>{{ p.cp_index }}</td>
-        <td><a href="{% url 'contest:contest_problem' contest.cid p.cp_index %}">{{ p.cp_title }}</a></td>
-        <td>{{ p.climt }}ms</td>
-        <td>{{ p.mlimt }}KB</td>
-        <td>{{p.ac}} / {{p.sub}}</td>
-        <td>{{p.ratio|floatformat:2}} %</td>
+        <td>{{ p.index }}</td>
+        <td><a href="{% url 'contest:problem-detail' contest.pk p.index %}">{{ p.title }}</a></td>
+        <td>{{ p.problem.time_limt }}ms</td>
+        <td>{{ p.memory_limit }}KB</td>
+        <td>{{p.ac_sub}} / {{p.all_sub}}</td>
     </tr>
     {% endfor %}
 </table>

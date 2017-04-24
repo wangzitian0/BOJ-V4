@@ -1,37 +1,37 @@
 {% extends "site_base.html" %}
-{% block head_title %}{{ contest.title }}{% endblock %}
+{% block head_title %}{{ object.title }}{% endblock %}
 {% block body %}
 <div class="page-header">
     <Meta http-equiv="Refresh" Content="50;">
     {%if tpl.has_priv%}
-    {%if contest.status == "ended"%}<button class="btn btn-inverse pull-right" onclick="postRequest();" id="submit">代码查重</button>{%endif%}
-    <a class="btn pull-right" href="/contest/{{ contest.cid }}/add_notice/">添加公告</a>
-    <a class="btn btn-primary pull-right" href="/contest/{{ contest.cid }}/update_contest/">修改测验</a>
+    {%if object.status == "ended"%}<button class="btn btn-inverse pull-right" onclick="postRequest();" id="submit">代码查重</button>{%endif%}
+    <a class="btn pull-right" href="/contest/{{ object.pk }}/add_notice/">添加公告</a>
+    <a class="btn btn-primary pull-right" href="/contest/{{ object.cid }}/update_contest/">修改测验</a>
     {%endif%}
-    <h1>{{ contest.title }}
-        <small>{% if contest.status == "ended" %}已结束{% elif contest.status == "running" %}进行中{% else %}未开始{% endif %}</small>
+    <h1>{{ object.title }}
     </h1>
+    <small>{% if object.status == "ended" %}已结束{% elif object.status == "running" %}进行中{% else %}未开始{% endif %}</small>
 </div>
 <ul class="nav nav-pills">
-    <li id="contest_home"><a href="{% url "contest:show_contest" contest.cid%}">测验首页</a></li>
-    <li id="contest_status"><a href="{% url "contest:show_status" contest.cid %}">结果列表</a></li>
-    <li id="contest_query"><a href="{% url "contest:show_query" contest.cid %}">提问列表</a></li>
-    <li id="contest_board"><a href="{% url "contest:show_board" contest.cid %}">排行榜</a></li>
-    {%if tpl.has_priv%}<li id="contest_balloon"><a href="/contest/{{ contest.cid }}/balloon/">气球</a></li>{% endif %}
+    <li id="contest_home"><a href="{% url "contest:contest-detail" object.pk%}">测验首页</a></li>
+    <li id="contest_status"><a href="{% url "contest:submission-list" object.pk %}">结果列表</a></li>
+    <li id="contest_query"><a href="{% url "contest:clarification-list" object.pk %}">提问列表</a></li>
+    <li id="contest_board"><a href="{% url "contest:board" object.pk %}">排行榜</a></li>
+    {%if tpl.has_priv%}<li id="contest_balloon"><a href="/contest/{{ object.pk }}/balloon/">气球</a></li>{% endif %}
 </ul>
 <div id="contest_info">
     <div class="kari-head-info">
-        <span class="kari-head-info"><strong>课程分班 </strong>{{ contest.group }}</span>
-        {%if contest.description%}<br><br><span class="kari-head-info"><strong>测验描述 </strong>{{ contest.description|safe }}</span>{%endif%}
+        <span class="kari-head-info"><strong>课程分班 </strong>{{ object.group.nickname }}</span>
+        {%if object.description%}<br><br><span class="kari-head-info"><strong>测验描述 </strong>{{ object.desc|safe }}</span>{%endif%}
     </div>
     <div class="kari-head-info">
         <span class="kari-head-info"><strong>当前时间 </strong><span class="clock">{% now "Y-m-d H:i:s" %}</span></span>
-        <span class="kari-head-info"><strong>开始时间 </strong>{{ contest.start_time|date:"Y-m-d H:i:s" }}</span>
-        <span class="kari-head-info"><strong>总长 </strong>{{ contest.duration }} 分钟</span>
-        <span class="kari-head-info"><strong>剩余 </strong>{{ contest.time_left }} 分钟</span>
+        <span class="kari-head-info"><strong>开始时间 </strong>{{ object.start_time|date:"Y-m-d H:i:s" }}</span>
+        <span class="kari-head-info"><strong>总长 </strong>{{ object.length }} 分钟</span>
+        <span class="kari-head-info"><strong>剩余 </strong>{{ object.time_left }} 分钟</span>
     </div>
     <div class="row">
-        <div class="progress span12"><div class="progress-bar" style="width:{{ contest.time_passed_percent }}%"></div></div>
+        <div class="progress span12"><div class="progress-bar" style="width:{{ object.time_passed_percent }}%"></div></div>
     </div>
 </div>
 {% if contest_notice_list and contest_notice_list|length > 0 %}
@@ -49,10 +49,10 @@
     {% for cn in contest_notice_list %}
     <tr>
         <td>{{ cn.time|date:"Y-m-d H:i:s" }}</td>
-        <td><a href="/contest/{{ contest.cid }}/notice/{{ cn.cnid }}/">{{ cn.title }}</a></td>
+        <td><a href="/contest/{{ object.cid }}/notice/{{ cn.cnid }}/">{{ cn.title }}</a></td>
         <td>{{ cn.content }}</td>
         {%if tpl.has_priv%}
-        <th><a href="/contest/{{ contest.cid }}/notice/{{ cn.cnid }}/update/">修改</a></th>
+        <th><a href="/contest/{{ object.cid }}/notice/{{ cn.cnid }}/update/">修改</a></th>
         {%endif%}
     </tr>
     {% endfor %}

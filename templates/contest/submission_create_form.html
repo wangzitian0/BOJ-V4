@@ -1,0 +1,23 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load bootstrap3 %}
+
+{% block head_title %}My Submission{% endblock %}
+
+{% block body_class %}my-submission{% endblock %}
+
+{% block body_base %}
+<section class="jumbotron">
+  <div class="container">
+	<h1>{{ problem.title }}</h1>
+    <h3>create submission</h3>
+    <form action="/api/contest/{{ object.pk }}/submit/" method="post">{% csrf_token %}
+      <input type="submit" value="Save" />
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_body %}
+{% endblock %}

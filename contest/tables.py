@@ -5,11 +5,11 @@ from django_tables2.utils import A
 
 
 class ContestTable(tables.Table):
-    pk = tables.LinkColumn('contest:contest-detail', args=[A('pk')])
+    title = tables.LinkColumn('contest:contest-detail', args=[A('pk')])
     group = tables.LinkColumn('mygroup-detail', args=[A('group.pk')])
 
 
     class Meta:
         model = Contest
-        fields = ('pk', 'author', 'group', 'start_time')
+        fields = ('title', 'author', 'group', 'start_time')
         template = 'django_tables2/bootstrap.html'
