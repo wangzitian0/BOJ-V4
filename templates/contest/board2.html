@@ -1,0 +1,94 @@
+{% extends "contest/contest_base.html" %}
+{% block contest_title %}排行榜{% endblock %}
+
+{% block contest_body %}
+
+<div>
+    <table class="table table-bordered table-striped table-hover table-condensed">
+    <thead>
+        <th width="10%">排名</th>
+        <th width="14%">用户</th>
+        <th width="8%">{% if contest.board_type == 1 %}得分{% else %}题数{% endif %}</th>
+        <th width="8%">罚时</th>
+        {%for p in problems %}
+        <th>{{p.index}}</th>
+        {%endfor%}
+    </thead>
+    {% for person in rank %}
+    <tr>
+        <td>{{person.rank}}</td>
+        <td>{{person.username}}{% if person.nickname %}<br>{{ person.nickname }}{% endif %}</td>
+        <td>{{person.ac}}</td>
+        <td>{{person.pen}}</td>
+        {%for pinfo in person.pinfo%}
+        <td class="{%if pinfo.ac > 0%}{%if pinfo.fb%}kari-board-fb{%else%}kari-board-ac{%endif%}{%elif pinfo.ac < 0%}kari-board-noac{%endif%}" id="{{pinfo.idx}}{{person.uid}}">
+            {%if pinfo.ac > 0%}<a style="color:{%if pinfo.fb%}#dff0d8{% else %}#468847{% endif %}" onclick="javascript:set('{{pinfo.idx}}{{person.uid}}');return false;" href="#">{% endif %}
+                {{pinfo.ac}}
+                {%if pinfo.ac > 0%}({{pinfo.ac_time}}{%if pinfo.sub > 1 %}+20*{{pinfo.sub|add:"-1"}}{%endif%})
+            {%if pinfo.ac > 0%}</a>{% endif %}
+            {%endif%}
+        </td>
+        {%endfor%}
+    </tr>
+    {% endfor %}
+</table>
+</div>
+
+{% endblock %}
+{% block script_extra %}
+    <script src='https://cdn.firebase.com/v0/firebase.js'></script>
+<script>
+    var rData = new Firebase("https://sizzling-fire-3540.firebaseio.com/{{contest.cid}}");
+    var data = {};
+    var lock = {};
+    var ready = false;
+    rData.once('value', function(x) {
+        if(x.val()!=null) {
+            data = x.val();
+        }
+        for(var key in data) {
+            setCol(key, data[key]);
+        }
+        ready = true;
+    });
+    function set(key) {
+        if(!ready) {
+            return false;
+        }
+        if(!(key in data)) {
+            data[key] = 0;
+        }
+        if(!(key in lock)) {
+            lock[key] = true;
+        } else {
+            return false;
+        }
+        rData.child(key).set(data[key]+1, function(error) {
+            if(error) {
+                alert('Connection error');
+            } else {
+                setCol(key, data[key]+=1);
+            }
+            delete lock[key];
+        });
+    }
+    function setCol(key, val) {
+        x = document.querySelector("#"+key)
+        if(val==1) {
+            x.className = "kari-board-sending";
+        } else if(val==2) {
+            x.className = "kari-board-send";
+            x.innerHTML = x.innerText || x.textContent
+        }
+    }
+    function getBoardData() {
+        $.get("/api/contest/{{ object.pk }}/board/",
+            function(result) {
+                alert(JSON.stringify(result));
+                //for(var i = 0; i < result.length; i ++){
+                //}
+        }, "json");
+    }
+    getBoardData();
+</script>
+{% endblock %}

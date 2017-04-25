@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from datetime import datetime, timedelta, date, time
-from bojv4.conf import LANGUAGE_MASK
-from .models import Contest
+from bojv4.conf import LANGUAGE_MASK, LANGUAGE
+from .models import Contest, ContestSubmission
 
 '''
 class ContestForm(forms.ModelForm):
@@ -68,4 +68,9 @@ class ContestForm(forms.Form):
 
         return cleaned_data
 
+
+class SubmissionForm(forms.Form):
+
+    index = forms.ChoiceField(choices=(), widget=forms.Select())
+    language = forms.ChoiceField(choices=LANGUAGE.choice(), widget=forms.Select())
 

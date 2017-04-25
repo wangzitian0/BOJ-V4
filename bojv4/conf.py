@@ -15,8 +15,8 @@ class EnumChoice(object):
 
     def to_dict(self):
         if not self.pairs or len(self.pairs) == 0:
-            return None
-        if not self._pairs:
+            return {}
+        if self._pairs:
             return self._pairs
         self._pairs = dict(self.pairs)
         return self._pairs

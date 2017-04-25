@@ -19,8 +19,8 @@
         {% endcomment %}
         <td>{{ p.index }}</td>
         <td><a href="{% url 'contest:problem-detail' contest.pk p.index %}">{{ p.title }}</a></td>
-        <td>{{ p.problem.time_limt }}ms</td>
-        <td>{{ p.memory_limit }}KB</td>
+        <td>{{ p.problem.time_limit }}ms</td>
+        <td>{{ p.problem.memory_limit }}KB</td>
         <td>{{p.ac_sub}} / {{p.all_sub}}</td>
     </tr>
     {% endfor %}

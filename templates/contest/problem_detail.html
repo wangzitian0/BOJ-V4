@@ -28,7 +28,7 @@
 		</div>
     <div>
 	<div class="row">
-      <a href="{% url 'contest:submission-add' object.pk problem.index %}" class="btn btn-large btn-primary">Submit</a>
+      <a href="{% url 'contest:submission-add' object.pk %}?index={{ problem.index }}" class="btn btn-large btn-primary">Submit</a>
     </div>
   </div>
 </section>

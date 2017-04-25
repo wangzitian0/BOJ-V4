@@ -6,7 +6,6 @@
             <h2>结果列表</h2>
             <table class="table table-bordered table-striped table-hover">
                 <thead>
-                    <th>ID</th>
                     <th>题号</th>
                     <th>结果</th>
                     <th>时间</th>
@@ -16,17 +15,16 @@
                     <th>提交时间</th>
                     <th>用户</th>
                 </thead>
-                {% for s in submission_list %}
+                {% for s in submissions %}
                     <tr>
-                        <td>{{ s.cpsid }}</td>
-                        <td><a href="{% url 'contest:contest_problem' contest.cid s.cp_index %}">{{ s.cp_index }}</a></td>
-                        <td><strong><a href="" class="{{ s.cps_status_class }}">{{ s.cps_status }}</a></strong></td>
-                        <td>{{ s.cps_timecost }}ms</td>
-                        <td>{{ s.cps_memerycost }}KB</td>
-                        <td>{{ s.cps_language}}</td>
-                        <td>{{ s.cps_codelength }}B</td>
-                        <td></strong>{{ s.cps_submittime|date:"Y-m-d H:i:s" }}</td>
-                        <td><a href="">{{ s.cps_username }}</a></td>
+                        <td><a href="{% url 'contest:problem-detail' object.pk s.problem.index %}">{{ s.problem.title }}</a></td>
+                        <td><strong><a href="{% url 'contest:submission-detail' object.pk s.pk %}" >{{ s.submission.status }}</a></strong></td>
+                        <td>{{ s.submission.running_time }}ms</td>
+                        <td>{{ s.submission.running_memory }}KB</td>
+                        <td>{{ s.submission.language }}</td>
+                        <td>{{ s.submission.length }}B</td>
+                        <td></strong>{{ s.submission.create_time|date:"Y-m-d H:i:s" }}</td>
+                        <td><a href="">{{ s.submission.user.username }}</a></td>
                     </tr>
                 {% endfor %}
             </table>

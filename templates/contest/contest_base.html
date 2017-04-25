@@ -8,12 +8,15 @@
     <a class="btn pull-right" href="/contest/{{ object.pk }}/add_notice/">添加公告</a>
     <a class="btn btn-primary pull-right" href="/contest/{{ object.cid }}/update_contest/">修改测验</a>
     {%endif%}
+    {% block contest_title %}
     <h1>{{ object.title }}
     </h1>
     <small>{% if object.status == "ended" %}已结束{% elif object.status == "running" %}进行中{% else %}未开始{% endif %}</small>
+    {% endblock %}
 </div>
 <ul class="nav nav-pills">
-    <li id="contest_home"><a href="{% url "contest:contest-detail" object.pk%}">测验首页</a></li>
+    <li id="contest_home"><a href="{% url "contest:contest-detail" object.pk %}">测验首页</a></li>
+    <li id="contest_submit"><a href="{% url "contest:submission-add" object.pk %}">提交代码</a></li>
     <li id="contest_status"><a href="{% url "contest:submission-list" object.pk %}">结果列表</a></li>
     <li id="contest_query"><a href="{% url "contest:clarification-list" object.pk %}">提问列表</a></li>
     <li id="contest_board"><a href="{% url "contest:board" object.pk %}">排行榜</a></li>
@@ -59,7 +62,11 @@
 </table>
 </div>
 {% endif %}
+      <div class="container" id="wrapper">
 {% block contest_body %} {% endblock contest_body %}
+  </div>
+    <script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
+    {% block script_extra %} {% endblock %}
 {% endblock %}
 
 
