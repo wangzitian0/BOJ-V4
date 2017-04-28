@@ -1,0 +1,33 @@
+{% extends "contest/contest_base.html" %}
+{% block body_extra_attributes %}onload="activateTag('contest_home')"{% endblock %}
+{% block contest_body %}
+{%if tpl.has_priv or object.status != 'scheduled'%}
+<div>
+<h2>题目列表</h2>
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <th>题目</th>
+        <th>标题</th>
+        <th>时间限制</th>
+        <th>内存限制</th>
+        <th>通过数 / 提交数</th>
+    </thead>
+    {% for p in object.problems.all %}
+    <tr>
+        {% comment %}
+        <td>{%if p.user_res == 1%}<strong><center><font color=red>Yes</font></center></strong>{%endif%}</td>
+        {% endcomment %}
+        <td>{{ p.index }}</td>
+        <td><a href="{% url 'contest:problem-detail' contest.pk p.index %}">{{ p.title }}</a></td>
+        <td>{{ p.problem.time_limit }}ms</td>
+        <td>{{ p.problem.memory_limit }}KB</td>
+        <td>{{p.ac_sub}} / {{p.all_sub}}</td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% endif %}
+
+{% endblock %}
+
+

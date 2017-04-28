@@ -13,10 +13,15 @@ class EnumChoice(object):
     def choice(self):
         return self.pairs
 
+    def filter_choice(self):
+        res = [('', 'All')]
+        res.extend(list(self.pairs))
+        return res
+
     def to_dict(self):
         if not self.pairs or len(self.pairs) == 0:
-            return None
-        if not self._pairs:
+            return {}
+        if self._pairs:
             return self._pairs
         self._pairs = dict(self.pairs)
         return self._pairs
@@ -42,8 +47,20 @@ LANGUAGE = EnumChoice(
     ('PY3', 'Python 3.5'),
     ('NASM', 'Assembly 32bit'),
     ('NASM64', 'Assembly 64bit')
-
 )
+
+LANGUAGE_MASK = EnumChoice(
+    (1, 'CPP03'),
+    (2, 'C'),
+    (4, 'JAVA8'),
+    (8, 'CPP11'),
+    (16, 'CPP14'),
+    (32, 'PY2'),
+    (64, 'PY3'),
+    (128, 'NASM'),
+    (256, 'NASM64')
+)
+
 
 GENDER = EnumChoice(
     ('S', _('Secret')),
