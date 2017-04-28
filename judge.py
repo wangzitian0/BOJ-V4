@@ -14,6 +14,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'bojv4.settings'
 django.setup()
 
 from submission.models import Submission, CaseResult
+import logging
+logger = logging.getLogger('django')
 
 
 class NsqQueue(object):
@@ -32,25 +34,26 @@ class NsqQueue(object):
 
 
 def submission_handler(message):
+    logger.info('receive judge result')
     try:
         mp = json.loads(message.body)
         # print json.dumps(mp, indent=4)
         sub_pk = mp.get('submission-id', None)
         sub = Submission.objects.filter(pk=sub_pk).first()
         status = mp.get('status', None)
-        print "================, ", status
+        logger.info('receive : ' + str(sub_pk) + status)
         if not sub or not status or status not in conf.STATUS_CODE.keys():
             print conf.STATUS_CODE.keys()
             return True
         position = mp.get('position', '')
-        print "================, ", position
+        logger.info('receive : ' + str(sub_pk) + str(position))
         if position != '':
             # CaseResult.deal_case_result(mp)
             case = CaseResult()
             case.position = int(position)
             case.submission = sub
-            case.running_time = mp.get('running_time', 0)
-            case.running_memory = mp.get('running_memory', 0)
+            case.running_time = mp.get('time', 0)
+            case.running_memory = mp.get('memory', 0)
             case.status = status
             print "============create=========="
             case.save()
@@ -64,7 +67,9 @@ def submission_handler(message):
                 sub.set_info('compile-message', mp['compile-message'])
             sub.status = status
             sub.save()
+        logger.info("judge end")
     except Exception as ex:
+        logger.error("judge error: "+str(ex))
         print ex
     return True
 
@@ -75,8 +80,9 @@ def cheat_handler(message):
 
 
 if __name__ == '__main__':
+    print "start run"
     NsqQueue.add_callback(handler=submission_handler, topic='submission', channel='123456')
-    NsqQueue.add_callback(handler=cheat_handler, topic='cheat', channel='adfasdf')
+    # NsqQueue.add_callback(handler=cheat_handler, topic='cheat', channel='adfasdf')
+    print "end add"
     NsqQueue.start()
-
 

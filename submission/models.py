@@ -47,6 +47,15 @@ class Submission(models.Model):
                 print ex
         self._info[key] = value
 
+    def get_info(self, key):
+        if not self._info:
+            self._info = {}
+            try:
+                self._info = json.loads(self.info)
+            except Exception as ex:
+                self._info = {}
+        return self._info.get(key, None)
+
     def deal_case_result(self, case):
         if case.status == 'AC' and self.cases.count() != self.problem.cases.count():
             return

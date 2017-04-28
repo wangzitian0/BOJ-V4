@@ -76,13 +76,13 @@ STATUS_CODE = EnumChoice(
     ('JD', 'Judging'),
     ('AC', 'Accepted'),
     ('PE', 'Presentation Error'),
+    ('IR', 'Invalid Return'),
     ('WA', 'Wrong Answer'),
     ('RE', 'Runtime Error'),
     ('TLE', 'Time Limit Exceed'),
     ('MLE', 'Memory Limit Exceed'),
     ('OLE', 'Output Limit Exceed'),
-    ('EXT', 'Extended Judge Result'),
-    ('NUM', 'Judge Score')
+    ('IE', 'Internal Error'),
 )
 PROBLEM_TITLE_LENGTH = 64
 PROBLEM_MAX_LEN_DESC = 32768
