@@ -5,7 +5,7 @@ from django_tables2.utils import A
 
 
 class SubmissionTable(tables.Table):
-    pk = tables.LinkColumn('submission:submission-detail', args=[A('pk')])
+    pk = tables.LinkColumn('submission:submission-detail', args=[A('pk')], verbose_name='id')
     problem = tables.LinkColumn('problem:problem-detail', args=[A('problem.pk')])
     status = tables.Column(verbose_name=u'运行结果')
     external = tables.TemplateColumn(

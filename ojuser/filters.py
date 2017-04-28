@@ -6,16 +6,21 @@ from guardian.shortcuts import get_objects_for_user
 
 class GroupFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains')
-    can_manage = django_filters.MethodFilter(widget=BooleanWidget())
+    can_manage = django_filters.BooleanFilter(method='filter_can_manage', label='can_manage', widget=BooleanWidget())
 
-    def filter_can_manage(self, queryset, value):
-        if value:
-            profiles_can_change = get_objects_for_user(
+    def filter_can_manage(self, queryset, name, value):
+        print "<name>:", name
+        print "<value>:", value
+        profiles_can_change = get_objects_for_user(
                 self.user,
                 'ojuser.change_groupprofile',
                 with_superuser=True
             )
+        if value:
             queryset = queryset.filter(pk__in=profiles_can_change)
+        else:
+            queryset = queryset.exclude(pk__in=profiles_can_change)
+
         return queryset
 
     def __init__(self, *args, **kwargs):

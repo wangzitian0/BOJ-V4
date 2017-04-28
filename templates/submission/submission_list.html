@@ -13,12 +13,9 @@
   <div class="container">
     {% include "_messages.html" %}
     <h1>Submissions</h1>
-      <form id="filter" action="" method="get">
-        <div class="col-lg-2">
+      <form id="filter" action="" method="get" class="form-inline">
           {% bootstrap_form filter.form %}
-        </div>
-        <div class="col-lg-2">
-          <br>
+        <div class="form-group">
           <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
         </div>
       </form>
