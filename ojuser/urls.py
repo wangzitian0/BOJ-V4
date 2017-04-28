@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     url(r"^groups/$", views.GroupListView.as_view(), name="mygroup-list"),
     url(r"^groups/add$", views.GroupCreateView.as_view(), name="mygroup-create"),
-    url(r'^group/(?P<pk>[0-9]+)/$', views.GroupDetailView.as_view(), name='mygroup-detail'),
+    url(r'^groups/(?P<pk>[0-9]+)/$', views.GroupDetailView.as_view(), name='mygroup-detail'),
     url(r'^groups/(?P<pk>[0-9]+)/update/$', views.GroupUpdateView.as_view(),
         name='mygroup-update'),
     url(r'^groups/(?P<pk>[0-9]+)/delete/$', views.GroupDeleteView.as_view(),

@@ -92,7 +92,7 @@ class ProblemDataInfoViewSet(viewsets.ModelViewSet):
 class ProblemListView(ListView):
 
     model = Problem
-    paginate_by = 10
+    paginate_by = 20
 
     def get_queryset(self):
         gp_can_view = get_objects_for_user(

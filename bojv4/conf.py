@@ -13,6 +13,11 @@ class EnumChoice(object):
     def choice(self):
         return self.pairs
 
+    def filter_choice(self):
+        res = [('', 'All')]
+        res.extend(list(self.pairs))
+        return res
+
     def to_dict(self):
         if not self.pairs or len(self.pairs) == 0:
             return {}

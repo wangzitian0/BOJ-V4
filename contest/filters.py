@@ -2,11 +2,24 @@ import django_filters
 from django_filters.widgets import BooleanWidget
 from django_filters import widgets
 from django_filters import filters
-from .models import Contest
+from .models import Contest, ContestSubmission
 from ojuser.models import GroupProfile
 from guardian.shortcuts import get_objects_for_user
+
+from bojv4.conf import LANGUAGE
 #  from guardian.shortcuts import get_objects_for_user
 
+
+class SubmissionFilter(django_filters.FilterSet):
+    pk = django_filters.CharFilter(name='id')
+
+    def __init__(self, *args, **kwargs):
+        super(SubmissionFilter, self).__init__(*args, **kwargs)
+
+
+    class Meta:
+        model = ContestSubmission
+        fields = ['pk', ]
 
 def view_groups(request):
     print 'user name', request.user
@@ -43,3 +56,5 @@ class ContestFilter(django_filters.FilterSet):
     class Meta:
         model = Contest
         fields = ['name', 'group', 'can_manage', ]
+
+

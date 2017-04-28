@@ -118,10 +118,10 @@
                 <th class="problem_score">题目分数</th>
             </thead>
             <tbody>
-            {% for p in problem_list %}
+            {% for p in problems %}
                 <tr class="prob_element">
                     <td><button class="btn" type="button" onclick="del_prob(this)">删除</button></td>
-                    <td><input type="text" name="problem_id" onchange="checkProb(this, false)" value="{{p.problem.pk}}" placeholder="Problem ID" autocomplete="off"></td>
+                    <td><input type="text" name="problem_id" onchange="checkProb(this)" value="{{p.problem.pk}}" placeholder="Problem ID" autocomplete="off"></td>
                     <td><input type="text" name="problem_title_custom" value="{{p.problem.title}}" placeholder="Problem Custom Title"></td>
                     <td><span class="problem_title">{{p.title}}</span></td>
                     <td>{{p.score}}</td>

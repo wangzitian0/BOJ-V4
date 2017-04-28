@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import math
 from .models import Contest, ContestProblem, ContestSubmission
@@ -40,9 +40,17 @@ class ContestViewPermission(BasePermission):
             return False
         if request.user.has_perm('ojuser.change_groupprofile', obj.group):
             return True
-        if request.user.has_perm('ojuser.change_groupprofile', obj.group) and datetime.now() > obj.start_time:
+        print type(obj.start_time)
+        now = datetime.now()
+        if request.user.has_perm('ojuser.view_groupprofile', obj.group) and now > obj.start_time.replace(tzinfo=None)\
+                and now < obj.start_time.replace(tzinfo=None) + timedelta(minutes=obj.length):
             return True
         return False
+
+class ContestChangePermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        pass
 
 
 class SubmissionPermission(BasePermission):
@@ -68,6 +76,7 @@ class ContestViewSet(ModelViewSet):
     def get_contest_board(self, request, pk=None):
         contest = self.get_object()
         subs = ContestSubmission.objects.filter(problem__contest=contest).all()
+        probs = ContestProblem.objects.filter(contest=contest).all()
         info = {}
         for csub in subs:
             sub = csub.submission
@@ -78,36 +87,41 @@ class ContestViewSet(ModelViewSet):
 
             uinfo = info.get(uid, None)
             if not uinfo:
-                uinfo = {}
-                info[sub.user.username] = uinfo
+                uinfo = {'username': uid, 'nickname': sub.user.profile.nickname}
+                info[uid] = uinfo
             pinfo = uinfo.get('pinfo', None)
             if not pinfo:
                 pinfo = {}
                 uinfo['pinfo'] = pinfo
             sinfo = pinfo.get(idx, None)
             if not sinfo:
-                sinfo = {'idx': idx, 'AC':0, 'sub': 0, 'pen': 0}
+                sinfo = {'idx': idx, 'AC': 0, 'sub': 0, 'pen': 0}
                 pinfo[idx] = sinfo
             if sinfo.get('AC', 0):
                 continue
             td = sub.create_time - contest.start_time
             info[uid]['pinfo'][idx]['sub'] += 1
             if sub.status == "AC":
-                print "AC============="
                 info[uid]['pinfo'][idx]["AC"] = info[uid]['pinfo'][idx]['sub']
                 info[uid]['pinfo'][idx]["ac_time"] = int(math.ceil(td.total_seconds() / 60))
-                info[uid]['pinfo'][idx]["pen"] += int(math.ceil(td.total_seconds() / 60))
+                # info[uid]['pinfo'][idx]["pen"] += int(math.ceil(td.total_seconds() / 60))
             else:
                 info[uid]['pinfo'][idx]["AC"] -= 1
                 info[uid]['pinfo'][idx]["pen"] += 20
 
         info = info.values()
+
         for i in info:
-            print i['pinfo']
+            for prob in probs:
+                if not i['pinfo'].has_key(prob.index):
+                    i['pinfo'] = {
+                        'idx': prob.idx,
+                        'AC': 0,
+                        'sub': 0,
+                        'pen': 0
+                    }
             i['pinfo'] = i['pinfo'].values()
-            print i['pinfo']
             i['pinfo'].sort(key=lambda x: x['idx'])
-            # if u.university_id!=5:
             i['sub'] = 0
             i['AC'] = 0
             i['pen'] = 0
@@ -115,7 +129,7 @@ class ContestViewSet(ModelViewSet):
                 print sinfo
                 if sinfo.get('AC', 0) > 0:
                     i['AC'] += 1
-                    i['pen'] += sinfo.get('pen', 0)
+                    i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
                 i['sub'] += sinfo.get('sub', 0)
 
         return Response(info)
@@ -283,6 +297,7 @@ class ContestDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(ContestDetailView, self).get_context_data(**kwargs)
         context['pk'] = self.kwargs['pk']
+        context['is_admin'] = self.request.user.has_perm('ojuser.change_groupprofile', self.object.group)
         return context
 
 
@@ -319,7 +334,10 @@ class SubmissionListView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(SubmissionListView, self).get_context_data(**kwargs)
         # context['submissions'] = reduce(lambda x, y: (x.submissions.all() | y.submissions.all()), self.object.problems.all())
-        context['submissions'] = ContestSubmission.objects.filter(problem__contest=self.object).all()
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.object.group):
+            context['submissions'] = ContestSubmission.objects.filter(problem__contest=self.object).all()
+        else:
+            context['submissions'] = ContestSubmission.objects.filter(problem__contest=self.object, submission__user=self.request.user).all()
         return context
 
 
@@ -352,11 +370,12 @@ class ContestUpdateView(TemplateView):
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
-        self.object = get_object_or_404(Contest.objects.all(), pk=pk)
+        groups = get_objects_for_user(self.request.user, 'ojuser.change_groupprofile', with_superuser=True)
+        qs = Contest.objects.filter(group__in=groups)
+        self.object = get_object_or_404(qs, pk=pk)
         return super(ContestUpdateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
         print "=================HTTP method: ", request.method
         if request.method == 'POST':
             form = ContestForm(request.POST)
@@ -380,7 +399,7 @@ class ContestUpdateView(TemplateView):
                 problem_pks = []
                 for i in range(len(problem_list)):
                     p = Problem.objects.filter(pk=problem_list[i]).first()
-                    cp = ContestProblem.objects.filter(problem=p, contest=self.object).first()
+                    cp = ContestProblem.objects.filter(contest=self.object, index=pindex).first()
                     if not cp:
                         cp = ContestProblem()
                     cp.problem = p
@@ -396,6 +415,7 @@ class ContestUpdateView(TemplateView):
                         p.delete()
                 print reverse('contest:contest-list')
                 return HttpResponseRedirect(reverse('contest:contest-list'))
+        context = self.get_context_data(**kwargs)
         return super(ContestUpdateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
@@ -410,6 +430,7 @@ class ContestUpdateView(TemplateView):
             else:
                 control_problem |= g.problems.all()
         context['control_problem'] = control_problem.distinct() if control_problem else None
+        context['problems'] = self.object.problems.all()
         return context
 
 

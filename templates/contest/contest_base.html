@@ -3,10 +3,10 @@
 {% block body %}
 <div class="page-header">
     <Meta http-equiv="Refresh" Content="50;">
-    {%if tpl.has_priv%}
+    {%if is_admin %}
     {%if object.status == "ended"%}<button class="btn btn-inverse pull-right" onclick="postRequest();" id="submit">代码查重</button>{%endif%}
     <a class="btn pull-right" href="/contest/{{ object.pk }}/add_notice/">添加公告</a>
-    <a class="btn btn-primary pull-right" href="/contest/{{ object.cid }}/update_contest/">修改测验</a>
+    <a class="btn btn-primary pull-right" href="{% url 'contest:contest-update' pk %}">修改测验</a>
     {%endif%}
     {% block contest_title %}
     <h1>{{ object.title }}

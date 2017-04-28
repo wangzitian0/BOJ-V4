@@ -4,7 +4,7 @@ from ojuser.models import GroupProfile
 from submission.models import Submission
 from problem.models import Problem
 from bojv4 import conf
-
+from datetime import datetime, timedelta
 # Create your models here.
 
 
@@ -19,6 +19,18 @@ class Contest(models.Model):
     desc = models.TextField(default='')
     lang_limit = models.IntegerField(default=0)
     contest_type = models.IntegerField(default=0)
+
+    def time_left(self):
+        now = datetime.now()
+        if now < self.start_time.replace(tzinfo=None):
+            return self.length
+        if now > (self.start_time.replace(tzinfo=None) + timedelta(minutes=self.length)):
+            print now
+            print self.start_time
+            print (self.start_time.replace(tzinfo=None)+timedelta(minutes=self.length))
+            return 0
+        print type(self.start_time)
+        return int((self.start_time + timedelta(minutes=self.length) -now).total_seconds()/60)
 
 
 class ContestProblem(models.Model):
@@ -36,16 +48,12 @@ class ContestSubmission(models.Model):
     submission = models.ForeignKey(Submission, related_name='contest_submissions')
 
 
-"""
-class ContestNotification(models.Model):
+class Notification(models.Model):
 
-    TITLE_MIN_LEN = 1
-    TITLE_MAX_LEN = 128
-
-    contest = models.ForeignKey(Contest)
-    title = models.CharField(max_length=TITLE_MAX_LEN)
-    content = models.TextField()
-    time = models.DateTimeField(auto_now_add=True)
+    contest = models.ForeignKey(Contest, related_name='notifications')
+    title = models.CharField(max_length=128)
+    content = models.TextField(default='')
+    create_time = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return self.title
@@ -53,10 +61,12 @@ class ContestNotification(models.Model):
 
 
 class Clarification(models.Model):
-    Q&A in contest
-    author = models.ForeignKey(User)
-    question = models.TextField()
-    answer = models.TextField()
-    time = models.DateTimeField(auto_now_add=True)
 
-"""
+    title = models.CharField(max_length=128)
+    author = models.ForeignKey(User)
+    question = models.TextField(default='')
+    answer = models.TextField(default='')
+    create_time = models.DateTimeField(auto_now_add=True)
+    contest = models.ForeignKey(Contest, related_name='clarifications')
+
+
