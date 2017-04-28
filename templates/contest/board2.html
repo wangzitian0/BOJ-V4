@@ -1,0 +1,71 @@
+{% extends "contest/contest_base.html" %}
+{% block contest_title %}排行榜{% endblock %}
+
+{% block contest_body %}
+
+<div>
+    <table class="table table-bordered table-striped table-hover table-condensed" id="id_rank">
+    <thead>
+        <th width="10%">排名</th>
+        <th width="14%">用户</th>
+        <th width="8%">题数</th>
+        <th width="8%">{% if object.contest_type == 0 %}罚时{% else %}得分{% endif %}</th>
+        {%for p in problems %}
+        <th>{{p.index}}</th>
+        {%endfor%}
+    </thead>
+    {% for person in rank %}
+    <tr>
+        <td>{{person.rank}}</td>
+        <td>{{person.username}}{% if person.nickname %}<br>{{ person.nickname }}{% endif %}</td>
+        <td>{{person.ac}}</td>
+        <td>{{person.pen}}</td>
+        {%for pinfo in person.pinfo%}
+        <td class="{%if pinfo.ac > 0%}{%if pinfo.fb%}kari-board-fb{%else%}kari-board-ac{%endif%}{%elif pinfo.ac < 0%}kari-board-noac{%endif%}" id="{{pinfo.idx}}{{person.uid}}">
+            {%if pinfo.ac > 0%}<a style="color:{%if pinfo.fb%}#dff0d8{% else %}#468847{% endif %}" onclick="javascript:set('{{pinfo.idx}}{{person.uid}}');return false;" href="#">{% endif %}
+                {{pinfo.ac}}
+                {%if pinfo.ac > 0%}({{pinfo.ac_time}}{%if pinfo.sub > 1 %}+20*{{pinfo.sub|add:"-1"}}{%endif%})
+            {%if pinfo.ac > 0%}</a>{% endif %}
+            {%endif%}
+        </td>
+        {%endfor%}
+    </tr>
+    {% endfor %}
+</table>
+</div>
+
+{% endblock %}
+{% block script_extra %}
+    <script src='https://cdn.firebase.com/v0/firebase.js'></script>
+<script>
+    function getBoardData() {
+        $.get("/api/contest/{{ object.pk }}/board/",
+            function(result) {
+                for(var i = 0; i < result.length; i ++){
+                    var tr = $("<tr></tr>");
+                    tr.append($("<td>"+ (i + 1) +"</td>"));
+                    tr.append($("<td>"+ result[i].username + "</td>"));
+                    tr.append($("<td>" + result[i].AC + "</td>"));
+                    tr.append($("<td>" + result[i].pen + "</td>"));
+                    for(var j = 0; j < result[i].pinfo.length; j ++) {
+                        var sub = $("<td></td>");
+                        var a = $("<a></a>");
+                        if (result[i].pinfo[j].AC > 0){
+                            sub.addClass("kari-board-ac");
+                            a.append(result[i].pinfo[j].AC);
+                            a.append("("+result[i].pinfo[j].ac_time+"+"+result[i].pinfo[j].pen+")");
+                        }
+                        else if(result[i].pinfo[j].AC < 0) {
+                            sub.addClass("kari-board-noac");
+                            a.append(result[i].pinfo[j].AC);
+                        }
+                        sub.append(a);
+                        tr.append(sub);
+                    }
+                    $("#id_rank").append(tr);
+                }
+        }, "json");
+    }
+    setInterval(getBoardData(), 10000);
+</script>
+{% endblock %}

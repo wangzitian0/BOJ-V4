@@ -1,0 +1,33 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load bootstrap3 %}
+{% load django_tables2 %}
+
+{% block head_title %}测验列表{% endblock %}
+
+{% block body_class %}contest-list{% endblock %}
+
+{% block body_base %}
+    <section class="jumbotron">
+        <div class="container">
+            <div class="row">
+                <form id="filter" action="" method="get">
+                    <div class="col-lg-2">
+                      {% bootstrap_form filter.form %}
+                    </div>
+                    <div class="col-lg-2">
+                      <br>
+                      <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+                    </div>
+                </form>
+
+            </div>
+            <div class="row">
+             </div>
+            {% render_table contests_table %}
+            {% bootstrap_pagination page_obj %}
+        </div>
+
+    </section>
+{% endblock %}

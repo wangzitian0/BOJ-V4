@@ -1,0 +1,35 @@
+{% extends "contest/contest_base.html" %}
+{% block body_extra_attributes %}onload="activateTag('contest_status')"{% endblock %}
+{% block contest_body %}
+    {%if tpl.has_priv or contest.status != 'scheduled'%}
+        <div>
+            <h2>结果列表</h2>
+            <table class="table table-bordered table-striped table-hover">
+                <thead>
+                    <th>题号</th>
+                    <th>结果</th>
+                    <th>时间</th>
+                    <th>内存</th>
+                    <th>语言</th>
+                    <th>代码长度</th>
+                    <th>提交时间</th>
+                    <th>用户</th>
+                </thead>
+                {% for s in submissions %}
+                    <tr>
+                        <td><a href="{% url 'contest:problem-detail' object.pk s.problem.index %}">{{ s.problem.title }}</a></td>
+                        <td><strong><a href="{% url 'contest:submission-detail' object.pk s.pk %}" >{{ s.submission.status }}</a></strong></td>
+                        <td>{{ s.submission.running_time }}ms</td>
+                        <td>{{ s.submission.running_memory }}KB</td>
+                        <td>{{ s.submission.language }}</td>
+                        <td>{{ s.submission.length }}B</td>
+                        <td></strong>{{ s.submission.create_time|date:"Y-m-d H:i:s" }}</td>
+                        <td><a href="">{{ s.submission.user.username }}</a></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
+
+

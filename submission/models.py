@@ -10,7 +10,10 @@ import json
 import logging
 logger = logging.getLogger('django')
 
+
 class Submission(models.Model):
+    CODE_LENGTH_LIMIT = 65536
+
     user = models.ForeignKey(User, related_name='submissions')
     problem = models.ForeignKey(Problem, related_name='submissions')
     create_time = models.DateTimeField(auto_now_add=True)
@@ -19,7 +22,8 @@ class Submission(models.Model):
     running_time = models.IntegerField(default=0)
     running_memory = models.IntegerField(default=0)
     info = models.TextField(blank=True)
-    code = models.TextField()
+    code = models.TextField(default='')
+    length = models.IntegerField(default=0)
     language = models.CharField(max_length=10, default='gcc', choices=conf.LANGUAGE.choice())
 
     def __init__(self, *args, **kwargs):
@@ -32,22 +36,6 @@ class Submission(models.Model):
 
     def get_absolute_url(self):
         return reverse('submission:submission-detail', kwargs={'pk': self.pk})
-
-    @classmethod
-    def firstAcInContest(cls, sub):
-        if not (sub.contest and sub.status == 'AC'):
-            return False
-        if cls.objects.filter(contest=sub.contest, user=sub.user, \
-                problem=sub.problem, status='AC').count() == 1:
-            return True
-        return False
-
-    @classmethod
-    def notAcInContest(cls, sub):
-        if cls.objects.filter(contest=sub.contest, user=sub.user, \
-                problem=sub.problem, status='AC').count() == 0:
-            return True
-        return False
 
     def set_info(self, key, value):
         if not self._info:
@@ -85,6 +73,8 @@ class Submission(models.Model):
         logger.warning("start pending judge for submission")
         resp = send_to_nsq('judge', json.dumps(req))
         if resp.get('code', None) == -1:
+            self.status = 'SE'
+            self.save()
             logger.warning("result of pending judge for submission is False, message is " + resp.get('msg'))
         else:
             logger.warning("result of pending judge for submission is True, " + resp.get('msg'))

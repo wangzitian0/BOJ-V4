@@ -1,4 +1,4 @@
-{% extends "site_base.html" %}
+{% extends "contest/contest_base.html" %}
 
 {% load i18n %}
 
@@ -6,24 +6,22 @@
 
 {% block body_class %}my-submission{% endblock %}
 
-{% block body_base %}
-<section id="content_body" class="jumbotron">
-    <div class="container" id="wrapper">
+{% block contest_body %}
         <div class="row white-bg">
             <div class="col-lg-10">
                 <div class="container">
                     <div class="row">
-                        <a href="{% url 'problem:problem-detail' object.problem.pk %}">
+                        <a href="{% url 'contest:problem-detail' contest.pk object.problem.index %}">
                             <h2>{{ object.problem.title }}</h2>
                         </a>
                     </div>
                     <div class="row">
                          <ol class="breadcrumb">
                             <li>
-                              <a href="{% url 'submission:submission-list' %}">Submission List</a>
+                              <a href="{% url 'contest:submission-list' contest.pk %}">Submission List</a>
                             </li>
                           <li class="active">
-                              <strong>{{ object.user.username }}</strong>
+                              <strong>{{ object.submission.user.username }}</strong>
                           </li>
                          </ol>
                     </div>
@@ -39,44 +37,11 @@
                         <div class="col-lg-12">
                             <div class="ibox">
                                 <div class="ibox-content">
-                                    <textarea id="code-text">{{ object.code }}</textarea>
+                                    <textarea id="code-text">{{ object.submission.code }}</textarea>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-lg-4">
-
-                        <div class="ibox float-e-margins">
-                            <div class="ibox-title">
-                                <h5>New data for the report</h5> <span class="label label-primary">IN+</span>
-                                    <div class="ibox-tools">
-                                        <a class="collapse-link">
-                                            <i class="fa fa-chevron-up"></i>
-                                        </a>
-                                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                                            <i class="fa fa-wrench"></i>
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-user">
-                                            <li><a href="#">Config option 1</a>
-                                            </li>
-                                            <li><a href="#">Config option 2</a>
-                                            </li>
-                                        </ul>
-                                        <a class="close-link">
-                                            <i class="fa fa-times"></i>
-                                        </a>
-                                    </div>
-                            </div>
-                                <div class="ibox-content">
-                                        <h4>NYS report new data!
-                                            <small class="m-r"><a href="graph_flot.html"> Check the stock price! </a> </small>
-                                        </h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {% for case in cases %}
                     <br>
                     <div class="row">
@@ -98,10 +63,8 @@
                 </div>
             </div>
         </div>
-    </div>
-</section>
 {% endblock %}
-{% block extra_body %}
+{% block script_extra %}
 
 <link href="{{ STATIC_URL }}css/bootstrap.css" rel="stylesheet">
 <link href="{{ STATIC_URL }}css/plugins/codemirror/codemirror.css" rel="stylesheet">
@@ -110,7 +73,6 @@
 
 <script src="{{ STATIC_URL }}js/plugins/metisMenu/jquery.metisMenu.js"></script>
 <script src="{{ STATIC_URL }}js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
-<script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
 <!-- CodeMirror -->
 <script src="{{ STATIC_URL }}js/plugins/codemirror/codemirror.js"></script>
 <script src="{{ STATIC_URL }}js/plugins/codemirror/mode/javascript/javascript.js"></script>

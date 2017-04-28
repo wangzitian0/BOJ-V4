@@ -1,0 +1,35 @@
+{% extends "contest/contest_base.html" %}
+
+{% block contest_body %}
+	<div class="row">
+		<h1>{{ problem.index}}. {{ problem.title }}</h1>
+	</div>
+	<div class="row">
+    <h4>time_limit: {{ problem.problem.time_limit }}</h4>
+	</div>
+	<div class="row">
+    <h4>memory_limit: {{ problem.problem.memory_limit }}</h4>
+	</div>
+	<div class="row">
+    <h4>code_length_limit: {{ problem.problem.code_length_limit }}</h4>
+	</div>
+	<div class="row">
+		<h4>last_updated_time: {{ problem.problem.last_updated_time }}</h4>
+	</div>
+	<div class="row">
+    <h4>author: {{ problem.problem.superadmin }}</h4>
+	</div>
+	<div class="row">
+    <h4>is_spj: {{ problem.problem.is_spj }}</h4>
+	</div>
+	<div class="row">
+		<div class="panel_content">
+    <p>{{ problem.problem.problem_desc }}</p>
+		</div>
+    <div>
+	<div class="row">
+      <a href="{% url 'contest:submission-add' object.pk %}?index={{ problem.index }}" class="btn btn-large btn-primary">Submit</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

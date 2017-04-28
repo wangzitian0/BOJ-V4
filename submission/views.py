@@ -7,6 +7,7 @@ from .models import Submission, CaseResult
 from .forms import SubmissionForm
 from .serializers import SubmissionSerializer
 from .tables import SubmissionTable
+from .filters import SubmissionFilter
 
 from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
@@ -52,6 +53,7 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 class SubmissionListView(ListView):
 
     model = Submission
+    paginate_by = 20
 
     def get_queryset(self):
         groups = get_objects_for_user(self.user, 'ojuser.change_groupprofile', GroupProfile)
@@ -59,7 +61,18 @@ class SubmissionListView(ListView):
         for g in groups:
             for p in g.problems.all():
                 ans |= p.submissions.all()
-        return ans
+        res = reduce(lambda x, y : x | y, map(lambda x: x.problems.all(), groups)).distinct()
+        self.submission_can_view_qs = ans.distinct()
+        print self.request.GET
+        self.filter = SubmissionFilter(
+            self.request.GET,
+            queryset=self.submission_can_view_qs,
+            problems=res
+        )
+        print "filters=========="
+        print self.filter.filters
+        # self.filter.filters.get('problem').queryset = res
+        return self.filter.qs
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -72,6 +85,11 @@ class SubmissionListView(ListView):
         RequestConfig(self.request).configure(submissions_table)
         #  add filter here
         context['submissions_table'] = submissions_table
+        0
+        #  add filter here
+        context['filter'] = self.filter
+        context['submission_can_view'] = self.submission_can_view_qs
+
         return context
 
 
