@@ -4114,10 +4114,14 @@
             editormd.loadFiles.css.push(fileName);
             callback();
         };
-
+        if(fileName == "lib/katex.min") {
+            fileName = "/site_media/static/editormd/lib/katex.min";
+        }
         css.href   = fileName + ".css";
 
-        if(into === "head") {
+        console.log(css);
+        if (into === "head") {
+
             document.getElementsByTagName("head")[0].appendChild(css);
         } else {
             document.body.appendChild(css);
@@ -4144,7 +4148,10 @@
         var script    = null; 
         script        = document.createElement("script");
         script.id     = fileName.replace(/[\./]+/g, "-");
-        script.type   = "text/javascript";        
+        script.type   = "text/javascript";
+        if(fileName == "lib/katex.min") {
+            fileName = "/site_media/static/editormd/lib/katex.min";
+        }
         script.src    = fileName + ".js";
         
         if (editormd.isIE8) 

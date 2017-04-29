@@ -7,9 +7,11 @@ from ojuser.models import GroupProfile
 
 class ProblemForm(forms.ModelForm):
 
+    is_spj = forms.NullBooleanField(widget=forms.CheckboxInput(), initial=False)
+
     class Meta:
         model = Problem
-        exclude = ["superadmin", "is_checked"]
+        exclude = ["superadmin", "is_checked", "created_time", "last_updated_time", "problem_desc", "tags"]
         widgets = {
            'groups': ModelSelect2MultipleWidget(
                 search_fields=[

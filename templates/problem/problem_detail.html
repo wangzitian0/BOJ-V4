@@ -1,28 +1,12 @@
 {% extends "site_base.html" %}
 {% load staticfiles %}
 {% block extra_head_base %}
-<script type="text/javascript" src="js/jquery.min.js"></script>
 
     <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8">
 
     <!--CombineResourcesFilter-->
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/planeui.min.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/prettify.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/clear.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/second-level-menu.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/problem-statement.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/ttypography.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/roundbox.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/datatable.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/table-form.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/topic.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/sidebar-menu.css" type="text/css" charset="utf-8">
-
-
-    <script type="text/javascript" src="{{ STATIC_URL }}js/prettify/prettify.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.lavalamp.min.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/sjcl.js"></script>
 
     <!--/CombineResourcesFilter-->
 
@@ -32,96 +16,41 @@
     <script id="-cdnjs-cloudflare-com-ajax-libs-KaTeX-0-3-0-katex-min" type="text/javascript" src="{{ STATIC_URL }}editormd/lib/katex.min.js"></script>
 {% endblock %}
 
-{% block head_title %}{{ object.pk }}.{{ object.title }}{% endblock %}
+{% block head_title %}{{ object.pk }}. {{ object.title }}{% endblock %}
 {% block body_base %}
 <section class="jumbotron">
   <div class="container">
-    <div id="body">
-        <br style="height: 3em; clear: both;">
-        <div style="position: relative;">
-            <div id="sidebar">
-                <div class="roundbox sidebox" style="">
-                    <div class="roundbox-lt">&nbsp;</div>
-                    <div class="roundbox-rt">&nbsp;</div>
-                    <div class="caption titled">Problem tags</div>
-                    <div style="padding: 0.5em;">
-                        <div class="roundbox " style="margin:0px; padding:0px 3px 2px 3px; background-color:#f0f0f0;float:left;">
-                            <div class="roundbox-lt">&nbsp;</div>
-                            <div class="roundbox-rt">&nbsp;</div>
-                            <div class="roundbox-lb">&nbsp;</div>
-                            <div class="roundbox-rb">&nbsp;</div>
-                            <span class="tag-box" style="font-size:1.2rem;"}>
-                                binary search{{ tags }}
-                            </span>
-                        </div>
-                    </div>
-                    <div style="clear:both;text-align:right;font-size:1.1rem;">
-                        <span title="Please login" class="notice">No tag edit access</span>
-                    </div>
-                </div>
-
-            </div>
+      <h1>{{ object.pk }}. <strong>{{ object.title }}</strong></h1>
+      <table class="table">
+          <tbody>
+          <tr>
+                <td>time_limit: {{ object.time_limit }}</td>
+                <td>memory_limit: {{ object.memory_limit }}</td>
+          </tr>
+          <tr>
+                <td>author: {{ object.superadmin }}</td>
+                <td>is special judge: {{ object.is_spj }}</td>
+          </tr>
+          </tbody>
+        </table>
+      <div class="row">
+          <h4>prolem description</h4>
+         <div id="test-editormd-view">
+            {{ object.desc }}
         </div>
-    </div>
-    <div id="pageContent" class="content-with-sidebar">
-        <div class="second-level-menu">
-            <ul class="second-level-menu-list">
-                <li class="backLava" style="position: absolute; display: block; margin: 0; padding: 0; left: 0; top: 0; width: 63px; height: 20px; overflow: hidden;">
-                    <div class="leftLava"></div>
-                    <div class="bottomLava"></div>
-                    <div class="cornerLava"></div>
-                </li>
-                <li><a href="/submit">Submit</a></li>
-                <li><a href="/submission">Submissions</a></li>
-            </ul>
-        </div>
-
-        <div class="problemindexholder" problemindex={{ object.pk }}>
-            <div class="ttypography">
-                <div class="problem-statement">
-                    <div class="header">
-                        <div class="title">{{ object.title }}</div>
-                        <div class="time-limit"><div class="property-title">time limit</div>{{ object.time_limit }}</div>
-                        <div class="memory-limit"><div class="property-title">memory limit per test</div>{{ object.memory_limit }}</div>
-                        <div class="spj"><div class="property-title">special judge</div>{% if object.is_spj %}Yes{% else %}No{% endif %}</div>
-                        <div class="input-file"><div class="property-title">input</div>inputfilename{{ INPUTFILE }}</div>
-                        <div class="output-file"><div class="property-title">output</div>outputfilename{{ OUTPUTFILE }}</div>
-                        <div class="code-length-limit"><div class="property-title">code length limit</div>{{ object.code_length_limit }}</div>
-                        <div class="update-time"><div class="property-title">last update time</div>{{ object.last_updated_time }}</div>
-                        <div class="author"><div class="property-title">author</div>{{ object.superadmin }}</div>
-                    </div>
-                    <div>
-                        <p>
-                            <div id="test-editormd-view">
-                                {{ object.problem_desc }}
-                            </div>
-                        </p>
-                    </div>
-                    <div class="input-specification">
-                        <div class="section-title">Input</div>
-                        <p>Input description{{ INPUT }}</p>
-                    </div>
-                    <div class="output-specification">
-                        <div class="section-title">Output</div>
-                        <p>Output description{{ OUTPUT }}</p>
-                    </div>
-                    <div class="sample-tests">
-                        <div class="section-title">Examples</div>
-                        <div class="sample-test">
-                            <div class="input"><div class="title">Input</div><pre>sampleinput1{{ SAMPLEINPUT }}</pre></div>
-                            <div class="output"><div class="title">Output</div><pre>sampleoutput1{{ SAMPLEOUTPUT }}</pre></div>
-                            <div class="input"><div class="title">Input</div><pre>sampleinput2{{ SAMPLEINPUT }}</pre></div>
-                            <div class="output"><div class="title">Output</div><pre>sampleoutput2{{ SAMPLEOUTPUT }}</pre></div>
-                        </div>
-                    </div>
-                    <div class="note">
-                        <div class="section-title">Note</div>
-                        <p>Note description{{ NOTE }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+      </div>
+      <br>
+      <div class="row">
+          <h4>Sample input</h4>
+          <pre><code>{{ object.sample_in }}</code></pre>
+      </div>
+       <div class="row">
+           <h4>Sample output</h4>
+           <pre><code>{{ object.sample_out }}</code></pre>
+      </div>
+       <div class="row">
+           <a href="{% url 'submission:submission-add' object.pk%}" class="btn btn-default">Submit</a>
+      </div>
   </div>
   <script src="{{ STATIC_URL }}js/jquery.min.js"></script>
   <script src="{{ STATIC_URL }}editormd/lib/marked.min.js"></script>

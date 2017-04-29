@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import json
 
 from django.contrib.auth.models import User
 from filer.models.filemodels import File
@@ -22,14 +23,14 @@ class Problem(models.Model):
     memory_limit = models.IntegerField(default=65536)
     code_length_limit = models.IntegerField(default=65536)
     problem_desc = models.TextField(default='None')
-    is_spj = models.BooleanField(default=False)
     is_checked = models.BooleanField(default=False)
     superadmin = models.ForeignKey(User)
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
     # allowed_lang = models.ManyToManyField('ojuser.Language', related_name='problems')
     groups = models.ManyToManyField(GroupProfile, blank=True, related_name='problems')
-    tags = models.ManyToManyField(ProblemTag, blank=True, related_name='problems')
+    tags = models.ManyToManyField(ProblemTag, blank=True, related_name='problems', null=True)
+    is_spj = models.BooleanField(default=False)
 
     def __unicode__(self):
         return str(self.title)
@@ -42,6 +43,30 @@ class Problem(models.Model):
             if user.has_perm('ojuser.view_groupprofile', g):
                 return True
         return False
+
+    def desc(self):
+        if not hasattr(self, '_desc'):
+            try:
+                self._desc = json.loads(self.problem_desc)
+            except:
+                self._desc = {'desc': self.problem_desc, 'sample_in': '', 'sample_out': ''}
+        return self._desc['desc']
+
+    def sample_in(self):
+        if not hasattr(self, '_desc'):
+            try:
+                self._desc = json.loads(self.problem_desc)
+            except:
+                self._desc = {'desc': self.problem_desc, 'sample_in': '', 'sample_out': ''}
+        return self._desc['sample_in']
+
+    def sample_out(self):
+        if not hasattr(self, '_desc'):
+            try:
+                self._desc = json.loads(self.problem_desc)
+            except:
+                self._desc = {'desc': self.problem_desc, 'sample_in': '', 'sample_out': ''}
+        return self._desc['sample_out']
 
     def check_data(self):
         data_info = self.datainfo
