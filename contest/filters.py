@@ -42,9 +42,9 @@ def view_groups(request):
 class ContestFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='name')
     group = django_filters.ModelChoiceFilter(queryset=GroupProfile.objects.all())
-    can_manage = django_filters.BooleanFilter(method='filter_can_manage', label='can_manage')
+    can_manage = django_filters.BooleanFilter(method='filter_can_manage', label='can_manage', widget=BooleanWidget())
 
-    def filter_can_manage(self, queryset, value):
+    def filter_can_manage(self, queryset, name, value):
         groups = get_objects_for_user(
             self.user,
             'ojuser.change_groupprofile',
