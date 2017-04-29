@@ -2,7 +2,7 @@
 from django import forms
 from datetime import datetime, timedelta, date, time
 from bojv4.conf import LANGUAGE_MASK, LANGUAGE
-from .models import Contest, ContestSubmission
+from .models import Contest, ContestSubmission, Notification
 
 '''
 class ContestForm(forms.ModelForm):
@@ -73,4 +73,12 @@ class SubmissionForm(forms.Form):
 
     index = forms.ChoiceField(choices=(), widget=forms.Select())
     language = forms.ChoiceField(choices=LANGUAGE.choice(), widget=forms.Select())
+
+
+class NotificationForm(forms.ModelForm):
+
+    class Meta:
+        model = Notification
+        fields = ['title', 'content']
+
 

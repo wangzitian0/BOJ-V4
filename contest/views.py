@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 import json
 import math
-from .models import Contest, ContestProblem, ContestSubmission
-from .filters import ContestFilter
-from .tables import ContestTable
-from .forms import ContestForm, SubmissionForm
+from .models import Contest, ContestProblem, ContestSubmission, Notification
+from .filters import ContestFilter, SubmissionFilter
+from .tables import ContestTable, NotificationTable
+from .forms import ContestForm, SubmissionForm, NotificationForm
 
 from problem.models import Problem
 from submission.models import Submission
@@ -333,11 +333,19 @@ class SubmissionListView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(SubmissionListView, self).get_context_data(**kwargs)
-        # context['submissions'] = reduce(lambda x, y: (x.submissions.all() | y.submissions.all()), self.object.problems.all())
+        queryset = None
         if self.request.user.has_perm('ojuser.change_groupprofile', self.object.group):
-            context['submissions'] = ContestSubmission.objects.filter(problem__contest=self.object).all()
+            queryset = ContestSubmission.objects.filter(problem__contest=self.object).all()
         else:
-            context['submissions'] = ContestSubmission.objects.filter(problem__contest=self.object, submission__user=self.request.user).all()
+            queryset = ContestSubmission.objects.filter(problem__contest=self.object, submission__user=self.request.user).all()
+        self.filter = SubmissionFilter(
+            self.request.GET,
+            queryset=queryset,
+            problems=self.object.problems.all()
+        )
+        context['submissions'] = self.filter.qs.order_by('-pk')
+        #  add filter here
+        context['filter'] = self.filter
         return context
 
 
@@ -499,4 +507,93 @@ class SubmissionDetailView(DetailView):
                 'memory': 0,
             })
         context['cases'] = cases
+        return context
+
+
+class NotificationListView(DetailView):
+
+    model = Contest
+    permission_classes = (IsAuthenticated, ContestViewPermission)
+    template_name = 'contest/notification_list.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        print "pk:", pk
+        return super(NotificationListView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotificationListView, self).get_context_data(**kwargs)
+        self.notification_can_view_qs = self.object.notifications.all()
+        notifications_table = NotificationTable(self.notification_can_view_qs)
+        RequestConfig(self.request).configure(notifications_table)
+        context['notification_table'] = notifications_table
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.object.group):
+            context['is_admin'] = True
+        print "object: ", self.object
+        return context
+
+
+class NotificationCreateView(TemplateView):
+
+    template_name = 'contest/notification_create_form.html'
+    success_message = "your notification has been created successfully"
+    permission_classes = (IsAuthenticated, )
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        self.contest = Contest.objects.filter(pk=pk).first()
+        if not self.contest or not request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            raise Http404()
+        return super(NotificationCreateView, self).dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        if request.method == 'POST':
+            form = NotificationForm(request.POST)
+            print "form"
+            if form.is_valid():
+                object = form.save(commit=False)
+                object.contest = self.contest
+                object.author = request.user
+                object.save()
+                return HttpResponseRedirect(reverse('contest:contest-detail', args=[self.contest.pk, ]))
+        return super(NotificationCreateView, self).render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotificationCreateView, self).get_context_data(**kwargs)
+        context['form'] = NotificationForm()
+        context['contest'] = self.contest
+        return context
+
+
+class NotificationUpdateView(TemplateView):
+
+    template_name = 'contest/notification_create_form.html'
+    success_message = "your notification has been created successfully"
+    permission_classes = (IsAuthenticated, )
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pk=None, nid=None, *args, **kwargs):
+        self.contest = Contest.objects.filter(pk=pk).first()
+        self.notification = Notification.objects.filter(pk=nid).first()
+        if not self.contest or not self.notification or not request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            raise Http404()
+        return super(NotificationUpdateView, self).dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        if request.method == 'POST':
+            form = NotificationForm(request.POST, instance=self.notification)
+            if form.is_valid():
+                object = form.save()
+                object.contest = self.contest
+                object.author = request.user
+                object.save()
+                return HttpResponseRedirect(reverse('contest:notification-list', args=[self.contest.pk, ]))
+        return super(NotificationUpdateView, self).render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotificationUpdateView, self).get_context_data(**kwargs)
+        context['form'] = NotificationForm(instance=self.notification)
+        context['contest'] = self.contest
         return context

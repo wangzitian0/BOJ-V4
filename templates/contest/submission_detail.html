@@ -1,4 +1,4 @@
-{% extends "contest/contest_base.html" %}
+{% extends "site_base.html" %}
 
 {% load i18n %}
 
@@ -6,28 +6,32 @@
 
 {% block body_class %}my-submission{% endblock %}
 
-{% block contest_body %}
+{% block body_base %}
+ <section id="content_body" class="jumbotron">
+    <div class="container" id="wrapper">
+        <h1>Submisstion Detail</h1>
         <div class="row white-bg">
             <div class="col-lg-10">
-                <div class="container">
-                    <div class="row">
-                        <a href="{% url 'contest:problem-detail' contest.pk object.problem.index %}">
-                            <h2>{{ object.problem.title }}</h2>
-                        </a>
-                    </div>
-                    <div class="row">
-                         <ol class="breadcrumb">
-                            <li>
-                              <a href="{% url 'contest:submission-list' contest.pk %}">Submission List</a>
-                            </li>
-                          <li class="active">
-                              <strong>{{ object.submission.user.username }}</strong>
-                          </li>
-                         </ol>
-                    </div>
-               </div>
-           </div>
-            <div class="col-lg-2">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <td>Problem: </td>
+                        <td><a href="{% url 'contest:problem-detail' contest.pk object.problem.index %}">
+                            {{ object.problem.index }}. {{ object.problem.title }}
+                        </a></td>
+                    </tr>
+                    <tr>
+                        <td>Contest: </td>
+                        <td><a href="{% url 'contest:contest-detail' contest.pk %}">
+                                {{ object.problem.contest.title }}
+                            </a></td>
+                    </tr>
+                    <tr>
+                        <td>User: </td>
+                        <td><strong>{{ object.submission.user.username }}</strong></td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         <div class="row white-bg">
@@ -56,15 +60,17 @@
                                 <div class="col-md-9"></div>
                             </div>
                             <h5>run_time: {{ case.time }} ms</h5>
-                            <h5>run_limit: {{ case.memory }}KB<h5>
+                            <h5>run_limit: {{ case.memory }}KB</h5>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
+    </div>
+ </section>
 {% endblock %}
-{% block script_extra %}
+{% block extra_body %}
 
 <link href="{{ STATIC_URL }}css/bootstrap.css" rel="stylesheet">
 <link href="{{ STATIC_URL }}css/plugins/codemirror/codemirror.css" rel="stylesheet">
@@ -73,13 +79,14 @@
 
 <script src="{{ STATIC_URL }}js/plugins/metisMenu/jquery.metisMenu.js"></script>
 <script src="{{ STATIC_URL }}js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
 <!-- CodeMirror -->
 <script src="{{ STATIC_URL }}js/plugins/codemirror/codemirror.js"></script>
 <script src="{{ STATIC_URL }}js/plugins/codemirror/mode/javascript/javascript.js"></script>
 
 <!-- Custom and plugin javascript -->
 <script src="{{ STATIC_URL }}js/plugins/pace/pace.min.js"></script>
-<script>
+<script type="text/javascript">
 
 var editor_one = CodeMirror.fromTextArea(document.getElementById("code-text"), {
      lineNumbers: true,

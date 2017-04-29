@@ -70,9 +70,9 @@ class SubmissionListView(ListView):
             problems=res
         )
         print "filters=========="
-        print self.filter.filters
         # self.filter.filters.get('problem').queryset = res
-        return self.filter.qs
+        print type(self.filter.qs)
+        return self.filter.qs.order_by('-pk')
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -85,10 +85,9 @@ class SubmissionListView(ListView):
         RequestConfig(self.request).configure(submissions_table)
         #  add filter here
         context['submissions_table'] = submissions_table
-        0
         #  add filter here
         context['filter'] = self.filter
-        context['submission_can_view'] = self.submission_can_view_qs
+        # context['submission_can_view'] = self.submission_can_view_qs
 
         return context
 
