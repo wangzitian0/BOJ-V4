@@ -230,7 +230,17 @@ class ProblemCreateView(CreateView):
 
     def form_valid(self, form):
         print '=========form valid==============='
+        print self.request.POST
+        desc = self.request.POST.get('desc', '')
+        sample_in = self.request.POST.get('sample_in', '')
+        sample_out = self.request.POST.get('sample_out', '')
         self.object = form.save(commit=False)
+        print self.object.problem_desc
+        self.object.problem_desc = json.dumps({
+            'desc': desc,
+            'sample_in': sample_in,
+            'sample_out': sample_out,
+        })
         self.object.superadmin = self.request.user
         self.object.save()
         return super(ProblemCreateView, self).form_valid(form)

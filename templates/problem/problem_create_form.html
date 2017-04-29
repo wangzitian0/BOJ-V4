@@ -1,7 +1,7 @@
 {% extends "site_base.html" %}
 {% load staticfiles %}
 {% block extra_head_base %}
-<script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.min.js"></script>
 
     <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8">
 
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ STATIC_URL }}css/planeui.min.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/prettify.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/clear.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/style2.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/second-level-menu.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/roundbox.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/datatable.css" type="text/css" charset="utf-8">
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="{{ STATIC_URL }}css/sidebar-menu.css" type="text/css" charset="utf-8">
 
 
-    <script type="text/javascript" src="{{ STATIC_URL }}js/prettify/prettify.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/prettify.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.lavalamp.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/sjcl.js"></script>
 
@@ -28,6 +28,7 @@
     <link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon" />
     <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}editormd/lib/katex.min.css">
     <script id="-cdnjs-cloudflare-com-ajax-libs-KaTeX-0-3-0-katex-min" type="text/javascript" src="{{ STATIC_URL }}editormd/lib/katex.min.js"></script>
+
 {% endblock %}
 
 {% load i18n %}
@@ -38,177 +39,54 @@
 {% block body_base %}
 <section class="jumbotron">
   <div class="container">
-    <div style="position: relative;">
-        <div id="sidebar">
-            <div class="roundbox sidebox" style="">
-                <div class="roundbox-lt">&nbsp;</div>
-                <div class="roundbox-rt">&nbsp;</div>
-                <div class="caption titled">→ admin
-                    <div class="top-links">
-                    </div>
-                </div>
-                <div class="personal-sidebar">
-                    <div class="for-avatar">
-                        <div class="avatar">
-                        </div>
-                    </div>
-                    <div>
-                        <ul class="nav-links">
-                            <li><a href="/groups">Groups</a></li>
-                        </ul>
-                    </div>
-                    <br style="clear:both;">
-                </div>
-            </div>
-
-        </div>
-        <div id="pageContent" class="content-with-sidebar">
-            <div class="second-level-menu">
-                <ul class="second-level-menu-list">
-                    <li class="backLava" style="position: absolute; display: block; margin: 0px; padding: 0px; left: 96.3281px; top: 0px; width: 56px; height: 20px; overflow: hidden;">
-                        <div class="leftLava"></div>
-                        <div class="bottomLava"></div>
-                        <div class="cornerLava"></div>
-                    </li>
-                    <li><a href="/problem_create">Add Problem</a></li>
-                </ul>
-            </div>
-
-
-            <div class="roundbox " style="padding:1em 1em 0 1em;">
-                <div class="roundbox-lt">&nbsp;</div>
-                <div class="roundbox-rt">&nbsp;</div>
-                <div class="roundbox-lb">&nbsp;</div>
-                <div class="roundbox-rb">&nbsp;</div>
-                <div class="userbox">
-                    <div class="info">
-                        <h3>Add New Problem</h3>
-                        <form id="settings-form" method="post" action="" style="width:100%;" _lpchecked="1">
-                            <table class="table-form" style="margin-left:0;">
-                                <input type="hidden" name="action" value="saveChanges">
-                                <input type="hidden" name="ftaa" value="">
-                                <input type="hidden" name="bfaa" value="">
-
-                                <tbody>
-                                    <tr>
-                                        <td class="field-name">Problem Title</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="title"  autocomplete="off" value="Untitled"></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="field-name">Time Limit(ms)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: pointer;" name="timelimit" type="digit" value="1000" autocomplete="off"></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="field-name">Memory Limit(MB)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="memorylimit" type="digit" autocomplete="off" value="64"></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="field-name">Code Length Limit(MB)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="codelengthlimit" type="digit" autocomplete="off" value="64"></td>
-                                    </tr>
-
-
-
-                                    <tr>
-                                        <td class="field-name">Problem Description</td>
-                                        <td>
-                                            <div id="test-editormd">
-                                                <textarea style="display:none;"></textarea>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-
-                                    <tr>
-                                        <td class="field-name">Allowed Language</td>
-                                        <td>
-                                            <select id="Language" name="Language" style="width: 25em;">
-                                                <option value="C++">C++</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="field-name">special judge</td>
-                                        <td>
-                                            <select id="spj" name="spj" style="width: 25em;">
-                                                <option value="Yes">Yes</option>
-                                                <option value="No">No</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <table class="table-form">
-                                <tbody>
-                                    <tr><td>
-                                        <div style="text-align:center;width:100%;">
-                                            <input class="submit" type="submit" value="Submit">
-                                        </div>
-                                    </td></tr>
-                                </tbody>
-                            </table>
-                            <input type="hidden" name="_tta" value="37">
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+      <h3>Add New Problem</h3>
+      <form id="id-form" method="post" action="" class="form-horizontal">
+          {% csrf_token %}
+            {% bootstrap_form form %}
+          <br>
+          <div class="form-group">
+              <label>Problem Description</label>
+              <div id="test-editormd">
+                  <textarea  name="desc"></textarea>
+              </div>
+          </div>
+          <div class="form-group">
+              <label>Sample In data</label><br>
+              <textarea rows="40" cols="10" name="sample_in" class="input-mini" style="width: 200px; height: 200px;"></textarea>
+          </div>
+          <div class="form-group">
+              <label>Sample out data</label><br>
+              <textarea rows="40" cols="10" name="sample_out" class="input-mini" style="width: 200px; height: 200px;"></textarea>
+          </div>
+          <div class="form-group">
+              <input class="submit" type="submit" value="Submit">
+          </div>
+          <input type="hidden" name="_tta" value="37">
+      </form>
+  </div>
 
     <style>
-        .personal-sidebar {
-            margin: 1em;
+        .form-group input{
+            width: 250px;
+            height: 45px;
         }
 
-        .personal-sidebar .for-avatar {
-            float: right;
+        .form-group.selection span{
+            height: 30px;
         }
 
-        .personal-sidebar li {
-            font-size: 0.8em;
+        .form-group.second-level-menu span{
+            width: 400px;
         }
 
-        .personal-sidebar .nav-links {
-            margin-top: 0.5em;
-        }
-
-        .personal-sidebar .nav-links li {
-            list-style: disc;
-            list-style-position: inside;
+        .form-group select{
+            width: 400px;
+            height: 30px;
         }
     </style>
-    <style>
-        .tShirtSizeErrorField div {
-            width: 30em;
-        }
-    </style>
-    <style>
-        .userbox {
-            overflow: hidden;
-        }
-        .userbox .info {
-                margin-right: 0px;
-        }
-        .userbox .right-frame {
-            float: right;
-            width: 350px;
-            display: inline;
-            margin-left: -360px;
-            margin-bottom: 1em;
-        }
-    </style>
-    <style type="text/css">
-        .subformContainer {
-            width: 100%;
-        }
-
-        .subformContainer tr td:first-child {
-            width: 75%;
-        }
-    </style>
-    <script src="{{ STATIC_URL }}js/jquery.min.js"></script>
-    <script src="{{ STATIC_URL }}editormd/editormd.js"></script>
+         <script src="{{ STATIC_URL }}js/jquery.min.js"></script>
+        <script src="{{ STATIC_URL }}editormd/editormd.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}editormd/lib/katex.min.js"></script>
     <script type="text/javascript">
         $(function() {
             var testEditor = editormd("test-editormd", {
@@ -238,7 +116,6 @@
             });
         });
     </script>
-  </div>
 </section>
 {% endblock %}
 
