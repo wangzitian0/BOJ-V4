@@ -48,37 +48,33 @@
         </div>
         <div class="row gray-bg">
             <div class="col-lg-12">
-                <div class="wrapper wrapper-content">
-                   <div class="row">
-                        <div class="col-lg-12">
-                            <div class="ibox">
-                                <div class="ibox-content">
-                                    <textarea id="code-text">{{ object.submission.code }}</textarea>
-                                </div>
-                            </div>
-                        </div>
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h4>code</h4>
                     </div>
-                    {% for case in cases %}
-                    <br>
-                    <div class="row">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-md-2">
-                                    <p>{{ case.position }}th case: </p>
-                                </div>
-                                <div class="col-md-1">
-                                    <span class="label label-primary">{{ case.status }}</span>
-                                </div>
-                                <div class="col-md-9"></div>
-                            </div>
+                    <div class="ibox-content">
+                        <textarea id="code-text">{{ object.submission.code }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% for case in cases %}
+            <div class="row gray-bg">
+                <div class="col-lg-6">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <span class="label label-primary pull-right">{{ case.status }}</span>
+                            <h5>{{ case.position }}th case: </h5>
+                        </div>
+                        <div class="ibox-content">
                             <h5>run_time: {{ case.time }} ms</h5>
                             <h5>run_limit: {{ case.memory }}KB</h5>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
+               </div>
             </div>
-        </div>
+        {% endfor %}
+
     </div>
  </section>
 {% endblock %}

@@ -7,6 +7,7 @@ import requests
 from bojv4 import conf
 import time
 import threading
+from django.db import connection
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
@@ -36,6 +37,7 @@ class NsqQueue(object):
 def submission_handler(message):
     logger.info('receive judge result')
     try:
+        connection.close()
         mp = json.loads(message.body)
         # print json.dumps(mp, indent=4)
         sub_pk = mp.get('submission-id', None)

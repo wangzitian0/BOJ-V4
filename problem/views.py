@@ -28,13 +28,26 @@ from .serializers import ProblemSerializer, ProblemDataInfoSerializer
 from .serializers import FileSerializer, ProblemDataSerializer
 from .forms import ProblemForm
 from ojuser.models import GroupProfile
+import logging
+logger = logging.getLogger('django')
 
 
-class ProblemUpdatePermission(BasePermission):
+class ProblemViewPermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if not isinstance(obj, Problem):
-            print "Not Problem"
+            return False
+        groups = obj.groups.all()
+        for g in groups:
+            if request.user.has_perm('ojuser.view_groupprofile', g):
+                return True
+        return False
+
+
+class ProblemChangePermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if not isinstance(obj, Problem):
             return False
         groups = obj.groups.all()
         for g in groups:
@@ -52,7 +65,7 @@ class FileViewSet(viewsets.ModelViewSet):
 class ProblemViewSet(viewsets.ModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
-    permission_classes = (IsAuthenticated, ProblemUpdatePermission)
+    permission_classes = (IsAuthenticated, ProblemChangePermission)
 
     @detail_route(methods=['get'], url_path='datas')
     def get_problem_datas(self, request, pk=None):
@@ -67,6 +80,7 @@ class ProblemViewSet(viewsets.ModelViewSet):
         p = get_object_or_404(qs, pk=pk)
         return Response({'code': 0, 'title': p.title})
 
+
 class ProblemDataInfoViewSet(viewsets.ModelViewSet):
     queryset = ProblemDataInfo.objects.all()
     serializer_class = ProblemDataInfoSerializer
@@ -77,7 +91,6 @@ class ProblemDataInfoViewSet(viewsets.ModelViewSet):
         problem = get_object_or_404(Problem.objects.all(), pk=pk)
         if problem.is_checked:
             return Response({'code': 0, 'msg': 'Have checked before!'}) 
-        print "start"
         try:
             if problem.check_data():
                 problem.is_checked = True
@@ -85,7 +98,7 @@ class ProblemDataInfoViewSet(viewsets.ModelViewSet):
             else:
                 return Response({'code': -1, 'msg': 'check data failed'})
         except Exception as ex:
-            print ex
+            logger.error(ex)
             return Response({'code': -1, 'msg': 'check data failed'})
         return Response({'code': 0, 'msg': 'Check Success !'}) 
 
@@ -167,13 +180,11 @@ class ProblemDataView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        print kwargs
         return super(ProblemDataView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ProblemDataView, self).get_context_data(**kwargs)
         context['cases'] = self.object.cases.all()
-        print self.object.cases.count()
         context['pk'] = self.kwargs['pk']
         return context
 
@@ -209,7 +220,6 @@ class ProblemDetailView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        print kwargs
         return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -229,13 +239,10 @@ class ProblemCreateView(CreateView):
         return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        print '=========form valid==============='
-        print self.request.POST
         desc = self.request.POST.get('desc', '')
         sample_in = self.request.POST.get('sample_in', '')
         sample_out = self.request.POST.get('sample_out', '')
         self.object = form.save(commit=False)
-        print self.object.problem_desc
         self.object.problem_desc = json.dumps({
             'desc': desc,
             'sample_in': sample_in,
@@ -263,7 +270,7 @@ class ProblemUpdateView(UpdateView):
     model = Problem
     #  fields = '__all__'
     form_class = ProblemForm
-    template_name_suffix = '_update_form'
+    template_name = 'problem/problem_update_form.html'
 
     def get_queryset(self):
         gp_can_change = get_objects_for_user(
@@ -281,6 +288,38 @@ class ProblemUpdateView(UpdateView):
             Q(pk__in=groups_can_delete)
         ).distinct()
         return self.qs
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        return super(ProblemUpdateView, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        desc = self.request.POST.get('desc', '')
+        sample_in = self.request.POST.get('sample_in', '')
+        sample_out = self.request.POST.get('sample_out', '')
+        self.object = form.save(commit=False)
+        self.object.problem_desc = json.dumps({
+            'desc': desc,
+            'sample_in': sample_in,
+            'sample_out': sample_out,
+        })
+        self.object.superadmin = self.request.user
+        self.object.save()
+        return super(ProblemUpdateView, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemUpdateView, self).get_context_data(**kwargs)
+        return context
+
+    def get_form(self):
+        groups = get_objects_for_user(
+                self.request.user,
+                'ojuser.change_groupprofile',
+                with_superuser=True
+            )
+        form = ProblemForm(**self.get_form_kwargs())
+        form.fields['groups'].widget.queryset = groups
+        return form
 
     def get_success_url(self):
         return reverse('problem:upload-new', args=[self.object.pk])
@@ -349,7 +388,6 @@ class FileCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(FileCreateView, self).get_context_data(**kwargs)
-        print "hello"
         context['pid'] = self.kwargs['pid']
         return context
 

@@ -56,7 +56,7 @@ class SubmissionListView(ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        groups = get_objects_for_user(self.user, 'ojuser.change_groupprofile', GroupProfile)
+        groups = get_objects_for_user(self.user, 'ojuser.view_groupprofile', GroupProfile)
         ans = self.user.submissions.all()
         for g in groups:
             for p in g.problems.all():

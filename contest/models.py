@@ -35,6 +35,14 @@ class Contest(models.Model):
         print type(self.start_time)
         return int((self.start_time + timedelta(minutes=self.length) -now).total_seconds()/60)
 
+    def ended(self):
+        now = datetime.now()
+        if now < self.start_time.replace(tzinfo=None):
+            return -1
+        if now > (self.start_time.replace(tzinfo=None) + timedelta(minutes=self.length)):
+            return 1
+        return 0
+
     def last_notification(self):
         if self.notifications.count() == 0:
             return None

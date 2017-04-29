@@ -11,7 +11,7 @@
     {% block contest_title %}
     <h1>{{ object.title }}
     </h1>
-    <small>{% if object.status == "ended" %}已结束{% elif object.status == "running" %}进行中{% else %}未开始{% endif %}</small>
+    <small>{% if object.ended == 1 %}已结束{% elif object.ended == 0 %}进行中{% else %}未开始{% endif %}</small>
         <br>
         {% if object.last_notification %}
         <h4>
@@ -43,32 +43,7 @@
         <div class="progress span12"><div class="progress-bar" style="width:{{ object.time_passed_percent }}%"></div></div>
     </div>
 </div>
-{% if contest_notice_list and contest_notice_list|length > 0 %}
-<div>
-<h2>测验公告</h2>
-<table class="table table-bordered table-striped table-hover table-word-break">
-    <thead>
-        <th width="15%">时间</th>
-        <th width="30%">标题</th>
-        <th>内容</th>
-        {%if tpl.has_priv%}
-        <th width="5%">修改</th>
-        {%endif%}
-    </thead>
-    {% for cn in contest_notice_list %}
-    <tr>
-        <td>{{ cn.time|date:"Y-m-d H:i:s" }}</td>
-        <td><a href="/contest/{{ object.cid }}/notice/{{ cn.cnid }}/">{{ cn.title }}</a></td>
-        <td>{{ cn.content }}</td>
-        {%if tpl.has_priv%}
-        <th><a href="/contest/{{ object.cid }}/notice/{{ cn.cnid }}/update/">修改</a></th>
-        {%endif%}
-    </tr>
-    {% endfor %}
-</table>
-</div>
-{% endif %}
-      <div class="container" id="wrapper">
+    <div class="container" id="wrapper">
 {% block contest_body %} {% endblock contest_body %}
   </div>
     <script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
