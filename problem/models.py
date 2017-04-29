@@ -48,7 +48,11 @@ class Problem(models.Model):
         if not hasattr(self, '_desc'):
             try:
                 self._desc = json.loads(self.problem_desc)
+                print "problem_dec ============="
+                print self._desc
             except:
+                print "problem desc warong================"
+                print self.problem_desc
                 self._desc = {'desc': self.problem_desc, 'sample_in': '', 'sample_out': ''}
         return self._desc['desc']
 

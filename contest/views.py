@@ -36,14 +36,12 @@ class ContestViewPermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if not isinstance(obj, Contest):
-            print "Not Problem"
             return False
         if request.user.has_perm('ojuser.change_groupprofile', obj.group):
             return True
         print type(obj.start_time)
         now = datetime.now()
-        if request.user.has_perm('ojuser.view_groupprofile', obj.group) and now > obj.start_time.replace(tzinfo=None)\
-                and now < obj.start_time.replace(tzinfo=None) + timedelta(minutes=obj.length):
+        if request.user.has_perm('ojuser.view_groupprofile', obj.group) and obj.ended() == 0:
             return True
         return False
 
@@ -57,7 +55,6 @@ class SubmissionPermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if not isinstance(obj, ContestSubmission):
-            print "Not Problem"
             return False
         if request.user == obj.user:
             return True
@@ -126,7 +123,6 @@ class ContestViewSet(ModelViewSet):
             i['AC'] = 0
             i['pen'] = 0
             for sinfo in i['pinfo']:
-                print sinfo
                 if sinfo.get('AC', 0) > 0:
                     i['AC'] += 1
                     i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
@@ -136,8 +132,6 @@ class ContestViewSet(ModelViewSet):
 
     @detail_route(methods=['post'], url_path='submit')
     def create_submission(self, request, pk=None):
-        print self.get_object().title
-        print request.POST
         index = request.POST.get('index', '')
         code = request.POST.get('code', '')
         s = Submission()
@@ -148,7 +142,6 @@ class ContestViewSet(ModelViewSet):
                 messages.ERROR,
                 _('Code length exceed limit')
             )
-            print request.META['HTTP_REFERER']
             return HttpResponseRedirect(reverse('contest:submission-add', args=(pk,)))
 
         language = request.POST.get('language')
@@ -194,7 +187,6 @@ class ContestListView(ListView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        print self.template_name
         return super(ContestListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -205,7 +197,6 @@ class ContestListView(ListView):
         context['contests_table'] = contests_table
         context['filter'] = self.filter
         context['contests_can_view'] = self.contest_can_view_qs
-        print "_________________filter"
         # context['contests_can_delete'] = self.contest_can_delete_qs
         # context['contests_can_change'] = self.contest_can_change_qs
         return context
@@ -218,7 +209,6 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        print "=====================args============"
         gid = kwargs.get('gid')
         try:
             gid = int(gid)
@@ -230,7 +220,6 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        print "=================HTTP method: ", request.method
         if request.method == 'POST':
             form = ContestForm(request.POST)
             print request.POST
@@ -310,7 +299,6 @@ class ProblemDetailView(DetailView):
     def dispatch(self, request, *args, **kwargs):
         pk = kwargs.get('pk', -1)
         index = kwargs.get('index', '#')
-        print index
         self.problem = ContestProblem.objects.filter(contest__pk=pk, index=index).first()
         if not self.problem:
             raise Http404
@@ -319,6 +307,8 @@ class ProblemDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(ProblemDetailView, self).get_context_data(**kwargs)
         context['problem'] = self.problem
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.object.group):
+            context['is_admin'] = True
         return context
 
 
@@ -384,7 +374,6 @@ class ContestUpdateView(TemplateView):
         return super(ContestUpdateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        print "=================HTTP method: ", request.method
         if request.method == 'POST':
             form = ContestForm(request.POST)
             if form.is_valid():
@@ -421,7 +410,6 @@ class ContestUpdateView(TemplateView):
                 for p in self.object.problems.all():
                     if p.pk not in problem_pks:
                         p.delete()
-                print reverse('contest:contest-list')
                 return HttpResponseRedirect(reverse('contest:contest-list'))
         context = self.get_context_data(**kwargs)
         return super(ContestUpdateView, self).render_to_response(context)
@@ -450,7 +438,6 @@ class SubmissionCreateView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        print request.GET
         self.index = request.GET.get('index', None)
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 
@@ -518,7 +505,6 @@ class NotificationListView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
-        print "pk:", pk
         return super(NotificationListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -529,7 +515,6 @@ class NotificationListView(DetailView):
         context['notification_table'] = notifications_table
         if self.request.user.has_perm('ojuser.change_groupprofile', self.object.group):
             context['is_admin'] = True
-        print "object: ", self.object
         return context
 
 
@@ -550,7 +535,6 @@ class NotificationCreateView(TemplateView):
         context = self.get_context_data(**kwargs)
         if request.method == 'POST':
             form = NotificationForm(request.POST)
-            print "form"
             if form.is_valid():
                 object = form.save(commit=False)
                 object.contest = self.contest

@@ -6,21 +6,17 @@
     <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8">
 
     <!--CombineResourcesFilter-->
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/planeui.min.css" type="text/css" charset="utf-8">
+    <!--link rel="stylesheet" href="{{ STATIC_URL }}css/planeui.min.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/prettify.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/clear.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/style2.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/second-level-menu.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/roundbox.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/datatable.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/table-form.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/topic.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/sidebar-menu.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/sidebar-menu.css" type="text/css" charset="utf-8"--->
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/style2.css" type="text/css" charset="utf-8">
 
-
-    <script type="text/javascript" src="{{ STATIC_URL }}js/prettify.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.lavalamp.min.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/sjcl.js"></script>
 
     <!--/CombineResourcesFilter-->
 
@@ -40,7 +36,7 @@
 <section class="jumbotron">
   <div class="container">
       <h3>Add New Problem</h3>
-      <form id="id-form" method="post" action="" class="form-horizontal">
+      <form id="id-form" method="post" action="">
           {% csrf_token %}
             {% bootstrap_form form %}
           <br>
@@ -120,6 +116,9 @@
 {% endblock %}
 
 {% block extra_body %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/prettify.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.lavalamp.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/sjcl.js"></script>
   {{ form.media.js }}
   {{ form.media.css }}
 {% endblock %}
