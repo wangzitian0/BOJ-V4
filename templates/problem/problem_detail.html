@@ -2,7 +2,8 @@
 {% load staticfiles %}
 {% block extra_head_base %}
 
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8"
+          xmlns="http://www.w3.org/1999/html">
 
     <!--CombineResourcesFilter-->
     <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css" type="text/css" charset="utf-8">
@@ -35,9 +36,7 @@
         </table>
       <div class="row">
           <h4>prolem description</h4>
-         <div id="test-editormd-view">
-            {{ object.desc }}
-        </div>
+          <div id="test-editormd-view"><textarea>{{ object.desc }}</textarea></div>
       </div>
       <br>
       <div class="row">
