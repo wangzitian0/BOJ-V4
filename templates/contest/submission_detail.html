@@ -27,6 +27,18 @@
                             </a></td>
                     </tr>
                     <tr>
+                        <td>Status: </td>
+                        <td>{{ object.submission.get_status_display }}</td>
+                    </tr>
+                    <tr>
+                        <td>running_time: </td>
+                        <td>{{ object.submission.running_time }}</td>
+                    </tr>
+                    <tr>
+                        <td>running_memory: </td>
+                        <td>{{ object.submission.running_memory }}</td>
+                    </tr>
+                    <tr>
                         <td>User: </td>
                         <td><strong>{{ object.submission.user.username }}</strong></td>
                     </tr>

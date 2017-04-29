@@ -35,7 +35,13 @@ class Submission(models.Model):
         #  return "-".join([str(self.pk), str(self.user), str(self.problem), str(self.datetime)])
 
     def get_absolute_url(self):
+        return self.get_status_display()
         return reverse('submission:submission-detail', kwargs={'pk': self.pk})
+
+    def get_status_display(self):
+        if self.status == 'JD':
+            return 'Judging in ' + str(self.cases.count()) + 'th case'
+        return conf.STATUS_CODE.get_display_name(self.status)
 
     def set_info(self, key, value):
         if not self._info:

@@ -105,8 +105,7 @@ class SubmissionDetailView(DetailView):
     def get_context_data(self, **kwargs):
         logger.warning('============test===============')
         status = self.object.get_status_display()
-        if self.object.status == 'JD':
-            status = 'Judging in ' + str(self.object.cases.count()) + 'th case'
+
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
         context['compile_message'] = self.object.get_info('compile-message')
