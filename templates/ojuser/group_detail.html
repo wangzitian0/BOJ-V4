@@ -14,6 +14,7 @@
 <section class="jumbotron">
   <div class="container">
     {% include "_messages.html" %}
+      {% get_obj_perms request.user for object as "object_perms" %}
     <h1>Groups {{ object.name }} - {{ object.nickname }}</h1>
     <h4>Admins</h4>
     <ul>
@@ -49,7 +50,6 @@
 
   {% render_table group_users_table %}
 
-  {% get_obj_perms request.user for object as "object_perms" %}
 
   {% if "change_groupprofile" in object_perms %}
     <div>
