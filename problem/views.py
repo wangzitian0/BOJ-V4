@@ -21,7 +21,7 @@ from rest_framework.decorators import detail_route
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
 
-from .models import Problem, ProblemDataInfo
+from .models import Problem, ProblemDataInfo, ProblemCase
 from .filters import ProblemFilter
 from .tables import ProblemTable
 from .serializers import ProblemSerializer, ProblemDataInfoSerializer
@@ -415,8 +415,12 @@ class FileDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.object.problem.is_checked = False
-        self.object.problem.save()
+        ProblemCase.objects.filter(input_data=self.object).delete()
+        ProblemCase.objects.filter(output_data=self.object).delete()
+        problemdata = ProblemDataInfo.objects.filter(data=self.object).first()
+        problemdata.problem.is_checked = False
+        problemdata.problem.save()
+        problemdata.delete()
         self.object.delete()
         response = JSONResponse(True, mimetype=response_mimetype(request))
         response['Content-Disposition'] = 'inline; filename=files.json'

@@ -77,6 +77,7 @@ class Problem(models.Model):
         in_set = set()
         out_set = set()
         mp = {}
+        self.cases.all().delete()
         for f in data_info.all():
             data = f.data
             path = data.path
