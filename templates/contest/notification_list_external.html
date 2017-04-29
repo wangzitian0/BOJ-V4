@@ -1,0 +1,6 @@
+{% load bootstrap3 %}
+
+{% if is_admin and record %}
+<a href="{% url 'contest:update-notification' object.pk record.pk %}" title="change">{% bootstrap_icon "edit text-primary" %}</a>
+{% endif %}
+

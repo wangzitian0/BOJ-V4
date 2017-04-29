@@ -5,13 +5,19 @@
     <Meta http-equiv="Refresh" Content="50;">
     {%if is_admin %}
     {%if object.status == "ended"%}<button class="btn btn-inverse pull-right" onclick="postRequest();" id="submit">代码查重</button>{%endif%}
-    <a class="btn pull-right" href="/contest/{{ object.pk }}/add_notice/">添加公告</a>
-    <a class="btn btn-primary pull-right" href="{% url 'contest:contest-update' pk %}">修改测验</a>
+    <a class="btn pull-right" href="{% url 'contest:add-notification' object.pk %}">添加公告</a>
+    <a class="btn btn-primary pull-right" href="{% url 'contest:update-contest' object.pk %}">修改测验</a>
     {%endif%}
     {% block contest_title %}
     <h1>{{ object.title }}
     </h1>
     <small>{% if object.status == "ended" %}已结束{% elif object.status == "running" %}进行中{% else %}未开始{% endif %}</small>
+        <br>
+        {% if object.last_notification %}
+        <h4>
+        <strong>New Notification: </strong><a href="{% url 'contest:notification-list' object.pk %}">{{ object.last_notification }}</a>
+        </h4>
+        {% endif %}
     {% endblock %}
 </div>
 <ul class="nav nav-pills">

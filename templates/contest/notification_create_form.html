@@ -1,0 +1,24 @@
+{% extends "site_base.html" %}
+
+{% load bootstrap %}
+
+{% block head_title %}My Submission{% endblock %}
+
+
+{% block body_base %}
+ <section id="content_body" class="jumbotron">
+    <div class="container" id="wrapper">
+
+	<h1>{{ contest.title }}</h1>
+    <h3>create notification</h3>
+    <form action="" method="post" class="form" role="form">{% csrf_token %}
+        {{ form|bootstrap }}
+        <input type="submit" name="add"/>
+    </form>
+    </div>
+ </section>
+{% endblock %}
+
+{% block extra_body %}
+
+{% endblock %}

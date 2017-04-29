@@ -12,6 +12,10 @@ from bojv4.settings import BASE_DIR
 #  from filer.fields.file import FilerFileField
 
 
+class ProblemTag(models.Model):
+    name = models.CharField(max_length=50)
+
+
 class Problem(models.Model):
     title = models.CharField(max_length=50, default='Untitled')
     time_limit = models.IntegerField(default=1000)
@@ -25,9 +29,10 @@ class Problem(models.Model):
     last_updated_time = models.DateTimeField(auto_now=True)
     # allowed_lang = models.ManyToManyField('ojuser.Language', related_name='problems')
     groups = models.ManyToManyField(GroupProfile, blank=True, related_name='problems')
+    tags = models.ManyToManyField(ProblemTag, blank=True, related_name='problems')
 
     def __unicode__(self):
-        return str(self.pk) + " " + str(self.title)
+        return str(self.title)
 
     def get_absolute_url(self):
         return reverse('problem:problem-detail', kwargs={'pk': self.pk})
