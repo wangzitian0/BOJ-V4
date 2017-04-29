@@ -6,20 +6,28 @@ from .models import Contest, ContestSubmission
 from ojuser.models import GroupProfile
 from guardian.shortcuts import get_objects_for_user
 
-from bojv4.conf import LANGUAGE
+from bojv4.conf import LANGUAGE, STATUS_CODE
 #  from guardian.shortcuts import get_objects_for_user
 
 
 class SubmissionFilter(django_filters.FilterSet):
-    pk = django_filters.CharFilter(name='id')
+
+    pk = django_filters.CharFilter(name='id', label='id')
+    submission__language = django_filters.ChoiceFilter(choices=LANGUAGE.choice(), label='language')
+    problem = django_filters.ModelChoiceFilter(queryset=(('A', 'A'),))
+    submission__status = django_filters.ChoiceFilter(choices=STATUS_CODE.choice(), label='status')
 
     def __init__(self, *args, **kwargs):
+        self.problems = kwargs.pop('problems')
         super(SubmissionFilter, self).__init__(*args, **kwargs)
+        self.filters.get('problem').queryset=self.problems
 
 
     class Meta:
         model = ContestSubmission
-        fields = ['pk', ]
+        fields = ['pk', 'problem', 'submission__language', 'submission__status']
+        order_by = 'desc'
+
 
 def view_groups(request):
     print 'user name', request.user
@@ -34,7 +42,7 @@ def view_groups(request):
 class ContestFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains')
     group = django_filters.ModelChoiceFilter(queryset=GroupProfile.objects.all())
-    can_manage = django_filters.MethodFilter(widget=BooleanWidget())
+    can_manage = django_filters.BooleanFilter(method='filter_can_manage', label='can_manage')
 
     def filter_can_manage(self, queryset, value):
         groups = get_objects_for_user(

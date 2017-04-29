@@ -39,9 +39,9 @@
       <li>No child yet.</li>
       {% endfor %}
     </ul>
-    {% if request.user in object.admin_group.user_set.all %}
+      {% if "change_groupprofile" in object_perms %}
         <a href="{% url 'contest:add-contest' object.pk %}" class="btn btn-large btn-primary">Create Contest</a>
-    {% endif %}
+        {% endif %}
 	<div id="jstree_id">
 	</div>
   </div>
@@ -52,11 +52,13 @@
   {% get_obj_perms request.user for object as "object_perms" %}
 
   {% if "change_groupprofile" in object_perms %}
-  <div>
-    <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">Members</a>
-    <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
-    <a href="{% url 'mygroup-reset-password' object.pk %}" class="btn btn-large btn-primary">Reset</a>
-  </div>
+    <div>
+        <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">Members</a>
+        <a href="{% url 'mygroup-reset-password' object.pk %}" class="btn btn-large btn-primary">Reset</a>
+        {% if "delete_groupprofile" in object_perms %}
+            <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
+        {% endif %}
+    </div>
   {% endif %}
 </section>
 {% endblock %}

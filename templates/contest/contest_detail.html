@@ -1,7 +1,6 @@
 {% extends "contest/contest_base.html" %}
 {% block body_extra_attributes %}onload="activateTag('contest_home')"{% endblock %}
 {% block contest_body %}
-{%if tpl.has_priv or object.status != 'scheduled'%}
 <div>
 <h2>题目列表</h2>
 <table class="table table-bordered table-striped table-hover">
@@ -26,7 +25,6 @@
     {% endfor %}
 </table>
 </div>
-{% endif %}
 
 {% endblock %}
 

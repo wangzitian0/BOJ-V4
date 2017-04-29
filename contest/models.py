@@ -20,6 +20,9 @@ class Contest(models.Model):
     lang_limit = models.IntegerField(default=0)
     contest_type = models.IntegerField(default=0)
 
+    def __unicode__(self):
+        return self.title
+
     def time_left(self):
         now = datetime.now()
         if now < self.start_time.replace(tzinfo=None):
@@ -32,6 +35,11 @@ class Contest(models.Model):
         print type(self.start_time)
         return int((self.start_time + timedelta(minutes=self.length) -now).total_seconds()/60)
 
+    def last_notification(self):
+        if self.notifications.count() == 0:
+            return None
+        return self.notifications.all().reverse()[0].title
+
 
 class ContestProblem(models.Model):
     contest = models.ForeignKey(Contest, related_name='problems')
@@ -41,6 +49,9 @@ class ContestProblem(models.Model):
     ac_sub = models.IntegerField(default=0)
     all_sub = models.IntegerField(default=0)
     title = models.CharField(max_length=64, default='')
+
+    def __unicode__(self):
+        return self.index + '. ' + self.title
 
 
 class ContestSubmission(models.Model):
