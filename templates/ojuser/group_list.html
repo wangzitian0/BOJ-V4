@@ -48,7 +48,7 @@
 		</div>
     </div>
     {% render_table groups_table %}
-    {% if request.user.is_staff %}
+    {% if request.user in rootGroup.user_set or request.user.is_staff %}
     <div>
       <a href="{% url 'mygroup-create' %}" class="btn btn-large btn-primary">New </a>
     </div>

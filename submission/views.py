@@ -109,6 +109,7 @@ class SubmissionDetailView(DetailView):
             status = 'Judging in ' + str(self.object.cases.count()) + 'th case'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
+        context['compile_message'] = self.object.get_info('compile-message')
         cases = []
         for c in self.object.cases.all():
             cases.append({

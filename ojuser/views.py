@@ -81,6 +81,7 @@ class GroupListView(ListView):
         context['group_can_view'] = self.group_can_view_qs
         context['group_can_change'] = self.group_can_change_qs
         context['group_can_delete'] = self.group_can_delete_qs
+        context['rootGroup'] = GroupProfile.objects.filter(name='root').first()
         tree_list = []
         for u in self.get_queryset():
             p_name = '#'
@@ -131,12 +132,12 @@ class GroupCreateView(TemplateView):
         superadmin_queryset = copy.copy(queryset)
         if group:
             superadmin_queryset |= group.user_group.user_set.all()
-        self.group_profile_form.fields['superadmin'].queryset = superadmin_queryset
+        self.group_profile_form.fields['superadmin'].queryset = superadmin_queryset.distinct()
 
         for g in groups.all():
             queryset |= g.user_group.user_set.all()
 
-        self.group_admins_form.fields["admins"].widget.queryset = queryset
+        self.group_admins_form.fields["admins"].queryset = queryset.distinct()
 
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
