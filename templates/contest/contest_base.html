@@ -1,6 +1,7 @@
 {% extends "site_base.html" %}
 {% block head_title %}{{ object.title }}{% endblock %}
 {% block body %}
+    <section class="jumbotron">
 <div class="page-header">
     <Meta http-equiv="Refresh" Content="50;">
     {%if is_admin %}
@@ -46,6 +47,7 @@
     <div class="container" id="wrapper">
 {% block contest_body %} {% endblock contest_body %}
   </div>
+    </section>
     <script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
     {% block script_extra %} {% endblock %}
 {% endblock %}

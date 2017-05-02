@@ -11,7 +11,7 @@ class ProblemForm(forms.ModelForm):
 
     class Meta:
         model = Problem
-        exclude = ["superadmin", "is_checked", "created_time", "last_updated_time", "problem_desc", "tags"]
+        exclude = ["superadmin", "is_checked", "created_time", "last_updated_time", "desc"]
         widgets = {
            'groups': ModelSelect2MultipleWidget(
                 search_fields=[

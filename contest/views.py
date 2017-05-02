@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 import json
 import math
-from .models import Contest, ContestProblem, ContestSubmission, Notification
+from .models import Contest, ContestProblem, ContestSubmission, Notification, Clarification
 from .filters import ContestFilter, SubmissionFilter
-from .tables import ContestTable, NotificationTable
-from .forms import ContestForm, SubmissionForm, NotificationForm
+from .tables import ContestTable, NotificationTable, ClarificationTable, SubmissionTable
+from .forms import ContestForm, SubmissionForm, NotificationForm, QuestionForm, AnswerForm
 
 from problem.models import Problem
 from submission.models import Submission
@@ -15,7 +15,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.shortcuts import render
-from django.views.generic import ListView, DetailView, CreateView, TemplateView
+from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.decorators import login_required
@@ -45,10 +45,6 @@ class ContestViewPermission(BasePermission):
             return True
         return False
 
-class ContestChangePermission(BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        pass
 
 
 class SubmissionPermission(BasePermission):
@@ -312,42 +308,53 @@ class ProblemDetailView(DetailView):
         return context
 
 
-class SubmissionListView(DetailView):
-    model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
+class SubmissionListView(ListView):
+    model = ContestSubmission
+    permission_classes = (IsAuthenticated, )
     template_name = 'contest/submission_list.html'
+    paginate_by = 15
+
+    def get_queryset(self):
+        queryset = None
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            queryset = ContestSubmission.objects.filter(problem__contest=self.contest).all()
+        else:
+            queryset = ContestSubmission.objects.filter(problem__contest=self.contest, submission__user=self.request.user).all()
+        self.filter = SubmissionFilter(
+            self.request.GET,
+            queryset=queryset,
+            problems=self.contest.problems.all()
+        )
+        return self.filter.qs
+
 
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        self.contest = get_object_or_404(Contest.objects.filter(group__in=get_objects_for_user(
+            request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True)), pk=pk)
+        print "contest:========", self.contest.title
         return super(SubmissionListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SubmissionListView, self).get_context_data(**kwargs)
-        queryset = None
-        if self.request.user.has_perm('ojuser.change_groupprofile', self.object.group):
-            queryset = ContestSubmission.objects.filter(problem__contest=self.object).all()
-        else:
-            queryset = ContestSubmission.objects.filter(problem__contest=self.object, submission__user=self.request.user).all()
-        self.filter = SubmissionFilter(
-            self.request.GET,
-            queryset=queryset,
-            problems=self.object.problems.all()
-        )
-        context['submissions'] = self.filter.qs.order_by('-pk')
+        submissions_table = SubmissionTable(self.get_queryset())
+        # submissions_table.paginate(page=self.request.get('page', 1), per_page=20)
+        RequestConfig(self.request).configure(submissions_table)
+        #  add filter here
+        context['submissions_table'] = submissions_table
+        # context['submissions'] = self.filter.qs.order_by('-pk')
         #  add filter here
         context['filter'] = self.filter
+        context['contest'] = self.contest
         return context
-
-
-class ClarificationListView(DetailView):
-    model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
 
 
 class BoardView(DetailView):
     model = Contest
     permission_classes = (IsAuthenticated, ContestViewPermission)
-    template_name = 'contest/board2.html'
+    template_name = 'contest/contest_board.html'
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -581,3 +588,109 @@ class NotificationUpdateView(TemplateView):
         context['form'] = NotificationForm(instance=self.notification)
         context['contest'] = self.contest
         return context
+
+
+class ClarificationListView(ListView):
+
+    model = Contest
+    permission_classes = (IsAuthenticated, )
+    template_name = 'contest/clarification_list.html'
+
+    paginate_by = 15
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        self.contest = get_object_or_404(Contest.objects.filter(group__in=get_objects_for_user(
+            request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True)), pk=pk)
+        return super(ClarificationListView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ClarificationListView, self).get_context_data(**kwargs)
+        self.clarification_can_view_qs = self.contest.clarifications.all()
+        notifications_table = ClarificationTable(self.clarification_can_view_qs)
+        RequestConfig(self.request, paginate={'per_page': 20}).configure(notifications_table)
+        context['clarification_table'] = notifications_table
+        context['contest'] = self.contest
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
+        return context
+
+
+class QuestionView(CreateView):
+
+    model = Clarification
+    template_name = 'contest/add_clarification.html'
+    form_class = QuestionForm
+    success_message = "your question has been created successfully"
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        self.contest = get_object_or_404(Contest.objects.filter(group__in=get_objects_for_user(
+            request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True)), pk=pk)
+        return super(QuestionView, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.contest = self.contest
+        self.object.author = self.request.user
+        self.object.save()
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            self.success_message
+            )
+        return super(QuestionView, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(QuestionView, self).get_context_data()
+        context['contest'] = self.contest
+        context['form'] = QuestionForm()
+        return context
+
+    def get_success_url(self):
+        return reverse('contest:contest-detail', args=[self.contest.pk])
+
+
+class AnswerView(UpdateView):
+
+    model = Clarification
+    template_name = 'contest/add_clarification.html'
+    form_class = AnswerForm
+
+    @method_decorator(login_required)
+    def dispatch(self, request, cpk=None, *args, **kwargs):
+        self.contest = get_object_or_404(Contest.objects.filter(group__in=get_objects_for_user(
+            request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True)), pk=cpk)
+        return super(AnswerView, self).dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(AnswerView, self).get_context_data()
+        context['contest'] = self.contest
+        context['form'] = self.form_class()
+        return context
+
+    def get_success_url(self):
+        return reverse('contest:clarification-list', args=[self.contest.pk])
+
+
+class QuestionDeleteView(DeleteView):
+    model = Clarification
+    template_name = 'ojuser/group_confirm_delete.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, request, cpk=None, *args, **kwargs):
+        self.contest = get_object_or_404(Contest.objects.filter(group__in=get_objects_for_user(
+            request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True)), pk=cpk)
+        return super(QuestionDeleteView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('contest:clarification-list', args=[self.contest.pk])
+
