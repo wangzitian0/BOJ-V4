@@ -243,7 +243,7 @@ class ProblemCreateView(CreateView):
         sample_in = self.request.POST.get('sample_in', '')
         sample_out = self.request.POST.get('sample_out', '')
         self.object = form.save(commit=False)
-        self.object.problem_desc = json.dumps({
+        self.object.desc = json.dumps({
             'desc': desc,
             'sample_in': sample_in,
             'sample_out': sample_out,
@@ -298,7 +298,7 @@ class ProblemUpdateView(UpdateView):
         sample_in = self.request.POST.get('sample_in', '')
         sample_out = self.request.POST.get('sample_out', '')
         self.object = form.save(commit=False)
-        self.object.problem_desc = json.dumps({
+        self.object.desc = json.dumps({
             'desc': desc,
             'sample_in': sample_in,
             'sample_out': sample_out,

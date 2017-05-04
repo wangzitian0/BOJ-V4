@@ -78,11 +78,9 @@ class Notification(models.Model):
         return self.title
 
 
-
 class Clarification(models.Model):
 
-    title = models.CharField(max_length=128)
-    author = models.ForeignKey(User)
+    author = models.ForeignKey(User, related_name='clarifications')
     question = models.TextField(default='')
     answer = models.TextField(default='')
     create_time = models.DateTimeField(auto_now_add=True)

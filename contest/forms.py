@@ -2,23 +2,7 @@
 from django import forms
 from datetime import datetime, timedelta, date, time
 from bojv4.conf import LANGUAGE_MASK, LANGUAGE
-from .models import Contest, ContestSubmission, Notification
-
-'''
-class ContestForm(forms.ModelForm):
-
-    class Meta:
-        model = Contest
-        exclude = ["author", 'start_time']
-        widgets = {
-           'group': ModelSelect2Widget(
-                search_fields=[
-                    'name__icontains',
-                    'nickname__icontains',
-                ]
-            ),
-        }
-'''
+from .models import Contest, ContestSubmission, Notification, Clarification
 
 
 class ContestForm(forms.Form):
@@ -81,4 +65,17 @@ class NotificationForm(forms.ModelForm):
         model = Notification
         fields = ['title', 'content']
 
+
+class QuestionForm(forms.ModelForm):
+
+    class Meta:
+        model = Clarification
+        fields = ['question']
+
+
+class AnswerForm(forms.ModelForm):
+
+    class Meta:
+        model = Clarification
+        fields = ['answer']
 

@@ -6,7 +6,7 @@
 
     <!--CombineResourcesFilter-->
     <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css" type="text/css" charset="utf-8">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" charset="utf-8">
+    <!--link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" charset="utf-8"-->
 
     <!--/CombineResourcesFilter-->
 
@@ -32,7 +32,7 @@
         </table>
       <div class="row">
           <h4>prolem description</h4>
-          <div id="test-editormd-view"><textarea>{{ problem.problem.desc }}</textarea></div>
+          <div id="test-editormd-view"><textarea>{{ problem.problem.description }}</textarea></div>
       </div>
       <br>
         {% if problem.problem.sample_in %}
@@ -47,14 +47,12 @@
            <pre><code>{{ problem.problem.sample_out }}</code></pre>
         </div>
     {% endif %}
+    <div class="row">
+        <a href="{% url 'contest:submission-add' object.pk%}?index={{ problem.index }}" class="btn btn-primary">Submit</a>
     {% if is_admin %}
-        <div class="row">
-           <a href="{% url 'problem:problem-update' problem.problem.pk%}" class="btn btn-default">Update Problem</a>
-        </div>
+           <a href="{% url 'problem:problem-update' problem.problem.pk%}" class="btn btn-info pull-right">Update Problem</a>
     {% endif %}
-        <div class="row">
-           <a href="{% url 'contest:submission-add' object.pk%}?index={{ problem.index }}" class="btn btn-default">Submit</a>
-        </div>
+    </div>
     </div>
 {% endblock %}
 {% block script_extra %}

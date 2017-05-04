@@ -22,14 +22,14 @@ class Problem(models.Model):
     time_limit = models.IntegerField(default=1000)
     memory_limit = models.IntegerField(default=65536)
     code_length_limit = models.IntegerField(default=65536)
-    problem_desc = models.TextField(default='None')
+    desc = models.TextField(default='None')
     is_checked = models.BooleanField(default=False)
     superadmin = models.ForeignKey(User)
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
     # allowed_lang = models.ManyToManyField('ojuser.Language', related_name='problems')
     groups = models.ManyToManyField(GroupProfile, blank=True, related_name='problems')
-    tags = models.ManyToManyField(ProblemTag, blank=True, related_name='problems', null=True)
+    tags = models.ManyToManyField(ProblemTag, blank=True, related_name='problems')
     is_spj = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -44,32 +44,32 @@ class Problem(models.Model):
                 return True
         return False
 
-    def desc(self):
+    def description(self):
         if not hasattr(self, '_desc'):
             try:
-                self._desc = json.loads(self.problem_desc)
+                self._desc = json.loads(self.desc)
                 print "problem_dec ============="
                 print self._desc
             except:
                 print "problem desc warong================"
-                print self.problem_desc
-                self._desc = {'desc': self.problem_desc, 'sample_in': '', 'sample_out': ''}
+                print self.desc
+                self._desc = {'desc': self.desc, 'sample_in': '', 'sample_out': ''}
         return self._desc['desc']
 
     def sample_in(self):
         if not hasattr(self, '_desc'):
             try:
-                self._desc = json.loads(self.problem_desc)
+                self._desc = json.loads(self.desc)
             except:
-                self._desc = {'desc': self.problem_desc, 'sample_in': '', 'sample_out': ''}
+                self._desc = {'desc': self.desc, 'sample_in': '', 'sample_out': ''}
         return self._desc['sample_in']
 
     def sample_out(self):
         if not hasattr(self, '_desc'):
             try:
-                self._desc = json.loads(self.problem_desc)
+                self._desc = json.loads(self.desc)
             except:
-                self._desc = {'desc': self.problem_desc, 'sample_in': '', 'sample_out': ''}
+                self._desc = {'desc': self.desc, 'sample_in': '', 'sample_out': ''}
         return self._desc['sample_out']
 
     def check_data(self):
