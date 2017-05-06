@@ -2,7 +2,8 @@
 from django import forms
 from datetime import datetime, timedelta, date, time
 from bojv4.conf import LANGUAGE_MASK, LANGUAGE
-from .models import Contest, ContestSubmission, Notification, Clarification
+from submission.models import Submission
+from .models import Contest, ContestSubmission, Notification, Clarification, ContestProblem
 
 
 class ContestForm(forms.Form):
@@ -53,10 +54,23 @@ class ContestForm(forms.Form):
         return cleaned_data
 
 
-class SubmissionForm(forms.Form):
+class SubmissionForm(forms.ModelForm):
 
-    index = forms.ChoiceField(choices=(), widget=forms.Select())
-    language = forms.ChoiceField(choices=LANGUAGE.choice(), widget=forms.Select())
+    problem = forms.ModelChoiceField(queryset=ContestProblem.objects.all(), widget=forms.Select(), label='problem')
+    submission__language = forms.ChoiceField(choices=LANGUAGE.choice(), widget=forms.Select(), label='language')
+    submission__code = forms.CharField(label='code', widget=forms.Textarea, max_length=65536)
+
+    class Meta:
+        model = ContestSubmission
+        fields = ['problem', 'submission__language', 'submission__code']
+
+    def set_choice(self, contest):
+        lang_limit = []
+        for x in LANGUAGE_MASK.choice():
+            if contest.lang_limit & x[0]:
+                lang_limit.append((x[1], LANGUAGE.get_display_name(x[1])))
+        self.fields['submission__language'].choices = lang_limit
+        self.fields['problem'].queryset = contest.problems.all()
 
 
 class NotificationForm(forms.ModelForm):

@@ -6,6 +6,10 @@ Make sure you are using a virtual environment of some sort (e.g. `virtualenv` or
 `pyenv`).
 
 ```
+```
+apt-get install libjpeg-turbo8-dev
+apt-get install zlib1g-dev
+```
 pip install -r requirements.txt
 ./manage.py migrate
 ./manage.py loaddata sites
@@ -30,16 +34,19 @@ TemplateView实现多个表单的验证
 ojuser/views.py
 class GroupUpdateView(TemplateView):
 ```
-权限控制最重要的接口
+- 权限控制最重要的接口
 ```
 https://django-guardian.readthedocs.org/en/stable/api/guardian.shortcuts.html
 ```
-向表单里面添加非fields的值
+- 向表单里面添加非fields的值
 ```
 
 ojuser/forms.py
 class GroupProfileForm(forms.ModelForm):
 ```
+
+- 后台进程管理
+    - 包括redis\nsq\django-server\judge\judge-result等
 ```
-apt-get install libjpeg-turbo8-dev
-apt-get install zlib1g-dev
+sudo supervisorctl #查看管理进程
+```

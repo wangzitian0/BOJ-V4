@@ -38,8 +38,9 @@ class ContestViewPermission(BasePermission):
         if not isinstance(obj, Contest):
             return False
         if request.user.has_perm('ojuser.change_groupprofile', obj.group):
+            print "could view contest", view
             return True
-        print type(obj.start_time)
+        print "could view contest", view
         now = datetime.now()
         if request.user.has_perm('ojuser.view_groupprofile', obj.group) and obj.ended() == 0:
             return True
@@ -125,39 +126,6 @@ class ContestViewSet(ModelViewSet):
                 i['sub'] += sinfo.get('sub', 0)
 
         return Response(info)
-
-    @detail_route(methods=['post'], url_path='submit')
-    def create_submission(self, request, pk=None):
-        index = request.POST.get('index', '')
-        code = request.POST.get('code', '')
-        s = Submission()
-        s.length = len(code)
-        if s.length > Submission.CODE_LENGTH_LIMIT:
-            messages.add_message(
-                request._request,
-                messages.ERROR,
-                _('Code length exceed limit')
-            )
-            return HttpResponseRedirect(reverse('contest:submission-add', args=(pk,)))
-
-        language = request.POST.get('language')
-        p = ContestProblem.objects.filter(contest=self.get_object(), index=index).first()
-        s.code = code
-        s.problem = p.problem
-        s.language = language
-        s.user = request.user
-        s.save()
-        cs = ContestSubmission()
-        cs.submission = s
-        cs.problem = p
-        cs.save()
-        s.judge()
-        messages.add_message(
-            request._request,
-            messages.SUCCESS,
-            _('Submit Success')
-        )
-        return HttpResponseRedirect(reverse('contest:submission-list', args=(pk, )))
 
 
 class ContestListView(ListView):
@@ -357,7 +325,8 @@ class BoardView(DetailView):
     template_name = 'contest/contest_board.html'
 
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        print "view contest board"
         return super(BoardView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -437,33 +406,60 @@ class ContestUpdateView(TemplateView):
         return context
 
 
-class SubmissionCreateView(DetailView):
-    model = Contest
+class SubmissionCreateView(CreateView):
     template_name = 'contest/submission_create_form.html'
     success_message = "your submission has been created successfully"
-    permission_classes = (IsAuthenticated, ContestViewPermission)
+    permission_classes = (IsAuthenticated, )
+    form_class = SubmissionForm
 
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request, cpk=None, *args, **kwargs):
         self.index = request.GET.get('index', None)
+        self.contest = get_object_or_404(Contest.objects.filter(group__in=get_objects_for_user(
+            request.user,
+            'ojuser.view_groupprofile',
+            with_superuser=True)), pk=cpk)
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        print "============submission============"
+        self.object = form.save(commit=False)
+        sub = Submission()
+        sub.code = form.cleaned_data['submission__code']
+        sub.language = form.cleaned_data['submission__language']
+        sub.user = self.request.user
+        sub.problem = self.object.problem.problem
+        sub.save()
+        sub.judge()
+        self.object.submission = sub
+        self.object.save()
+        # self.object.user = self.request.user
+
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            _('Submit Success')
+        )
+        return super(SubmissionCreateView, self).form_valid(form)
+
+    def get_form(self, form_class=None):
+        form = super(SubmissionCreateView, self).get_form(form_class)
+        form.set_choice(self.contest)
+        if self.index:
+            form.fields['problem'].initial = ContestProblem.objects.filter(contest=self.contest, index=self.index).first()
+        else:
+            form.fields['problem'].initial = self.contest.problems.first()
+        return form
 
     def get_context_data(self, **kwargs):
         context = super(SubmissionCreateView, self).get_context_data(**kwargs)
-        context['index'] = self.index
-        form = SubmissionForm()
-        form.fields['index'].choices = ((x.index, x.index + '. ' + x.title) for x in self.object.problems.all())
-        if self.index:
-            form.fields['index'].initial = self.index
-        else:
-            form.fields['index'].initial = 'A'
-        lang_limit = []
-        for x in LANGUAGE_MASK.choice():
-            if self.object.lang_limit & x[0]:
-                lang_limit.append((x[1], LANGUAGE.get_display_name(x[1])))
-        form.fields['language'].choices = lang_limit
-        context['form'] = form
+        context['contest'] = self.contest
         return context
+
+    def get_success_url(self):
+        return reverse('contest:submission-list', args=[self.contest.pk])
+
+
 
 
 class SubmissionDetailView(DetailView):
