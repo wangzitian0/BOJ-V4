@@ -23,6 +23,9 @@ class Contest(models.Model):
     def __unicode__(self):
         return self.title
 
+    def key(self):
+        return 'contest__' + str(self.pk) + '__' + self.title
+
     def time_left(self):
         now = datetime.now()
         if now < self.start_time.replace(tzinfo=None):

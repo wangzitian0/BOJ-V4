@@ -6,7 +6,7 @@ from submission.models import Submission
 from .models import Contest, ContestSubmission, Notification, Clarification, ContestProblem
 
 
-class ContestForm(forms.Form):
+class ContestForm(forms.ModelForm):
 
     title = forms.CharField(max_length=64, min_length=1,
             label=u'测验标题', widget=forms.TextInput(attrs={
@@ -36,6 +36,11 @@ class ContestForm(forms.Form):
                                            initial=[4, 1, 2], label=u'语言限制')
 
     started = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+    class Meta:
+        model = Contest
+        fields = ['title', 'desc', 'start_time', 'start_date', 'start_time', 'length', 'board_stop', 'lang_limit']
+
 
     def clean(self):
         cleaned_data = super(ContestForm, self).clean()

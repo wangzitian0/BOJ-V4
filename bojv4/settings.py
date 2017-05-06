@@ -179,22 +179,38 @@ LOGGING = {
             "filters": ["require_debug_false"],
             "class": "django.utils.log.AdminEmailHandler"
         },
-	'default': { 
-            'level':'INFO', 
-            'class':'logging.handlers.RotatingFileHandler', 
+        'default': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': '/var/log/oj/all.log',
-            'maxBytes': 1024*1024*5, 
+            'maxBytes': 1024*1024*5,
             'backupCount': 5,
-            'formatter':'standard', 
-        }, 
-        'warning_handler': { 
-            'level':'WARNING', 
-            'class':'logging.handlers.RotatingFileHandler', 
-            'filename': '/var/log/oj/warning.log',
-	    'maxBytes': 1024*1024*5, 
-            'backupCount': 5, 
+            'formatter' :'standard',
+        },
+        'error_handler': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/var/log/oj/error.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
             'formatter':'standard',
-        }, 
+        },
+        'warning_handler': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/var/log/oj/warning.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5, 
+            'formatter': 'standard',
+        },
+        'judge_handler': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/var/log/oj/judge.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
+            'formatter': 'standard',
+        }
     },
     "loggers": {
         "django.request": {
@@ -203,10 +219,15 @@ LOGGING = {
             "propagate": True,
         },
         "django": {
-            "handlers": ["default", "warning_handler"],
+            "handlers": ["default", "warning_handler", "error_handler"],
             "level": "INFO",
             "propagate": True,
         },
+        "judge": {
+            "handlers": ["judge_handler"],
+            "level": "ERROR",
+            "propagate": True,
+        }
     }
 }
 

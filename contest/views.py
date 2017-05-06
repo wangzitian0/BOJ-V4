@@ -12,6 +12,7 @@ from bojv4.conf import LANGUAGE_MASK, LANGUAGE
 
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.core.urlresolvers import reverse
+from django.core.cache import cache
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.shortcuts import render
@@ -38,9 +39,7 @@ class ContestViewPermission(BasePermission):
         if not isinstance(obj, Contest):
             return False
         if request.user.has_perm('ojuser.change_groupprofile', obj.group):
-            print "could view contest", view
             return True
-        print "could view contest", view
         now = datetime.now()
         if request.user.has_perm('ojuser.view_groupprofile', obj.group) and obj.ended() == 0:
             return True
@@ -69,6 +68,9 @@ class ContestViewSet(ModelViewSet):
     @detail_route(methods=['get'], url_path='board')
     def get_contest_board(self, request, pk=None):
         contest = self.get_object()
+        res = cache.get(contest.key())
+        if res:
+            return Response(res)
         subs = ContestSubmission.objects.filter(problem__contest=contest).all()
         probs = ContestProblem.objects.filter(contest=contest).all()
         info = {}
@@ -124,7 +126,8 @@ class ContestViewSet(ModelViewSet):
                     i['AC'] += 1
                     i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
                 i['sub'] += sinfo.get('sub', 0)
-
+        info.sort(key=lambda x: x['AC']*1000000-x['pen'], reverse=True)
+        cache.set(contest.key(), info)
         return Response(info)
 
 
@@ -177,7 +180,6 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
         try:
             gid = int(gid)
         except Exception as ex:
-            print ex
             gid = -1
         self.group = get_object_or_404(get_objects_for_user(request.user, 'ojuser.change_groupprofile', with_superuser=True), pk=gid)
         return super(ContestCreateView, self).dispatch(request, *args, **kwargs)
@@ -186,7 +188,6 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         if request.method == 'POST':
             form = ContestForm(request.POST)
-            print request.POST
             if form.is_valid():
                 problem_list = request.POST.getlist('problem_id')
                 score_list = request.POST.getlist('problem_score_custom')
@@ -208,7 +209,6 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
                 for i in range(len(problem_list)):
                     p = Problem.objects.filter(pk=problem_list[i]).first()
                     if ContestProblem.objects.filter(problem=p, contest=c).count() > 0 or not p:
-                        print "Error Problem, ", problem_list[i]
                         continue
                     cp = ContestProblem()
                     cp.problem = p
@@ -217,8 +217,6 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
                     cp.contest = c
                     cp.index = pindex[i]
                     cp.save()
-                print "____________________end__________________"
-                print reverse('contest:contest-list')
                 return HttpResponseRedirect(reverse('contest:contest-list'))
         return super(ContestCreateView, self).render_to_response(context)
 
@@ -234,7 +232,6 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
             else:
                 control_problem |= g.problems.all()
         context['control_problem'] = control_problem.distinct() if control_problem else None
-        print context['now']
         return context
 
 
@@ -302,7 +299,6 @@ class SubmissionListView(ListView):
             request.user,
             'ojuser.view_groupprofile',
             with_superuser=True)), pk=pk)
-        print "contest:========", self.contest.title
         return super(SubmissionListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -326,7 +322,6 @@ class BoardView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
-        print "view contest board"
         return super(BoardView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -362,7 +357,6 @@ class ContestUpdateView(TemplateView):
                 self.object.board_stop = form.cleaned_data['board_stop']
                 self.object.desc = form.cleaned_data['desc']
                 self.object.length = form.cleaned_data['length']
-                self.object.group = self.group
                 self.object.title = form.cleaned_data['title']
                 for x in form.cleaned_data['lang_limit']:
                     self.object.lang_limit |= int(x)
@@ -422,7 +416,6 @@ class SubmissionCreateView(CreateView):
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        print "============submission============"
         self.object = form.save(commit=False)
         sub = Submission()
         sub.code = form.cleaned_data['submission__code']
