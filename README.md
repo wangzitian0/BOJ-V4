@@ -2,11 +2,37 @@
 
 ## Getting Started
 
+### Basic lib
+
+```
+sudo apt-get install libjpeg-turbo8-dev zlib1g-dev python-pip
+```
+### Virtual environment
+
 Make sure you are using a virtual environment of some sort (e.g. `virtualenv` or
 `pyenv`).
 
 ```
-pip install -r requirements.txt
+cat >> prepare.sh << EOF
+pip install virtualenv
+mkdir BOJ
+cd BOJ
+virtualenv --no-site-packages venv
+EOF
+chmod +x prepare.sh
+./prepare.sh
+```
+
+### Clone the project
+
+```
+source venv/bin/activate
+git clone https://github.com/BUPT-OJ-V4/BOJ-V4.git
+cd BOJ-V4
+pip install -r requirements.txt 
+```
+
+```        
 ./manage.py migrate
 ./manage.py loaddata sites
 ```
@@ -40,6 +66,4 @@ https://django-guardian.readthedocs.org/en/stable/api/guardian.shortcuts.html
 ojuser/forms.py
 class GroupProfileForm(forms.ModelForm):
 ```
-```
-apt-get install libjpeg-turbo8-dev
-apt-get install zlib1g-dev
+
