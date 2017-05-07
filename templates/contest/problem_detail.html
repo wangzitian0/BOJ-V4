@@ -1,0 +1,99 @@
+{% extends "contest/contest_base.html" %}
+
+{% block extra_head_base %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8"
+          xmlns="http://www.w3.org/1999/html">
+
+    <!--CombineResourcesFilter-->
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css" type="text/css" charset="utf-8">
+    <!--link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" charset="utf-8"-->
+
+    <!--/CombineResourcesFilter-->
+
+    <link rel="stylesheet" href="{{ STATIC_URL }}editormd/css/editormd.css" />
+    <link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon" />
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}editormd/lib/katex.min.css">
+    <script id="-cdnjs-cloudflare-com-ajax-libs-KaTeX-0-3-0-katex-min" type="text/javascript" src="{{ STATIC_URL }}editormd/lib/katex.min.js"></script>
+{% endblock %}
+
+{% block contest_body %}
+       <h1>{{ problem.index }}. <strong>{{ problem.title }}</strong></h1>
+      <table class="table">
+          <tbody>
+          <tr>
+                <td><strong>time_limit: </strong>{{ problem.problem.time_limit }}</td>
+                <td><strong>memory_limit: </strong>{{ problem.problem.memory_limit }}</td>
+          </tr>
+          <tr>
+                <td><strong>author: </strong>{{ problem.problem.superadmin }}</td>
+                <td><strong>is special judge</strong>: {{ problem.problem.is_spj }}</td>
+          </tr>
+          </tbody>
+        </table>
+      <div class="row">
+          <h4>prolem description</h4>
+          <div id="test-editormd-view"><textarea>{{ problem.problem.description }}</textarea></div>
+      </div>
+      <br>
+        {% if problem.problem.sample_in %}
+        <div class="row">
+          <h4>Sample input</h4>
+          <pre><code>{{ problem.problem.sample_in }}</code></pre>
+        </div>
+    {% endif %}
+    {% if problem.problem.sample_out %}
+        <div class="row">
+           <h4>Sample output</h4>
+           <pre><code>{{ problem.problem.sample_out }}</code></pre>
+        </div>
+    {% endif %}
+    <div class="row">
+        <a href="{% url 'contest:submission-add' object.pk%}?index={{ problem.index }}" class="btn btn-primary">Submit</a>
+    {% if is_admin %}
+           <a href="{% url 'problem:problem-update' problem.problem.pk%}" class="btn btn-info pull-right">Update Problem</a>
+    {% endif %}
+    </div>
+    </div>
+{% endblock %}
+{% block script_extra %}
+    <script src="{{ STATIC_URL }}js/jquery.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/marked.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/prettify.min.js"></script>
+
+  <script src="{{ STATIC_URL }}editormd/lib/raphael.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/underscore.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/sequence-diagram.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/flowchart.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/jquery.flowchart.min.js"></script>
+
+  <script src="{{ STATIC_URL }}editormd/editormd.js"></script>
+  <script type="text/javascript">
+      $(function() {
+          var testEditormdView, testEditormdView2;
+
+          testEditormdView = editormd.markdownToHTML("test-editormd-view", {
+              //markdown        : markdown ,//+ "\r\n" + $("#append-test").text(),
+              //htmlDecode      : true,       // 开启 HTML 标签解析，为了安全性，默认不开启
+              htmlDecode      : "style,script,iframe",  // you can filter tags decode
+              //toc             : false,
+              tocm            : true,    // Using [TOCM]
+              //tocContainer    : "#custom-toc-container", // 自定义 ToC 容器层
+              //gfm             : false,
+              //tocDropdown     : true,
+              // markdownSourceCode : true, // 是否保留 Markdown 源码，即是否删除保存源码的 Textarea 标签
+              emoji           : true,
+              taskList        : true,
+              tex             : true,  // 默认不解析
+              flowChart       : true,  // 默认不解析
+              sequenceDiagram : true,  // 默认不解析
+          });
+
+          //console.log("返回一个 jQuery 实例 =>", testEditormdView);
+
+          // 获取Markdown源码
+          console.log(testEditormdView.getMarkdown());
+
+          //alert(testEditormdView.getMarkdown());
+      });
+  </script>
+{% endblock %}

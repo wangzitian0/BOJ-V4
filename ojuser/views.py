@@ -1,4 +1,5 @@
 import json
+import copy
 from itertools import chain
 from account.views import SignupView
 from django.shortcuts import redirect
@@ -24,21 +25,15 @@ from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserProfilesForm
 from .forms import GroupProfileForm, GroupForm, GroupSearchForm
-from .serializers import LanguageSerializer, UserSerializer, UserProfileSerializer, \
+from .serializers import UserSerializer, UserProfileSerializer, \
         get_rand_password, GroupProfileSerializer, UserSlugSerializer, GroupSerializer, \
         UserResetSerializer
 from .tables import GroupUserTable, GroupTable
-from .models import GroupProfile, Language
+from .models import GroupProfile
 from .filters import GroupFilter
 
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
-
-
-class LanguageViewSet(viewsets.ModelViewSet):
-    queryset = Language.objects.all()
-    serializer_class = LanguageSerializer
-    permission_classes = (IsAdminUser,)
 
 
 class GroupListView(ListView):
@@ -86,6 +81,24 @@ class GroupListView(ListView):
         context['group_can_view'] = self.group_can_view_qs
         context['group_can_change'] = self.group_can_change_qs
         context['group_can_delete'] = self.group_can_delete_qs
+        context['rootGroup'] = GroupProfile.objects.filter(name='root').first()
+        tree_list = []
+        for u in self.get_queryset():
+            p_name = '#'
+            if u.parent:
+                p_name = str(u.parent.pk)
+            url = reverse('mygroup-detail', args=[u.pk, ])
+            tree_list.append({
+                'id': str(u.pk),
+                'parent': p_name,
+                'text': u.nickname,
+                'state': {
+                    'opened': True,
+                },
+            })
+        context['tree_list'] = json.dumps(tree_list)
+        print context['tree_list']
+
         return context
 
 
@@ -100,7 +113,7 @@ class GroupCreateView(TemplateView):
         context = self.get_context_data(**kwargs)
         if self.group_profile_form.is_valid() and self.group_admins_form.is_valid():
             gg = GroupProfile(**self.group_profile_form.cleaned_data)
-            gg.superadmin = self.request.user
+            # gg.superadmin = self.request.user
             gg.save()
             GroupForm(request.POST, instance=gg.admin_group).save()
             return HttpResponseRedirect(reverse('mygroup-detail', args=[gg.pk, ]))
@@ -109,8 +122,23 @@ class GroupCreateView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(GroupCreateView, self).get_context_data(**kwargs)
         self.group_profile_form = GroupProfileForm(self.request.POST or None)
-        self.group_admins_form = GroupForm(self.request.POST or None,
-                user_queryset=User.objects.filter(is_staff=True))
+        self.group_admins_form = GroupForm(self.request.POST or None)
+        group = GroupProfile.objects.filter(name='root').first()
+        groups = get_objects_for_user(
+            user=self.request.user,
+            perms='ojuser.delete_groupprofile',
+            with_superuser=True)
+        queryset = User.objects.filter(pk=self.request.user.pk)
+        superadmin_queryset = copy.copy(queryset)
+        if group:
+            superadmin_queryset |= group.user_group.user_set.all()
+        self.group_profile_form.fields['superadmin'].queryset = superadmin_queryset.distinct()
+
+        for g in groups.all():
+            queryset |= g.user_group.user_set.all()
+
+        self.group_admins_form.fields["admins"].queryset = queryset.distinct()
+
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
         return context
@@ -137,21 +165,22 @@ class GroupUpdateView(TemplateView):
         return super(GroupUpdateView, self).render_to_response(context)
 
     def get_context_data(self, **kwargs):
-        profiles_can_change = get_objects_for_user(
-            self.request.user,
-            'ojuser.change_groupprofile',
-            with_superuser=True
-        )
         context = super(GroupUpdateView, self).get_context_data(**kwargs)
         self.pk = self.kwargs['pk']
         qs = GroupProfile.objects.all()
         self.object = get_object_or_404(qs, pk=self.pk)
-        self.group_profile_form = GroupProfileForm(instance=self.object,
-                my_queryset=profiles_can_change)
-        user_queryset = User.objects.filter(Q(pk__in=self.object.user_group.user_set.all()) |
-                Q(is_staff=True))
-        self.group_admins_form = GroupForm(instance=self.object.admin_group, 
-                user_queryset=user_queryset)
+        my_children = self.object.get_descendants(include_self=True)
+        profiles_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        ).exclude(pk__in=my_children)
+        self.group_profile_form = GroupProfileForm(instance=self.object)
+        self.group_profile_form.fields['parent'].queryset = profiles_can_change
+        self.group_profile_form.fields['parent'].widget.queryset = profiles_can_change
+        user_queryset = User.objects.filter(pk__in=self.object.user_group.user_set.all())
+        self.group_admins_form = GroupForm(instance=self.object.admin_group)
+        self.group_admins_form.fields['admins'].widget.queryset = user_queryset
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
         context['pk'] = self.pk
@@ -201,23 +230,15 @@ class GroupDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
         context['group_pk'] = context['object'].pk
-        tree_list = []
-        for u in self.get_queryset():
-            p_name = '#'
-            if u.parent:
-                p_name = u.parent.name
-            url = reverse('mygroup-detail', args=[u.pk, ])
-            tree_list.append({
-                'id': u.name,
-                'parent': p_name,
-                'text': u.nickname,
-                'state': {
-                    'opened': True,
-                    'disabled': True,
-                },
-            })
-        context['tree_list'] = json.dumps(tree_list)
-        print context['tree_list']
+        group = context['object']
+        print group.get_ancestors()
+        context['admins'] = group.admin_group.user_set.all()
+        context['children'] = group.get_children()
+        group_users = group.user_group.user_set.all()
+        group_users_table = GroupUserTable(group_users)
+        RequestConfig(self.request).configure(group_users_table)
+        #  add filter here
+        context['group_users_table'] = group_users_table
         return context
 
 
@@ -315,26 +336,6 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
     serializer_class = GroupProfileSerializer
     permission_classes = [IsAuthenticated, ]
 
-    @detail_route(methods=['get'], url_path='detail')
-    def get_detail(self, request, pk=None):
-        if request.method == "GET":
-            print "==================start"
-            context = {}
-            # group = get_object_or_404(qs=self.get_queryset(), pk=pk) 
-            group = GroupProfile.objects.get(pk=pk)
-            print "group_id", group.pk
-            group_users = group.user_group.user_set.all()
-            group_users_table = GroupUserTable(group_users)
-            # RequestConfig(self.request).configure(group_users_table)
-            #  add filter here
-            # context['group_users_table'] = group_users_table
-            try:
-                context['table'] = group_users_table.as_html(request)
-            except Exception, ex:
-                print ex
-            return Response(context)
-     
-
     @detail_route(methods=['post', 'get', 'put', ], url_path='members')
     def manage_member(self, request, pk=None):
         qs = self.get_queryset()
@@ -390,7 +391,6 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class OjUserSignupView(SignupView):
 
     form_class = UserProfileForm
@@ -404,6 +404,9 @@ class OjUserSignupView(SignupView):
         profile.nickname = form.cleaned_data["nickname"]
         profile.gender = form.cleaned_data["gender"]
         profile.save()
+        group = GroupProfile.objects.filter(name='public').first()
+        if group:
+            group.user_group.user_set.add(self.created_user)
 
 
 class OjUserProfilesView(FormView):
@@ -423,14 +426,12 @@ class OjUserProfilesView(FormView):
         profile = self.request.user.profile
         initial["nickname"] = profile.nickname
         initial["gender"] = profile.gender
-        initial["prefer_lang"] = profile.prefer_lang
         return initial
 
     def form_valid(self, form):
         profile = self.request.user.profile
         profile.gender = form.cleaned_data["gender"]
         profile.nickname = form.cleaned_data["nickname"]
-        profile.prefer_lang = form.cleaned_data["prefer_lang"]
         profile.save()
         if self.messages.get("profiles_updated"):
             messages.add_message(

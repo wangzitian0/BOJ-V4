@@ -8,7 +8,8 @@ from rest_framework import routers
 from problem.views import ProblemViewSet, ProblemDataInfoViewSet
 from problem.views import FileViewSet
 from submission.views import SubmissionViewSet
-from ojuser.views import LanguageViewSet, UserProfileViewSet, GroupProfileViewSet, GroupViewSet
+from contest.views import ContestViewSet
+from ojuser.views import UserProfileViewSet, GroupProfileViewSet, GroupViewSet
 
 
 router = routers.DefaultRouter()
@@ -19,8 +20,8 @@ router.register(r'groups', GroupProfileViewSet)
 router.register(r'files', FileViewSet)
 router.register(r'problems', ProblemViewSet)
 router.register(r'datainfo', ProblemDataInfoViewSet)
-router.register(r'languages', LanguageViewSet)
 router.register(r'submissions', SubmissionViewSet)
+router.register(r'contest', ContestViewSet)
 
 urlpatterns = [
     url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
