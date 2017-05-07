@@ -36,6 +36,10 @@ https://django-guardian.readthedocs.org/en/stable/api/guardian.shortcuts.html
 ```
 向表单里面添加非fields的值
 ```
+
 ojuser/forms.py
 class GroupProfileForm(forms.ModelForm):
 ```
+```
+apt-get install libjpeg-turbo8-dev
+apt-get install zlib1g-dev

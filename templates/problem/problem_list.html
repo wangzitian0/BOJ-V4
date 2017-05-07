@@ -12,11 +12,11 @@
 <section class="jumbotron">
   <div class="container">
     {% include "_messages.html" %}
-    <h1>Articles</h1>
+    <h1>Problems</h1>
     <div>
     </div>
     <div>
-      <form id="filter" action="" method="get">
+      <form id="filter" action="" method="get" class="form">
         <div class="col-lg-2">
           {% bootstrap_form filter.form %}
         </div>
@@ -27,7 +27,7 @@
       </form>
     </div>
     {% render_table problems_table %}
-    {% if request.user.is_staff %}
+    {% if request.user in rootGroup.user_group.user_set or request.user.is_staff %}
     <div>
       <a href="{% url 'problem:problem-add' %}" class="btn btn-large btn-primary">Add</a>
     </div>

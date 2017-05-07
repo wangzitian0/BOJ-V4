@@ -1,6 +1,6 @@
 
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
@@ -15,18 +15,45 @@ import mimetypes
 from django_tables2 import RequestConfig
 from filer.models.filemodels import File
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
 
-from .models import Problem, ProblemDataInfo
+from .models import Problem, ProblemDataInfo, ProblemCase
 from .filters import ProblemFilter
 from .tables import ProblemTable
 from .serializers import ProblemSerializer, ProblemDataInfoSerializer
 from .serializers import FileSerializer, ProblemDataSerializer
 from .forms import ProblemForm
+from ojuser.models import GroupProfile
+import logging
+logger = logging.getLogger('django')
+
+
+class ProblemViewPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if not isinstance(obj, Problem):
+            return False
+        groups = obj.groups.all()
+        for g in groups:
+            if request.user.has_perm('ojuser.view_groupprofile', g):
+                return True
+        return False
+
+
+class ProblemChangePermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if not isinstance(obj, Problem):
+            return False
+        groups = obj.groups.all()
+        for g in groups:
+            if request.user.has_perm('ojuser.change_groupprofile', g):
+                return True
+        return False
 
 
 class FileViewSet(viewsets.ModelViewSet):
@@ -38,7 +65,7 @@ class FileViewSet(viewsets.ModelViewSet):
 class ProblemViewSet(viewsets.ModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, ProblemChangePermission)
 
     @detail_route(methods=['get'], url_path='datas')
     def get_problem_datas(self, request, pk=None):
@@ -47,17 +74,39 @@ class ProblemViewSet(viewsets.ModelViewSet):
         serializer = ProblemDataSerializer(problem, context={'request': request})
         return Response(serializer.data)
 
+    @detail_route(methods=['get'], url_path='info')
+    def get_problem_title(self, request, pk=None):
+        qs = self.get_queryset()
+        p = get_object_or_404(qs, pk=pk)
+        return Response({'code': 0, 'title': p.title})
+
 
 class ProblemDataInfoViewSet(viewsets.ModelViewSet):
     queryset = ProblemDataInfo.objects.all()
     serializer_class = ProblemDataInfoSerializer
     permission_classes = (IsAuthenticated,)
 
+    @detail_route(methods=['get'], url_path='check')
+    def check_problem_data(self, request, pk=None):
+        problem = get_object_or_404(Problem.objects.all(), pk=pk)
+        if problem.is_checked:
+            return Response({'code': 0, 'msg': 'Have checked before!'}) 
+        try:
+            if problem.check_data():
+                problem.is_checked = True
+                problem.save()
+            else:
+                return Response({'code': -1, 'msg': 'check data failed'})
+        except Exception as ex:
+            logger.error(ex)
+            return Response({'code': -1, 'msg': 'check data failed'})
+        return Response({'code': 0, 'msg': 'Check Success !'}) 
+
 
 class ProblemListView(ListView):
 
     model = Problem
-    paginate_by = 10
+    paginate_by = 20
 
     def get_queryset(self):
         gp_can_view = get_objects_for_user(
@@ -104,12 +153,47 @@ class ProblemListView(ListView):
         context['problem_can_view'] = self.problem_can_view_qs
         context['problem_can_delete'] = self.problem_can_delete_qs
         context['problem_can_change'] = self.problem_can_change_qs
+        context['rootGroup'] = GroupProfile.objects.filter(name='root').first()
+        return context
+
+
+class ProblemDataView(DetailView):
+    model = Problem
+    template_name = 'problem/problemdata_detail.html'
+
+    def get_queryset(self):
+        gp_can_change = get_objects_for_user(
+            self.request.user,
+            'ojuser.change_groupprofile',
+            with_superuser=True
+        )
+        groups_can_delete = get_objects_for_user(
+            self.request.user,
+            'problem.delete_problem',
+            with_superuser=True
+        )
+        self.qs = Problem.objects.filter(
+            Q(groups__in=gp_can_change) |
+            Q(pk__in=groups_can_delete)
+        ).distinct()
+        return self.qs
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(ProblemDataView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemDataView, self).get_context_data(**kwargs)
+        context['cases'] = self.object.cases.all()
+        context['pk'] = self.kwargs['pk']
         return context
 
 
 class ProblemDetailView(DetailView):
 
     model = Problem
+    permission_classes = (IsAuthenticated, )
+#    template_name = 'problem/problem_detail.html'
 
     def get_queryset(self):
         gp_can_view = get_objects_for_user(
@@ -140,6 +224,8 @@ class ProblemDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ProblemDetailView, self).get_context_data(**kwargs)
+        if self.request.user.has_perm('problem.change_problem', self.object): 
+            context['has_change_perm'] = 1
         return context
 
 
@@ -153,10 +239,28 @@ class ProblemCreateView(CreateView):
         return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        desc = self.request.POST.get('desc', '')
+        sample_in = self.request.POST.get('sample_in', '')
+        sample_out = self.request.POST.get('sample_out', '')
         self.object = form.save(commit=False)
+        self.object.desc = json.dumps({
+            'desc': desc,
+            'sample_in': sample_in,
+            'sample_out': sample_out,
+        })
         self.object.superadmin = self.request.user
         self.object.save()
         return super(ProblemCreateView, self).form_valid(form)
+
+    def get_form(self):
+        groups = get_objects_for_user(
+                self.request.user,
+                'ojuser.change_groupprofile',
+                with_superuser=True
+            )
+        form = ProblemForm(**self.get_form_kwargs())
+        form.fields['groups'].widget.queryset = groups
+        return form 
 
     def get_success_url(self):
         return reverse('problem:upload-new', args=[self.object.pk])
@@ -166,7 +270,7 @@ class ProblemUpdateView(UpdateView):
     model = Problem
     #  fields = '__all__'
     form_class = ProblemForm
-    template_name_suffix = '_update_form'
+    template_name = 'problem/problem_update_form.html'
 
     def get_queryset(self):
         gp_can_change = get_objects_for_user(
@@ -184,6 +288,38 @@ class ProblemUpdateView(UpdateView):
             Q(pk__in=groups_can_delete)
         ).distinct()
         return self.qs
+
+    @method_decorator(login_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        return super(ProblemUpdateView, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        desc = self.request.POST.get('desc', '')
+        sample_in = self.request.POST.get('sample_in', '')
+        sample_out = self.request.POST.get('sample_out', '')
+        self.object = form.save(commit=False)
+        self.object.desc = json.dumps({
+            'desc': desc,
+            'sample_in': sample_in,
+            'sample_out': sample_out,
+        })
+        self.object.superadmin = self.request.user
+        self.object.save()
+        return super(ProblemUpdateView, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemUpdateView, self).get_context_data(**kwargs)
+        return context
+
+    def get_form(self):
+        groups = get_objects_for_user(
+                self.request.user,
+                'ojuser.change_groupprofile',
+                with_superuser=True
+            )
+        form = ProblemForm(**self.get_form_kwargs())
+        form.fields['groups'].widget.queryset = groups
+        return form
 
     def get_success_url(self):
         return reverse('problem:upload-new', args=[self.object.pk])
@@ -258,6 +394,8 @@ class FileCreateView(CreateView):
     def form_valid(self, form):
         pid = self.kwargs['pid']
         _problem = Problem.objects.get(pk=pid)
+        _problem.is_checked = False
+        _problem.save()
         self.object = form.save()
         #  print _problem, self.object
         ProblemDataInfo.objects.create(data=self.object, problem=_problem)
@@ -277,6 +415,12 @@ class FileDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
+        ProblemCase.objects.filter(input_data=self.object).delete()
+        ProblemCase.objects.filter(output_data=self.object).delete()
+        problemdata = ProblemDataInfo.objects.filter(data=self.object).first()
+        problemdata.problem.is_checked = False
+        problemdata.problem.save()
+        problemdata.delete()
         self.object.delete()
         response = JSONResponse(True, mimetype=response_mimetype(request))
         response['Content-Disposition'] = 'inline; filename=files.json'
@@ -285,6 +429,7 @@ class FileDeleteView(DeleteView):
 
 class FileListView(ListView):
     model = File
+    template_name = 'problem/problemdata_list.html'
 
     def get_queryset(self):
         _problem = Problem.objects.get(pk=self.kwargs['pid'])
@@ -297,3 +442,4 @@ class FileListView(ListView):
         response = JSONResponse(data, mimetype=response_mimetype(self.request))
         response['Content-Disposition'] = 'inline; filename=files.json'
         return response
+

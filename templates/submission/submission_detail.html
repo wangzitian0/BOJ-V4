@@ -7,10 +7,92 @@
 {% block body_class %}my-submission{% endblock %}
 
 {% block body_base %}
-<section class="jumbotron">
-  <div class="container">
-    {% include "_messages.html" %}
-    <h1>{{ object.pk }}. {{ object.title }}</h1>
-  </div>
+<section id="content_body" class="jumbotron">
+    <div class="container" id="wrapper" style="width: 1100px;">
+        <h1>Submisstion Detail</h1>
+        <div class="row gray-bg">
+             <div class="col-lg-10">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <td>Problem: </td>
+                        <td><a href="{% url 'problem:problem-detail' object.problem.pk %}">
+                            {{ object.problem.pk }}. {{ object.problem.title }}
+                        </a></td>
+                    </tr>
+                     <tr>
+                        <td>Status: </td>
+                        <td>{{ object.get_status_display }}</td>
+                        </tr>
+                    <tr>
+                        <td>User: </td>
+                        <td><strong>{{ object.user.username }}</strong></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if compile_message %}
+            <div class="row gray-bg">
+                <h4>编译信息</h4>
+                <p>{{ compile_message }}</p>
+            </div>
+        {% endif %}
+       <div class="row gray-bg">
+            <div class="col-lg-12">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <textarea id="code-text">{{ object.code }}</textarea>
+                    </div>
+                 </div>
+            </div>
+       </div>
+
+        {% for case in cases %}
+            <div class="row gray-bg">
+                <div class="col-lg-6">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <span class="label label-primary pull-right">{{ case.status }}</span>
+                            <h5>{{ case.position }}th case: </h5>
+                        </div>
+                        <div class="ibox-content">
+                            <h5>run_time: {{ case.time }} ms</h5>
+                            <h5>run_limit: {{ case.memory }}KB</h5>
+                        </div>
+                    </div>
+               </div>
+            </div>
+        {% endfor %}
+    </div>
 </section>
+{% endblock %}
+{% block extra_body %}
+
+<link href="{{ STATIC_URL }}css/bootstrap.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/plugins/codemirror/codemirror.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/plugins/codemirror/ambiance.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/animate.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}css/style.css" rel="stylesheet">
+
+<script src="{{ STATIC_URL }}js/plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
+<!-- CodeMirror -->
+<script src="{{ STATIC_URL }}js/plugins/codemirror/codemirror.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/codemirror/mode/javascript/javascript.js"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{{ STATIC_URL }}js/plugins/pace/pace.min.js"></script>
+<script>
+
+var editor_one = CodeMirror.fromTextArea(document.getElementById("code-text"), {
+     lineNumbers: true,
+     matchBrackets: true,
+     styleActiveLine: true,
+     readOnly: true
+    });
+
+</script>
+
 {% endblock %}

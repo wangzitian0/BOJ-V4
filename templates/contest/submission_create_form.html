@@ -1,0 +1,53 @@
+{% extends "contest/contest_base.html" %}
+
+{% load bootstrap %}
+
+
+{% block contest_body %}
+	<h1>{{ problem.title }}</h1>
+    <h3>create submission</h3>
+    <form action="/api/contest/{{ object.pk }}/submit/" method="post" class="form" role="form">{% csrf_token %}
+        {{ form|bootstrap }}
+         <div class="form-group">
+            <label class="control-label" for="id_code">Code</label>
+            <textarea class="form-control" cols="40" id="id_code" name="code" placeholder="Code" required="required" rows="10" title=""></textarea>
+        </div>
+        <input type="submit" onclick="submit()"/>
+    </form>
+{% endblock %}
+
+{% block extra_body %}
+
+<link href="{{ STATIC_URL }}css/bootstrap.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/plugins/codemirror/codemirror.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/plugins/codemirror/ambiance.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/animate.css" rel="stylesheet">
+
+<script src="{{ STATIC_URL }}js/plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<!-- CodeMirror -->
+<script src="{{ STATIC_URL }}js/plugins/codemirror/codemirror.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/codemirror/mode/javascript/javascript.js"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{{ STATIC_URL }}js/plugins/pace/pace.min.js"></script>
+<script>
+
+var editor_one = CodeMirror.fromTextArea(document.getElementById("id_code"), {
+     lineNumbers: true,
+     matchBrackets: true,
+     styleActiveLine: true,
+    });
+function submit() {
+    $.post("/api/contest/{{ object.pk }}/submit/",{
+       language: $('#id_language').val(),
+       code: $('#id_code').val(),
+       index: $('#id_index').val()
+    }, function (result) {
+       alert(result);
+    }, "json");
+}
+
+</script>
+
+{% endblock %}

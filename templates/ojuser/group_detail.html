@@ -14,7 +14,8 @@
 <section class="jumbotron">
   <div class="container">
     {% include "_messages.html" %}
-    <h1>Groups {{ object.name }} - {{ object.profile.nickname }}</h1>
+      {% get_obj_perms request.user for object as "object_perms" %}
+    <h1>Groups {{ object.name }} - {{ object.nickname }}</h1>
     <h4>Admins</h4>
     <ul>
       {% for admin in admins %}
@@ -24,7 +25,13 @@
       {% endfor %}
     </ul>
     <h4>Parents</h4>
-    {{ object.get_ancestors | tree_path:" > " }}
+	<ul>
+      {% for profile in object.get_ancestors %}
+		<a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.name }}</a>
+	  {% empty %}
+	  <li> No Parents </li>
+      {% endfor %}
+	</ul>
     <h4>Children</h4>
     <ul>
       {% for profile in children %}
@@ -33,18 +40,26 @@
       <li>No child yet.</li>
       {% endfor %}
     </ul>
+      {% if "change_groupprofile" in object_perms %}
+        <a href="{% url 'contest:add-contest' object.pk %}" class="btn btn-large btn-primary">Create Contest</a>
+        {% endif %}
+	<div id="jstree_id">
+	</div>
   </div>
   <h3>group member</h3>
 
   {% render_table group_users_table %}
 
-  {% get_obj_perms request.user for object as "object_perms" %}
 
   {% if "change_groupprofile" in object_perms %}
-  <div>
-    <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">Members</a>
-    <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
-  </div>
+    <div>
+        <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">Members</a>
+        <a href="{% url 'mygroup-reset-password' object.pk %}" class="btn btn-large btn-primary">Reset</a>
+        {% if "delete_groupprofile" in object_perms %}
+            <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
+        {% endif %}
+    </div>
   {% endif %}
 </section>
 {% endblock %}
+
