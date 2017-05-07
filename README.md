@@ -31,19 +31,19 @@ source venv/bin/activate
 git clone https://github.com/BUPT-OJ-V4/BOJ-V4.git
 cd BOJ-V4
 pip install -r requirements.txt 
+cp bojv4/scr_settings.py bojv4/secret_settings.py  # 拷贝一份私密配置，否则系统无法运行
 ```
 
+### Run the project
+
+Make sure you get root permissions.
+
 ```        
+mkdir -p /var/log/oj
 ./manage.py migrate
 ./manage.py loaddata sites
 ```
 
-拷贝一份私密配置，否则系统无法运行
-
-```
-cp bojv4/scr_settings.py bojv4/secret_settings.py
-
-```
 
 运行临时服务器查看效果
 ```
@@ -63,7 +63,6 @@ https://django-guardian.readthedocs.org/en/stable/api/guardian.shortcuts.html
 ```
 向表单里面添加非fields的值
 ```
-
 ojuser/forms.py
 class GroupProfileForm(forms.ModelForm):
 ```
