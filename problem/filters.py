@@ -20,5 +20,5 @@ class ProblemFilter(django_filters.FilterSet):
 
     class Meta:
         model = Problem
-        fields = ['title', 'groups', 'tags']
+        fields = ['title', 'groups', ]
 

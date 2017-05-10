@@ -16,7 +16,7 @@ django.setup()
 
 from submission.models import Submission, CaseResult
 import logging
-logger = logging.getLogger('django')
+logger = logging.getLogger('judge')
 
 
 class NsqQueue(object):

@@ -17,76 +17,9 @@
 {% block body_base %}
 <section class="jumbotron">
   <div class="container">
- <form class="form-horizontal" action="{{request.get_full_path}}" method="POST" enctype="multipart/form-data" onSubmit="return checkAllProb()">
+ <form class="form-horizontal" action="" method="POST" enctype="multipart/form-data" onSubmit="return checkAllProb()">
     {% csrf_token %}
-    {{form.non_field_errors}}
-    <fieldset>
-        <legend>基本信息</legend>
-        <div class="control-group">
-            <label class="control-label" for="id_title">{{form.title.label}}</label>
-            {{form.title.errors}}
-            <div class="controls">
-                {{form.title}}
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label" for="id_desc">{{form.desc.label}}</label>
-            {{form.desc.errors}}
-            <div class="controls">
-                {{form.desc}}
-            </div>
-        </div>
-    </fieldset>
-    <fieldset>
-        <legend>时间</legend>
-        <div class="control-group">
-            <label class="control-label">开始时间</label>
-            {{form.start_date.errors}}
-            {{form.start_time.errors}}
-            <div class="controls">
-                <label for="id_start_date" style="display:inline-block;">日期</label>
-                {{form.start_date}}
-                <label for="id_start_time" style="display:inline-block;">时间</label>
-                {{form.start_time}}
-                <div style="display:inline-block;">当前时间 <span class="clock">{%now "Y-m-d H:i:s"%}</span></div>
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">持续时间(分钟)</label>
-            {{form.length.errors}}
-            {{form.board_stop.errors}}
-            <div class="controls">
-                <label for="id_length" style="display:inline-block;">{{form.length.label}}</label>
-                {{form.length}}
-                <label for="id_board_stop" style="display:inline-block;">{{form.board_stop.label}}</label>
-                {{form.board_stop}}
-            </div>
-        </div>
-    </fieldset>
-    <fieldset>
-        <legend>其它选项</legend>
-        <div class="control-group">
-            <label class="control-label">{{form.board_type.label}}</label>
-            {{form.board_type.errors}}
-            <div class="controls">
-                {{form.board_type}}
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{form.contest_type.label}}</label>
-            {{form.contest_type.errors}}
-            <div class="controls">
-                {{form.contest_type}}
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{form.lang_limit.label}}</label>
-            {{form.lang_limit.errors}}
-            <div class="controls">
-                {{form.lang_limit}}
-            </div>
-        </div>
-    </fieldset>
+     {% bootstrap_form form %}
     <fieldset>
         <legend>题目列表</legend>
         {% if control_problem %}
@@ -124,7 +57,7 @@
                     <td><input type="text" name="problem_id" onchange="checkProb(this)" value="{{p.problem.pk}}" placeholder="Problem ID" autocomplete="off"></td>
                     <td><input type="text" name="problem_title_custom" value="{{p.problem.title}}" placeholder="Problem Custom Title"></td>
                     <td><span class="problem_title">{{p.title}}</span></td>
-                    <td>{{p.score}}</td>
+                    <td><input type="text" name="problem_score_custom" value="{{p.score}}"></td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -132,7 +65,7 @@
         </table>
     </fieldset>
     <div class="form-actions">
-        <div align="right"><input class="btn btn-primary" type="submit" value="   提交   "></div>
+        <div align="right"><input class="btn btn-primary" type="submit" value="提交"></div>
     </div>
     </form>
 

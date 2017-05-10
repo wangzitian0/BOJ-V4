@@ -57,12 +57,18 @@ TemplateView实现多个表单的验证
 ojuser/views.py
 class GroupUpdateView(TemplateView):
 ```
-权限控制最重要的接口
+- 权限控制最重要的接口
 ```
 https://django-guardian.readthedocs.org/en/stable/api/guardian.shortcuts.html
 ```
-向表单里面添加非fields的值
+- 向表单里面添加非fields的值
 ```
 ojuser/forms.py
 class GroupProfileForm(forms.ModelForm):
+```
+
+- 后台进程管理
+    - 包括redis\nsq\django-server\judge\judge-result等
+```
+sudo supervisorctl #查看管理进程
 ```
