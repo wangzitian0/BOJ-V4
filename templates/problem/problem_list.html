@@ -16,12 +16,9 @@
     <div>
     </div>
     <div>
-      <form id="filter" action="" method="get" class="form">
-        <div class="col-lg-2">
-          {% bootstrap_form filter.form %}
-        </div>
-        <div class="col-lg-2">
-          <br>
+      <form id="filter" action="" method="get" class="form-inline">
+           {% bootstrap_form filter.form %}
+        <div class="form-group">
           <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
         </div>
       </form>

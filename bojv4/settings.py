@@ -40,7 +40,7 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
+USE_TZ = False
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
@@ -291,6 +291,9 @@ FILER_ENABLE_PERMISSIONS = True
 FILER_CANONICAL_URL = 'sharing/'
 
 #  ==============================================
+
+
+
 
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 INTERNAL_IPS = ["10.105.243.4", "10.205.242.83"]

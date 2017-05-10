@@ -8,7 +8,13 @@ class EnumChoice(object):
             if not isinstance(x, tuple) or len(x) != 2:
                 raise Exception("Args Error")
         self.pairs = args
-        self._pairs = None
+        self._pairs = dict(self.pairs)
+        self._rpairs = dict([(k, v) for k, v in self.pairs])
+
+    def __getattr__(self, item):
+        if not self._rpairs.has_key(item):
+            return super(EnumChoice, self).__getattr__(item)
+        return self._rpairs[item]
 
     def choice(self):
         return self.pairs
@@ -61,6 +67,10 @@ LANGUAGE_MASK = EnumChoice(
     (256, 'NASM64')
 )
 
+CONTEST_TYPE = EnumChoice(
+    (0, 'ICPC'),
+    (1, 'OI')
+)
 
 GENDER = EnumChoice(
     ('S', _('Secret')),
