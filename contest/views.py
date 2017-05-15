@@ -92,7 +92,7 @@ class ContestViewSet(ModelViewSet):
             sub = csub.submission
             uid = sub.user.username
             idx = csub.problem.index
-            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.score :
+            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
                 continue
             uinfo = info.get(uid, None)
             if not uinfo:
