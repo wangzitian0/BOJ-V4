@@ -146,6 +146,13 @@ class Problem(models.Model):
             raise Exception("param 'position' is invalid.")
         return self.cases.all()[position].score
 
+    @property
+    def score(self):
+        res = 0
+        for c in self.cases.all():
+            res += c.score
+        return res
+
     class Meta:
         permissions = (
             ('view_problem', 'Can view problem'),

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Problem, ProblemDataInfo
+from .models import Problem, ProblemDataInfo, ProblemCase
 from filer.models.filemodels import File
 
 
@@ -27,3 +27,11 @@ class ProblemDataSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Problem
+
+
+class ProblemCaseSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = ProblemCase
+        fields = ['score', ]
+

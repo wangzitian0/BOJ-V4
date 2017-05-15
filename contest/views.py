@@ -8,7 +8,7 @@ from .forms import ContestForm, SubmissionForm, NotificationForm, QuestionForm, 
 
 from problem.models import Problem
 from submission.models import Submission
-from bojv4.conf import LANGUAGE_MASK, LANGUAGE
+from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME
 
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.core.urlresolvers import reverse
@@ -49,7 +49,6 @@ class ContestViewPermission(BasePermission):
 class ContestChangePermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
-        print "change permission"
         if not isinstance(obj, Contest):
             return False
         if request.user.has_perm('ojuser.change_groupprofile', obj.group):
@@ -72,25 +71,29 @@ class ContestViewSet(ModelViewSet):
     queryset = Contest.objects.all()
     permission_classes = (IsAuthenticated, ContestViewPermission)
 
-    def get_queryset(self):
-        return self.queryset
-
     @detail_route(methods=['get'], url_path='board')
     def get_contest_board(self, request, pk=None):
         contest = self.get_object()
-        res = cache.get(contest.key())
-        if res:
+
+        lock = str(contest.pk) + "__lock"
+        if cache.get(lock):
+            res = cache.get(contest.key())
             return Response(res)
+        cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
+
         subs = ContestSubmission.objects.filter(problem__contest=contest).all()
         probs = ContestProblem.objects.filter(contest=contest).all()
+
+        mp = {}
+        for p in probs:
+            mp[p.index] = float(p.score) / max(1, p.problem.score)
         info = {}
         for csub in subs:
             sub = csub.submission
             uid = sub.user.username
             idx = csub.problem.index
-            if sub.status in ['PD', 'JD', 'CL', 'SE']:
+            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
                 continue
-
             uinfo = info.get(uid, None)
             if not uinfo:
                 uinfo = {'username': uid, 'nickname': sub.user.profile.nickname}
@@ -113,15 +116,17 @@ class ContestViewSet(ModelViewSet):
                 # info[uid]['pinfo'][idx]["pen"] += int(math.ceil(td.total_seconds() / 60))
             else:
                 info[uid]['pinfo'][idx]["AC"] -= 1
-                info[uid]['pinfo'][idx]["pen"] += 20
-
+                if contest.contest_type == CONTEST_TYPE.ICPC:
+                    info[uid]['pinfo'][idx]["pen"] += 20
+            if contest.contest_type == CONTEST_TYPE.OI:
+                info[uid]['pinfo'][idx]["pen"] = max(info[uid]['pinfo'][idx]["pen"], mp[idx] * sub.score)
         info = info.values()
 
         for i in info:
             for prob in probs:
                 if not i['pinfo'].has_key(prob.index):
-                    i['pinfo'] = {
-                        'idx': prob.idx,
+                    i['pinfo'][prob.index] = {
+                        'idx': prob.index,
                         'AC': 0,
                         'sub': 0,
                         'pen': 0
@@ -134,10 +139,16 @@ class ContestViewSet(ModelViewSet):
             for sinfo in i['pinfo']:
                 if sinfo.get('AC', 0) > 0:
                     i['AC'] += 1
-                    i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
+                    if contest.contest_type == CONTEST_TYPE.ICPC:
+                        i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
+                if contest.contest_type == CONTEST_TYPE.OI:
+                    i['pen'] += sinfo.get('pen')
                 i['sub'] += sinfo.get('sub', 0)
-        info.sort(key=lambda x: x['AC']*1000000-x['pen'], reverse=True)
-        cache.set(contest.key(), info)
+        if contest.contest_type == CONTEST_TYPE.ICPC:
+            info.sort(key=lambda x: x['AC']*1000000-x['pen'], reverse=True)
+        else:
+            info.sort(key=lambda x: x['pen'], reverse=True)
+        cache.set(contest.key(), info, CONTEST_CACHE_EXPIRE_TIME)
         return Response(info)
 
 
