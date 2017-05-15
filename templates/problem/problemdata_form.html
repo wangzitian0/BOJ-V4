@@ -45,11 +45,7 @@
         <i class="glyphicon glyphicon-trash"></i>
         <span>Delete</span>
       </button>
-	  <button type="button" class="btn btn-success success" onclick="check_data()">
-        <i class="glyphicon glyphicon-upload"></i>
-        <span>Check Data</span>
-	  </button>
-      <input type="checkbox" class="toggle">
+     <input type="checkbox" class="toggle">
       <!-- The loading indicator is shown during file processing -->
       <span class="fileupload-loading"></span>
     </div>
@@ -77,7 +73,7 @@
   <ol class="indicator"></ol>
 </div>
 <div>
-  <a href="{% url 'problem:problem-detail' pid %}" class="btn btn-large btn-primary">Finished</a>
+    <button class="btn btn-large btn-primary" onclick="check_data()">Finished</button>
 </div>
 {% endblock %}
 {% block extra_body %}
@@ -122,7 +118,7 @@
 <script src="{{ STATIC_URL }}jfu/js/cors/jquery.xdr-transport.js"></script>
 <![endif]-->
 <script>
-	var url = '/api/datainfo/' + {{ pid }} + '/check/';
+	var url = '/api/problems/' + {{ pid }} + '/check/';
 	function check_data() {
 		$.get(url, function(result) {
 			if (result.code == 0) {

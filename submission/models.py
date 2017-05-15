@@ -35,7 +35,6 @@ class Submission(models.Model):
         #  return "-".join([str(self.pk), str(self.user), str(self.problem), str(self.datetime)])
 
     def get_absolute_url(self):
-        return self.get_status_display()
         return reverse('submission:submission-detail', kwargs={'pk': self.pk})
 
     def get_status_display(self):

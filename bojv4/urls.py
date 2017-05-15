@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 from django.contrib import admin
 
 from rest_framework import routers
-from problem.views import ProblemViewSet, ProblemDataInfoViewSet
+from problem.views import ProblemViewSet, ProblemDataInfoViewSet, ScoreViewSet
 from problem.views import FileViewSet
 from submission.views import SubmissionViewSet
 from contest.views import ContestViewSet
@@ -19,6 +19,7 @@ router.register(r'inline-groups', GroupViewSet)
 router.register(r'groups', GroupProfileViewSet)
 router.register(r'files', FileViewSet)
 router.register(r'problems', ProblemViewSet)
+router.register(r'cases', ScoreViewSet)
 router.register(r'datainfo', ProblemDataInfoViewSet)
 router.register(r'submissions', SubmissionViewSet)
 router.register(r'contest', ContestViewSet)
