@@ -321,6 +321,8 @@ class SubmissionListView(ListView):
         #  add filter here
         context['filter'] = self.filter
         context['contest'] = self.contest
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
 
@@ -331,12 +333,15 @@ class BoardView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
+        self.contest = Contest.objects.filter(pk=pk).first()
         return super(BoardView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         # context['submissions'] = reduce(lambda x, y: (x.submissions.all() | y.submissions.all()), self.object.problems.all())
         context['problems'] = self.object.problems.all()
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
 
@@ -457,6 +462,8 @@ class SubmissionCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super(SubmissionCreateView, self).get_context_data(**kwargs)
         context['contest'] = self.contest
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
     def get_success_url(self):

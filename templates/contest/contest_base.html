@@ -5,7 +5,7 @@
 <div class="page-header">
     <Meta http-equiv="Refresh" Content="50;">
     {%if is_admin %}
-    {%if contest.status == "ended"%}<button class="btn btn-inverse pull-right" onclick="postRequest();" id="submit">代码查重</button>{%endif%}
+    {%if contest.ended == 1 %}<button class="btn btn-inverse pull-right" onclick="postRequest();" id="submit">代码查重</button>{%endif%}
     <a class="btn pull-right" href="{% url 'contest:add-notification' contest.pk %}">添加公告</a>
     <a class="btn btn-primary pull-right" href="{% url 'contest:update-contest' contest.pk %}">修改测验</a>
     {%endif%}
@@ -41,7 +41,7 @@
         <span class="kari-head-info"><strong>剩余 </strong>{{ contest.time_left }} 分钟</span>
     </div>
     <div class="row">
-        <div class="progress span12"><div class="progress-bar" style="width:{{ contest.time_passed_percent }}%"></div></div>
+        <div class="progress span12"><div class="progress-bar" style="width:{{ contest.time_passed_precent }}%"></div></div>
     </div>
 </div>
     <div class="container" id="wrapper">
