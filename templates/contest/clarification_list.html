@@ -1,16 +1,11 @@
-{% extends "site_base.html" %}
+{% extends "contest/contest_base.html" %}
 {% load i18n %}
 {% load bootstrap3 %}
 {% load mptt_tags %}
 {% load django_tables2 %}
 {% load guardian_tags %}
-
-{% block body %}
-    <div class="page-header">
-        <Meta http-equiv="Refresh" Content="50;">
-        <a class="btn pull-right" href="{% url 'contest:add-question' contest.pk %}">添加提问</a>
-        <a class="btn btn-primary pull-right" href="{% url 'contest:contest-detail' contest.pk %}">返回测验</a>
-    </div>
+{% block body_extra_attributes %}onload="activateTag('contest_query')"{% endblock %}
+{% block contest_body %}
     <h2>notification list</h2>
     {% render_table clarification_table %}
     {% bootstrap_pagination page_obj %}

@@ -92,7 +92,7 @@ class ContestViewSet(ModelViewSet):
             sub = csub.submission
             uid = sub.user.username
             idx = csub.problem.index
-            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
+            if sub.status in ['PD'  , 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
                 continue
             uinfo = info.get(uid, None)
             if not uinfo:
@@ -206,7 +206,7 @@ class ContestCreateView(CreateView):
             gid = -1
         self.group = get_object_or_404(get_objects_for_user(request.user, 'ojuser.change_groupprofile', with_superuser=True), pk=gid)
         return super(ContestCreateView, self).dispatch(request, *args, **kwargs)
-    
+
     def form_valid(self, form):
         problem_list = self.request.POST.getlist('problem_id')
         score_list = self.request.POST.getlist('problem_score_custom')
@@ -667,7 +667,7 @@ class AnswerView(UpdateView):
             'ojuser.change_groupprofile',
             with_superuser=True)), pk=cpk)
         return super(AnswerView, self).dispatch(request, *args, **kwargs)
-    
+
     def get_context_data(self, **kwargs):
         context = super(AnswerView, self).get_context_data()
         context['contest'] = self.contest

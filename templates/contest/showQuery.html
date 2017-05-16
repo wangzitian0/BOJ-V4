@@ -1,4 +1,4 @@
-{% extends "contest/contestBase.html" %}
+{% extends "contest/contest_base.html" %}
 {% block body_extra_attributes %}onload="activateTag('contest_query')"{% endblock %}
 {% block contest_body %}
     {%if tpl.has_priv or contest.status != 'scheduled'%}
