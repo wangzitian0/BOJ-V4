@@ -40,7 +40,7 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
+USE_TZ = False
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
@@ -55,7 +55,7 @@ MEDIA_URL = "/site_media/media/"
 # Don"t put anything in this directory yourself; store your static files
 # in apps" "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.join(PROJECT_ROOT, "site_media", "static")
+STATIC_ROOT = os.path.join(PROJECT_ROOT, "site_media")
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -63,7 +63,7 @@ STATIC_URL = "/site_media/static/"
 
 # Additional locations of static files
 STATICFILES_DIRS = [
-    os.path.join(PROJECT_ROOT, "static", "dist"),
+    os.path.join(PROJECT_ROOT, "site_media", "static"),
 ]
 
 # List of finder classes that know how to find static files in
@@ -179,22 +179,38 @@ LOGGING = {
             "filters": ["require_debug_false"],
             "class": "django.utils.log.AdminEmailHandler"
         },
-	'default': { 
-            'level':'INFO', 
-            'class':'logging.handlers.RotatingFileHandler', 
+        'default': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': '/var/log/oj/all.log',
-            'maxBytes': 1024*1024*5, 
+            'maxBytes': 1024*1024*5,
             'backupCount': 5,
-            'formatter':'standard', 
-        }, 
-        'warning_handler': { 
-            'level':'WARNING', 
-            'class':'logging.handlers.RotatingFileHandler', 
-            'filename': '/var/log/oj/warning.log',
-	    'maxBytes': 1024*1024*5, 
-            'backupCount': 5, 
+            'formatter' :'standard',
+        },
+        'error_handler': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/var/log/oj/error.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
             'formatter':'standard',
-        }, 
+        },
+        'warning_handler': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/var/log/oj/warning.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5, 
+            'formatter': 'standard',
+        },
+        'judge_handler': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/var/log/oj/judge.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
+            'formatter': 'standard',
+        }
     },
     "loggers": {
         "django.request": {
@@ -203,10 +219,15 @@ LOGGING = {
             "propagate": True,
         },
         "django": {
-            "handlers": ["default", "warning_handler"],
+            "handlers": ["default", "warning_handler", "error_handler"],
             "level": "INFO",
             "propagate": True,
         },
+        "judge": {
+            "handlers": ["judge_handler"],
+            "level": "ERROR",
+            "propagate": True,
+        }
     }
 }
 
@@ -271,5 +292,8 @@ FILER_CANONICAL_URL = 'sharing/'
 
 #  ==============================================
 
+
+
+
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
-INTERNAL_IPS = ["10.105.243.4", "10.205.24.165"]
+INTERNAL_IPS = ["10.105.243.4", "10.205.242.83"]

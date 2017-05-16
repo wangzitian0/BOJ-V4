@@ -1,0 +1,131 @@
+{% extends "newtpl/admin.html" %}
+{% block admin-access %}
+<a class="btn btn-primary btn-block" href="{% url 'Course:showCourseClass' cc.id %}">&laquo;返回课程分班</a>
+{% endblock %}
+{% block admin-form %}
+<div>
+    <form class="form-horizontal" action="{{request.get_full_path}}" method="POST" enctype="multipart/form-data" onSubmit="return checkAllProb()">
+    {% csrf_token %}
+    {{form.non_field_errors}}
+    <fieldset>
+        <legend>基本信息</legend>
+        <div class="control-group">
+            <label class="control-label" for="id_title">{{form.title.label}}</label>
+            {{form.title.errors}}
+            <div class="controls">
+                {{form.title}}
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="id_desc">{{form.desc.label}}</label>
+            {{form.desc.errors}}
+            <div class="controls">
+                {{form.desc}}
+            </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>时间</legend>
+        <div class="control-group">
+            <label class="control-label">开始时间</label>
+            {{form.start_date.errors}}
+            {{form.start_time.errors}}
+            <div class="controls">
+                <label for="id_start_date" style="display:inline-block;">日期</label>
+                {{form.start_date}}
+                <label for="id_start_time" style="display:inline-block;">时间</label>
+                {{form.start_time}}
+                <div style="display:inline-block;">当前时间 <span class="clock">{%now "Y-m-d H:i:s"%}</span></div>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">持续时间(分钟)</label>
+            {{form.length.errors}}
+            {{form.board_stop.errors}}
+            <div class="controls">
+                <label for="id_length" style="display:inline-block;">{{form.length.label}}</label>
+                {{form.length}}
+                <label for="id_board_stop" style="display:inline-block;">{{form.board_stop.label}}</label>
+                {{form.board_stop}}
+            </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>其它选项</legend>
+        <div class="control-group">
+            <label class="control-label">{{form.board_type.label}}</label>
+            {{form.board_type.errors}}
+            <div class="controls">
+                {{form.board_type}}
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{form.contest_type.label}}</label>
+            {{form.contest_type.errors}}
+            <div class="controls">
+                {{form.contest_type}}
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{form.lang_limit.label}}</label>
+            {{form.lang_limit.errors}}
+            <div class="controls">
+                {{form.lang_limit}}
+            </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>题目列表</legend>
+        {% if recent_problem and not started%}
+        <label>从最近添加的题目中选择</label>
+        <div style="max-height:300px;overflow:auto; margin-bottom:24px;">
+            <table class="table table-striped table-hover" id="recent_problem_table">
+                <thead>
+                    <th>添加到测验</th>
+                    <th class="problem_id">题目ID</th>
+                    <th class="problem_title">题目标题</th>
+                </thead>
+                {% for p in recent_problem %}
+                <tr>
+                    <td><button class="btn add-prob-btn" type="button" onclick="addRecentProb(this)">添加</button></td>
+                    <td><span class="recent_problem_id">{{ p.pid }}</span></td>
+                    <td><span class="recent_problem_title">{{ p.prob_title }}</span></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+        {%if not started%}<label>或手动添加</label>{%endif%}
+        <table class="table table-striped table-hover" id="problem_table">
+            <thead>
+                <th class="problem_modify"><button class="btn btn-primary add-prob-btn" type="button" {%if started%}disabled{%endif%} onclick="addProb(null)">添加</button></th>
+                <th class="">题目ID</th>
+                <th class="problem_title_custom">自定义标题</th>
+                <th class="problem_title">原始标题</th>
+            </thead>
+            <tr class="prob_element hide">
+                <td><button class="btn" type="button" {%if started%}disabled{%endif%} onclick="delProb(this)">删除</button></td>
+                <td><input type="text" name="problem_id" onchange="checkProb(this, false)" placeholder="Problem ID" autocomplete="off"></td>
+                <td><input type="text" name="problem_title_custom" placeholder="Problem Custom Title"></td>
+                <td><span class="problem_title">题目不存在</span></td>
+            </tr>
+            {% for p in problem_list %}
+            <tr class="prob_element">
+                <td><button class="btn" type="button" {%if started%}disabled{%endif%} onclick="delProb(this)">删除</button></td>
+                <td><input type="text" name="problem_id" {%if started%}disabled{%endif%} onchange="checkProb(this, false)" value="{{p.pid}}" placeholder="Problem ID" autocomplete="off"></td>
+                <td><input type="text" name="problem_title_custom" {%if started%}disabled{%endif%} value="{{p.title}}" placeholder="Problem Custom Title"></td>
+                <td><span class="problem_title">{{p.origTitle}}</span></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </fieldset>
+    <div class="form-actions">
+        <div align="right"><input class="btn btn-primary" type="submit" value="   提交   "></div>
+    </div>
+    </form>
+</div>
+{% endblock %}
+{%block ext-script %}
+<script>var probTtlUrl = "{% url 'Problem:title' %}"</script>
+<script src="/static/js/contest.js"></script>    
+{%endblock ext-script%}
