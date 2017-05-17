@@ -8,7 +8,10 @@
     {%if contest.ended == 1 %}<button class="btn btn-inverse pull-right" onclick="postRequest();" id="submit">代码查重</button>{%endif%}
     <a class="btn pull-right" href="{% url 'contest:add-notification' contest.pk %}">添加公告</a>
     <a class="btn btn-primary pull-right" href="{% url 'contest:update-contest' contest.pk %}">修改测验</a>
+    {%else%}
+    <a class="btn btn-primary pull-right" href="{% url 'contest:add-question' contest.pk %}">添加提问</a>
     {%endif%}
+
     {% block contest_title %}
     <h1>{{ contest.title }}
         <small>{% if contest.ended == 1 %}已结束{% elif contest.ended == 0 %}进行中{% else %}未开始{% endif %}</small>
