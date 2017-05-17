@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.renderers import JSONRenderer
 from .models import ContestSubmission
-from .models import Contest, ContestProblem, Clarification, ContestNotification
+from .models import Contest, ContestProblem, Clarification, Notification
 
 
 class ContestSubmissionSerializer(serializers.HyperlinkedModelSerializer):
@@ -32,4 +32,4 @@ class ClarificationSerializer(serializers.HyperlinkedModelSerializer):
 
 class ContestNotificationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = ContestNotification
+        model = Notification
