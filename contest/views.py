@@ -5,10 +5,12 @@ from .models import Contest, ContestProblem, ContestSubmission, Notification, Cl
 from .filters import ContestFilter, SubmissionFilter
 from .tables import ContestTable, NotificationTable, ClarificationTable, SubmissionTable
 from .forms import ContestForm, SubmissionForm, NotificationForm, QuestionForm, AnswerForm
+from .serializers import ContestSubmissionSerializer
 
 from problem.models import Problem
 from submission.models import Submission
 from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME
+from common.nsq_client import send_to_nsq
 
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.core.urlresolvers import reverse
@@ -35,7 +37,11 @@ from rest_framework.request import Request
 
 class ContestViewPermission(BasePermission):
 
+    def has_permission(self, request, view):
+        print "xxxxxxxxxxxx"
+
     def has_object_permission(self, request, view, obj):
+        print "permission"
         if not isinstance(obj, Contest):
             return False
         if request.user.has_perm('ojuser.change_groupprofile', obj.group):
@@ -70,6 +76,18 @@ class SubmissionPermission(BasePermission):
 class ContestViewSet(ModelViewSet):
     queryset = Contest.objects.all()
     permission_classes = (IsAuthenticated, ContestViewPermission)
+    serializer_class = ContestSubmissionSerializer
+
+    @detail_route(methods=['post'], url_path='submit')
+    def submit(self, request, pk=None):
+        print request.data
+        send_to_nsq('submit', json.dumps(request.data))
+        messages.add_message(
+            self.request._request,
+            messages.SUCCESS,
+            _('Submit Success')
+        )
+        return Response({'code': 0})
 
     @detail_route(methods=['get'], url_path='board')
     def get_contest_board(self, request, pk=None):
@@ -193,7 +211,6 @@ class ContestListView(ListView):
 class ContestCreateView(CreateView):
     template_name = 'contest/contest_create_form.html'
     success_message = "your Contest has been created successfully"
-    permission_classes = (IsAuthenticated, )
     model = Contest
     form_class = ContestForm
 
@@ -246,7 +263,6 @@ class ContestCreateView(CreateView):
 
 class ContestDetailView(DetailView):
     model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
@@ -262,12 +278,13 @@ class ContestDetailView(DetailView):
 
 class ProblemDetailView(DetailView):
     model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
     template_name = 'contest/problem_detail.html'
 
+    def get_queryset(self):
+        return Contest.objects.all()
+
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', -1)
+    def dispatch(self, request, pk=None, *args, **kwargs):
         index = kwargs.get('index', '#')
         self.problem = ContestProblem.objects.filter(contest__pk=pk, index=index).first()
         if not self.problem:
@@ -284,7 +301,6 @@ class ProblemDetailView(DetailView):
 
 class SubmissionListView(ListView):
     model = ContestSubmission
-    permission_classes = (IsAuthenticated, )
     template_name = 'contest/submission_list.html'
     paginate_by = 15
 
@@ -326,11 +342,11 @@ class SubmissionListView(ListView):
 
 class BoardView(DetailView):
     model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
     template_name = 'contest/contest_board.html'
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
+        print "dispatch"
         return super(BoardView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -343,7 +359,6 @@ class BoardView(DetailView):
 class ContestUpdateView(UpdateView):
     template_name = 'contest/contest_create_form.html'
     success_message = "your Contest has been updated successfully"
-    permission_classes = (IsAuthenticated, ContestChangePermission)
     form_class = ContestForm
     model = Contest
 
@@ -410,64 +425,37 @@ class ContestUpdateView(UpdateView):
         return kwargs
 
 
-class SubmissionCreateView(CreateView):
+class SubmissionCreateView(DetailView):
     template_name = 'contest/submission_create_form.html'
     success_message = "your submission has been created successfully"
-    permission_classes = (IsAuthenticated, )
-    form_class = SubmissionForm
+    model = Contest
+
+    def get_queryset(self):
+        return Contest.objects.all()
 
     @method_decorator(login_required)
-    def dispatch(self, request, cpk=None, *args, **kwargs):
+    def dispatch(self, request, pk=None, *args, **kwargs):
         self.index = request.GET.get('index', None)
-        self.contest = get_object_or_404(Contest.objects.filter(group__in=get_objects_for_user(
-            request.user,
-            'ojuser.view_groupprofile',
-            with_superuser=True)), pk=cpk)
+        self.contest = self.get_object()
+
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        self.object = form.save(commit=False)
-        sub = Submission()
-        sub.code = form.cleaned_data['submission__code']
-        sub.language = form.cleaned_data['submission__language']
-        sub.user = self.request.user
-        sub.problem = self.object.problem.problem
-        sub.save()
-        sub.judge()
-        self.object.submission = sub
-        self.object.save()
-        # self.object.user = self.request.user
-
-        messages.add_message(
-            self.request,
-            messages.SUCCESS,
-            _('Submit Success')
-        )
-        return super(SubmissionCreateView, self).form_valid(form)
-
-    def get_form(self, form_class=None):
-        form = super(SubmissionCreateView, self).get_form(form_class)
-        form.set_choice(self.contest)
-        if self.index:
-            form.fields['problem'].initial = ContestProblem.objects.filter(contest=self.contest, index=self.index).first()
-        else:
-            form.fields['problem'].initial = self.contest.problems.first()
-        return form
 
     def get_context_data(self, **kwargs):
         context = super(SubmissionCreateView, self).get_context_data(**kwargs)
         context['contest'] = self.contest
+        queryset = None
+        if self.index:
+            queryset = ContestProblem.objects.filter(contest=self.contest, index=self.index).first()
+        else:
+            queryset = self.contest.problems.first()
+        form = SubmissionForm(initial={'problem': queryset})
+        form.set_choice(self.contest)
+        context['form'] = form
         return context
-
-    def get_success_url(self):
-        return reverse('contest:submission-list', args=[self.contest.pk])
-
-
 
 
 class SubmissionDetailView(DetailView):
     model = ContestSubmission
-    permission_classes = (IsAuthenticated, SubmissionPermission)
     template_name = 'contest/submission_detail.html'
 
     @method_decorator(login_required)
@@ -506,7 +494,6 @@ class SubmissionDetailView(DetailView):
 class NotificationListView(DetailView):
 
     model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
     template_name = 'contest/notification_list.html'
 
     @method_decorator(login_required)
@@ -528,7 +515,6 @@ class NotificationCreateView(TemplateView):
 
     template_name = 'contest/notification_create_form.html'
     success_message = "your notification has been created successfully"
-    permission_classes = (IsAuthenticated, )
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
@@ -560,7 +546,6 @@ class NotificationUpdateView(TemplateView):
 
     template_name = 'contest/notification_create_form.html'
     success_message = "your notification has been created successfully"
-    permission_classes = (IsAuthenticated, )
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, nid=None, *args, **kwargs):
@@ -592,7 +577,6 @@ class NotificationUpdateView(TemplateView):
 class ClarificationListView(ListView):
 
     model = Contest
-    permission_classes = (IsAuthenticated, )
     template_name = 'contest/clarification_list.html'
 
     paginate_by = 15

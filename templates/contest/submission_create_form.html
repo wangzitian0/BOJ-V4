@@ -24,10 +24,10 @@
         </ul>
             <h1>{{ problem.title }}</h1>
             <h3>create submission</h3>
-            <form action="" method="post" class="form" role="form">{% csrf_token %}
+            <form action="/api/contest/{{ contest.pk }}/submit/" method="post" class="form" role="form">{% csrf_token %}
                 {{ form|bootstrap }}
-                <input type="submit" onclick="submit()"/>
             </form>
+            <button onclick="submit()" class="btn btn-primary">Submit</button>
         </div>
     </section>
 
@@ -56,12 +56,15 @@ var editor_one = CodeMirror.fromTextArea(document.getElementById("id_submission_
      styleActiveLine: true,
     });
 function submit() {
-    $.post("/api/contest/{{ object.pk }}/submit/",{
-       language: $('#id_language').val(),
-       code: $('#id_code').val(),
-       index: $('#id_index').val()
+    $.post("/api/contest/{{ contest.pk }}/submit/",{
+        language: $('#id_language').val(),
+        code: $('#id_code').val(),
+        problem: $('#id_problem').val(),
+        user: {{ request.user.pk }}
     }, function (result) {
-       alert(result);
+        if (result.code == 0) {
+            location.href = "{% url 'contest:submission-list' contest.pk %}";
+        }
     }, "json");
 }
 

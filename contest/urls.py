@@ -14,7 +14,7 @@ urlpatterns = [
     url(r'^(?P<cpk>[0-9]+)/clarification/(?P<pk>[0-9]+)/delete/$', views.QuestionDeleteView.as_view(), name='delete-question'),
     url(r'^(?P<pk>[0-9]+)/board/$', views.BoardView.as_view(), name='board'),
     url(r'^(?P<pk>[0-9]+)/update/$', views.ContestUpdateView.as_view(), name='update-contest'),
-    url(r'^(?P<cpk>[0-9]+)/submit/$', views.SubmissionCreateView.as_view(),
+    url(r'^(?P<pk>[0-9]+)/submit/$', views.SubmissionCreateView.as_view(),
         name='submission-add'),
     url(r'^(?P<cpk>[0-9]+)/submission/(?P<pk>[0-9]+)/$', views.SubmissionDetailView.as_view(), name='submission-detail'),
     url(r'^(?P<pk>[0-9]+)/notification/$', views.NotificationListView.as_view(), name='notification-list'),

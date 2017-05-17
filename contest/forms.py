@@ -68,19 +68,19 @@ class ContestForm(forms.ModelForm):
 class SubmissionForm(forms.ModelForm):
 
     problem = forms.ModelChoiceField(queryset=ContestProblem.objects.all(), widget=forms.Select(), label='problem')
-    submission__language = forms.ChoiceField(choices=LANGUAGE.choice(), widget=forms.Select(), label='language')
-    submission__code = forms.CharField(label='code', widget=forms.Textarea, max_length=65536)
+    language = forms.ChoiceField(choices=LANGUAGE.choice(), widget=forms.Select(), label='language')
+    code = forms.CharField(label='code', widget=forms.Textarea, max_length=65536)
 
     class Meta:
         model = ContestSubmission
-        fields = ['problem', 'submission__language', 'submission__code']
+        fields = ['problem', 'language', 'code']
 
     def set_choice(self, contest):
         lang_limit = []
         for x in LANGUAGE_MASK.choice():
             if contest.lang_limit & x[0]:
                 lang_limit.append((x[1], LANGUAGE.get_display_name(x[1])))
-        self.fields['submission__language'].choices = lang_limit
+        self.fields['language'].choices = lang_limit
         self.fields['problem'].queryset = contest.problems.all()
 
 

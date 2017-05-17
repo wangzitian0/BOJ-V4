@@ -68,7 +68,7 @@ class Contest(models.Model):
     def last_notification(self):
         if self.notifications.count() == 0:
             return None
-        return self.notifications.all().reverse()[0].title
+        return self.notifications.last().title
 
 
 class ContestProblem(models.Model):

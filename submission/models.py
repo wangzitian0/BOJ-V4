@@ -92,6 +92,7 @@ class Submission(models.Model):
             logger.warning("result of pending judge for submission is False, message is " + resp.get('msg'))
         else:
             logger.warning("result of pending judge for submission is True, " + resp.get('msg'))
+            print "Success"
 
     def rejudge(self):
         for c in self.cases.all():

@@ -15,6 +15,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'bojv4.settings'
 django.setup()
 
 from submission.models import Submission, CaseResult
+from contest.models import ContestSubmission, ContestProblem
+from django.contrib.auth.models import User
 import logging
 logger = logging.getLogger('judge')
 
@@ -76,15 +78,31 @@ def submission_handler(message):
     return True
 
 
-def cheat_handler(message):
+def submit_handler(message):
     print 'cheat=================',  message.body
+    try:
+        mp = json.loads(message.body)
+        print mp
+        s = ContestSubmission()
+        s.problem = ContestProblem.objects.get(pk=int(mp['problem']))
+        sub = Submission()
+        sub.code = mp['code']
+        sub.language = mp['language']
+        sub.problem = s.problem.problem
+        sub.user = User.objects.get(pk=int(mp['user']))
+        sub.save()
+        s.submission = sub
+        s.save()
+        sub.judge()
+    except Exception as ex:
+        print ex
     return True
 
 
 if __name__ == '__main__':
     print "start run"
     NsqQueue.add_callback(handler=submission_handler, topic='submission', channel='123456')
-    # NsqQueue.add_callback(handler=cheat_handler, topic='cheat', channel='adfasdf')
+    NsqQueue.add_callback(handler=submit_handler, topic='submit', channel='adfasdf')
     print "end add"
     NsqQueue.start()
 
