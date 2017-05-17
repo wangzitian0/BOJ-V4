@@ -16,3 +16,4 @@ test.py
 my.cnf
 *.sock
 django.xml
+env
