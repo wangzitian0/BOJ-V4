@@ -1,54 +1,11 @@
 
-{% extends "site_base.html" %}
+{% extends "contest/contest_base.html" %}
 {% load i18n %}
 {% load bootstrap3 %}
 {% load django_tables2 %}
-
-{% block head_title %}{{ contest.title }}{% endblock %}
-{% block body %}
-    <section class="jumbotron">
-<div class="page-header">
-    <Meta http-equiv="Refresh" Content="50;">
-    {%if is_admin %}
-    {%if contest.status == "ended"%}<button class="btn btn-inverse pull-right" onclick="postRequest();" id="submit">代码查重</button>{%endif%}
-    <a class="btn pull-right" href="{% url 'contest:add-notification' contest.pk %}">添加公告</a>
-    <a class="btn btn-primary pull-right" href="{% url 'contest:update-contest' contest.pk %}">修改测验</a>
-    {%endif%}
-    <h1>{{ contest.title }}
-    </h1>
-    <small>{% if contest.ended == 1 %}已结束{% elif contest.ended == 0 %}进行中{% else %}未开始{% endif %}</small>
-        <br>
-        {% if contest.last_notification %}
-        <h4>
-        <strong>New Notification: </strong><a href="{% url 'contest:notification-list' contest.pk %}">{{ contest.last_notification }}</a>
-        </h4>
-        {% endif %}
-</div>
-<ul class="nav nav-pills">
-    <li id="contest_home"><a href="{% url "contest:contest-detail" contest.pk %}">测验首页</a></li>
-    <li id="contest_submit"><a href="{% url "contest:submission-add" contest.pk %}">提交代码</a></li>
-    <li id="contest_status"><a href="{% url "contest:submission-list" contest.pk %}">结果列表</a></li>
-    <li id="contest_query"><a href="{% url "contest:clarification-list" contest.pk %}">提问列表</a></li>
-    <li id="contest_board"><a href="{% url "contest:board" contest.pk %}">排行榜</a></li>
-    {%if tpl.has_priv%}<li id="contest_balloon"><a href="/contest/{{ contest.pk }}/balloon/">气球</a></li>{% endif %}
-</ul>
-<div id="contest_info">
-    <div class="kari-head-info">
-        <span class="kari-head-info"><strong>课程分班 </strong>{{ contest.group.nickname }}</span>
-        {%if contest.description%}<br><br><span class="kari-head-info"><strong>测验描述 </strong>{{ contest.desc|safe }}</span>{%endif%}
-    </div>
-    <div class="kari-head-info">
-        <span class="kari-head-info"><strong>当前时间 </strong><span class="clock">{% now "Y-m-d H:i:s" %}</span></span>
-        <span class="kari-head-info"><strong>开始时间 </strong>{{ contest.start_time|date:"Y-m-d H:i:s" }}</span>
-        <span class="kari-head-info"><strong>总长 </strong>{{ contest.length }} 分钟</span>
-        <span class="kari-head-info"><strong>剩余 </strong>{{ contest.time_left }} 分钟</span>
-    </div>
-    <div class="row">
-        <div class="progress span12"><div class="progress-bar" style="width:{{ contest.time_passed_percent }}%"></div></div>
-    </div>
-</div>
+{% block body_extra_attributes %}onload="activateTag('contest_status')"{% endblock %}
+{% block contest_body %}
     <div class="container" id="wrapper">
-        <h2>结果列表</h2>
            <form id="filter" action="" method="get" class="form-inline">
               {% bootstrap_form filter.form %}
             <div class="form-group">
@@ -58,7 +15,6 @@
         {% render_table submissions_table %}
         {% bootstrap_pagination page_obj %}
     </div>
-    </section>
     <script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
 {% endblock %}
 

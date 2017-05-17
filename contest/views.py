@@ -110,7 +110,7 @@ class ContestViewSet(ModelViewSet):
             sub = csub.submission
             uid = sub.user.username
             idx = csub.problem.index
-            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
+            if sub.status in ['PD'  , 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
                 continue
             uinfo = info.get(uid, None)
             if not uinfo:
@@ -223,7 +223,7 @@ class ContestCreateView(CreateView):
             gid = -1
         self.group = get_object_or_404(get_objects_for_user(request.user, 'ojuser.change_groupprofile', with_superuser=True), pk=gid)
         return super(ContestCreateView, self).dispatch(request, *args, **kwargs)
-    
+
     def form_valid(self, form):
         problem_list = self.request.POST.getlist('problem_id')
         score_list = self.request.POST.getlist('problem_score_custom')
@@ -337,6 +337,8 @@ class SubmissionListView(ListView):
         #  add filter here
         context['filter'] = self.filter
         context['contest'] = self.contest
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
 
@@ -346,13 +348,15 @@ class BoardView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
-        print "dispatch"
+        self.contest = Contest.objects.filter(pk=pk).first()
         return super(BoardView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         # context['submissions'] = reduce(lambda x, y: (x.submissions.all() | y.submissions.all()), self.object.problems.all())
         context['problems'] = self.object.problems.all()
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
 
@@ -451,6 +455,8 @@ class SubmissionCreateView(DetailView):
         form = SubmissionForm(initial={'problem': queryset})
         form.set_choice(self.contest)
         context['form'] = form
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
 
@@ -651,7 +657,7 @@ class AnswerView(UpdateView):
             'ojuser.change_groupprofile',
             with_superuser=True)), pk=cpk)
         return super(AnswerView, self).dispatch(request, *args, **kwargs)
-    
+
     def get_context_data(self, **kwargs):
         context = super(AnswerView, self).get_context_data()
         context['contest'] = self.contest

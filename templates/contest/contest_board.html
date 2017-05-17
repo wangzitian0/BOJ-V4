@@ -1,15 +1,15 @@
 {% extends "contest/contest_base.html" %}
-{% block contest_title %}排行榜{% endblock %}
-
+{% block body_extra_attributes %}onload="activateTag('contest_board')"{% endblock %}
 {% block contest_body %}
 
 <div>
+    <h2>排行榜</h2>
     <table class="table table-bordered table-striped table-hover table-condensed" id="id_rank">
     <thead>
         <th width="10%">排名</th>
         <th width="14%">用户</th>
         <th width="8%">题数</th>
-        <th width="8%">{% if object.contest_type == 0 %}罚时{% else %}得分{% endif %}</th>
+        <th width="8%">{% if contest.contest_type == 0 %}罚时{% else %}得分{% endif %}</th>
         {%for p in problems %}
         <th>{{p.index}}</th>
         {%endfor%}
@@ -39,7 +39,7 @@
     <script src='https://cdn.firebase.com/v0/firebase.js'></script>
 <script>
     function getBoardData() {
-        $.get("/api/contest/{{ object.pk }}/board/",
+        $.get("/api/contest/{{ contest.pk }}/board/",
             function(result) {
                 for(var i = 0; i < result.length; i ++){
                     var tr = $("<tr></tr>");

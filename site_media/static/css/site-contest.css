@@ -1,0 +1,139 @@
+div.kari-head-info {
+    margin-bottom:15px;
+}
+div.kari-head-info span {
+    font-size: 15px;
+    margin-right:24px;
+}
+div.kari-head-info span strong {
+    font-size: 18px;
+    margin-right:6px;
+    height: 30px;
+}
+
+td.kari-board-fb {
+    background-color:#468847 !important;
+    color:#dff0d8 !important;
+}
+td.kari-board-ac {
+    background-color:#dff0d8 !important;
+    color:#468847 !important;
+}
+td.kari-board-sending {
+    background-color:orange !important;
+}
+td.kari-board-send {
+    background-color:lightgrey !important;
+}
+td.kari-board-noac {
+    background-color:#f2dede !important;
+    color:#b94a48 !important;
+}
+
+.contest-problem {
+    margin: 0;
+    padding: 0;
+}
+.prob-title-contest{padding-left:60px}
+.prob-title-contest h2{display:inline}
+.prob-title-contest .origin{padding-left:20px}
+
+.status-ac {
+  color: #ff0000;
+  font-weight: bold;
+}
+a.status-ac:hover,
+a.status-ac:focus {
+  color: #ff6347;
+  font-weight: bold;
+}
+
+.status-pe {
+  color: #ffa500;
+  font-weight: bold;
+}
+a.status-pe:hover,
+a.status-pe:focus {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.status-wa {
+  color: #008000;
+  font-weight: bold;
+}
+a.status-wa:hover,
+a.status-wa:focus {
+  color: #32cd32;
+  font-weight: bold;
+}
+
+.status-re {
+  color: #008b8b;
+  font-weight: bold;
+}
+a.status-re:hover,
+a.status-re:focus {
+  color: #003eff;
+  font-weight: bold;
+}
+
+.status-tle {
+  color: #008b8b;
+  font-weight: bold;
+}
+a.status-tle:hover,
+a.status-tle:focus {
+  color: #003eff;
+  font-weight: bold;
+}
+
+.status-mle {
+  color: #008b8b;
+  font-weight: bold;
+}
+a.status-mle:hover,
+a.status-mle:focus {
+  color: #003eff;
+  font-weight: bold;
+}
+
+.status-ole {
+  color: #000000;
+  font-weight: bold;
+}
+a.status-ole:hover,
+a.status-ole:focus {
+  color: #000000;
+  font-weight: bold;
+}
+
+.status-ce {
+  color: #4169E1;
+  font-weight: bold;
+}
+a.status-ce:hover,
+a.status-ce:focus {
+  color: #191970;
+  font-weight: bold;
+}
+
+.status-pd {
+  color: #808080;
+  font-weight: bold;
+}
+a.status-pd:hover,
+a.status-pd:focus {
+  color: #7f7f7f;
+  font-weight: bold;
+}
+
+.status-jd {
+  color: #404040;
+  font-weight: bold;
+}
+a.status-jd:hover,
+a.status-jd:focus {
+  color: #7f7f7f;
+  font-weight: bold;
+}

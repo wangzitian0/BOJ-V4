@@ -57,6 +57,14 @@ class Contest(models.Model):
             return 0
         return int((self._start_time + timedelta(minutes=self.length) -now).total_seconds()/60)
 
+    def time_passed_precent(self):
+        now = datetime.now()
+        if now < self._start_time:
+            return 0
+        if now > self._start_time + timedelta(minutes=self.length):
+            return 100
+        return int(((now - self._start_time).total_seconds())*100/(self.length*60))
+
     def ended(self):
         now = datetime.now()
         if now < self._start_time:

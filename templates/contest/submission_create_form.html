@@ -1,36 +1,15 @@
-{% extends "site_base.html" %}
-
+{% extends "contest/contest_base.html" %}
+{% block body_extra_attributes %}onload="activateTag('contest_submit')"{% endblock %}
 {% load bootstrap %}
 
-{% block body %}
-    <section class="jumbotron">
-        <div class="container">
-            <div class="page-header">
-            <Meta http-equiv="Refresh" Content="50;">
-            <h1>{{ contest.title }}</h1>
-            {% if object.last_notification %}
-            <h4>
-            <strong>New Notification: </strong><a href="{% url 'contest:notification-list' object.pk %}">{{ object.last_notification }}</a>
-            </h4>
-            {% endif %}
-        </div>
-        <ul class="nav nav-pills">
-            <li id="contest_home"><a href="{% url "contest:contest-detail" contest.pk %}">测验首页</a></li>
-            <li id="contest_submit"><a href="{% url "contest:submission-add" contest.pk %}">提交代码</a></li>
-            <li id="contest_status"><a href="{% url "contest:submission-list" contest.pk %}">结果列表</a></li>
-            <li id="contest_query"><a href="{% url "contest:clarification-list" contest.pk %}">提问列表</a></li>
-            <li id="contest_board"><a href="{% url "contest:board" contest.pk %}">排行榜</a></li>
-            {%if tpl.has_priv%}<li id="contest_balloon"><a href="/contest/{{ contest.pk }}/balloon/">气球</a></li>{% endif %}
-        </ul>
-            <h1>{{ problem.title }}</h1>
-            <h3>create submission</h3>
-            <form action="/api/contest/{{ contest.pk }}/submit/" method="post" class="form" role="form">{% csrf_token %}
-                {{ form|bootstrap }}
-            </form>
-            <button onclick="submit()" class="btn btn-primary">Submit</button>
-        </div>
-    </section>
 
+{% block contest_body %}
+<div class="container">
+     <form action="/api/contest/{{ contest.pk }}/submit/" method="post" class="form" role="form">{% csrf_token %}
+                {{ form|bootstrap }}
+      </form>
+      <button onclick="submit()" class="btn btn-primary">Submit</button>
+</div>
 {% endblock %}
 
 {% block extra_body %}
