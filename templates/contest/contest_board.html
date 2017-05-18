@@ -14,6 +14,7 @@
         <th>{{p.index}}</th>
         {%endfor%}
     </thead>
+    <tbody id="id_body">
     {% for person in rank %}
     <tr>
         <td>{{person.rank}}</td>
@@ -30,6 +31,7 @@
         </td>
         {%endfor%}
     </tr>
+        </tbody>
     {% endfor %}
 </table>
 </div>
@@ -41,6 +43,7 @@
     function getBoardData() {
         $.get("/api/contest/{{ contest.pk }}/board/",
             function(result) {
+                $("#id_body").html("");
                 for(var i = 0; i < result.length; i ++){
                     var tr = $("<tr></tr>");
                     tr.append($("<td>"+ (i + 1) +"</td>"));

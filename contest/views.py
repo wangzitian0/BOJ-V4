@@ -97,6 +97,7 @@ class ContestViewSet(ModelViewSet):
         lock = str(contest.pk) + "__lock"
         if cache.get(lock):
             res = cache.get(contest.key())
+            print "cache: ", res
             return Response(res)
         cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
 
@@ -167,7 +168,8 @@ class ContestViewSet(ModelViewSet):
             info.sort(key=lambda x: x['AC']*1000000-x['pen'], reverse=True)
         else:
             info.sort(key=lambda x: x['pen'], reverse=True)
-        cache.set(contest.key(), info, CONTEST_CACHE_EXPIRE_TIME)
+        cache.set(contest.key(), json.dumps(info), CONTEST_CACHE_EXPIRE_TIME)
+        print info
         return Response(info)
 
 
