@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 import json
 import math
+from functools import wraps
+
 from .models import Contest, ContestProblem, ContestSubmission, Notification, Clarification
 from .filters import ContestFilter, SubmissionFilter
 from .tables import ContestTable, NotificationTable, ClarificationTable, SubmissionTable
@@ -43,30 +45,30 @@ class ContestViewPermission(BasePermission):
         if request.user.has_perm('ojuser.change_groupprofile', obj.group):
             return True
         now = datetime.now()
-        if request.user.has_perm('ojuser.view_groupprofile', obj.group) and obj.ended() == 0:
+        if request.user.has_perm('ojuser.view_groupprofile', obj.group) and obj.ended() != -1:
             return True
         return False
 
 
-class ContestChangePermission(BasePermission):
+def view_permission_required(func):
 
-    def has_object_permission(self, request, view, obj):
-        if not isinstance(obj, Contest):
-            return False
-        if request.user.has_perm('ojuser.change_groupprofile', obj.group):
-            return True
-        return False
-
-
-class SubmissionPermission(BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        if not isinstance(obj, ContestSubmission):
-            return False
-        if request.user == obj.user:
-            return True
-        group = obj.problem.contest.group
-        return request.user.has_perm('ojuser.change_groupprofile', group)
+    def decorator(func):
+        @wraps(func)
+        def returned_wrapper(request, *args, **kwargs):
+            pk = kwargs.get('pk')
+            contest = Contest.objects.filter(pk=pk).first()
+            if pk and contest:
+                if request.user.has_perm('ojuser.view_groupprofile', contest.group) and contest.ended() == 0:
+                    return func(request, *args, **kwargs)
+                elif request.user.has_perm('ojuser.change_groupprofile', contest.group):
+                    return func(request, *args, **kwargs)
+            raise Http404()
+        return returned_wrapper
+    if not func:
+        def foo(func):
+            return decorator(func)
+        return foo
+    return decorator(func)
 
 
 def check_permission(user, contest):
@@ -81,7 +83,13 @@ class ContestViewSet(ModelViewSet):
 
     @detail_route(methods=['post'], url_path='submit')
     def submit(self, request, pk=None):
-        print request.data
+        if self.get_object().ended() != 0:
+            messages.add_message(
+                self.request._request,
+                messages.ERROR,
+                _('Contest has ended.')
+            )
+            return Response({'code': -1})
         send_to_nsq('submit', json.dumps(request.data))
         messages.add_message(
             self.request._request,
@@ -97,7 +105,6 @@ class ContestViewSet(ModelViewSet):
         lock = str(contest.pk) + "__lock"
         if cache.get(lock):
             res = cache.get(contest.key())
-            print "cache: ", res
             return Response(res)
         cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
 
@@ -169,7 +176,6 @@ class ContestViewSet(ModelViewSet):
         else:
             info.sort(key=lambda x: x['pen'], reverse=True)
         cache.set(contest.key(), json.dumps(info), CONTEST_CACHE_EXPIRE_TIME)
-        print info
         return Response(info)
 
 
@@ -268,7 +274,8 @@ class ContestDetailView(DetailView):
     model = Contest
 
     @method_decorator(login_required)
-    def dispatch(self, request, pk=None, *args, **kwargs):
+    @method_decorator(view_permission_required)
+    def dispatch(self, request, *args, **kwargs):
         # self.object = get_object_or_404(self.get_queryset(), pk=pk)
         check_permission(request.user, self.get_object())
         return super(ContestDetailView, self).dispatch(request, *args, **kwargs)
@@ -288,6 +295,7 @@ class ProblemDetailView(DetailView):
         return Contest.objects.all()
 
     @method_decorator(login_required)
+    @method_decorator(view_permission_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
         check_permission(request.user, self.get_object())
         index = kwargs.get('index', '#')
@@ -352,6 +360,7 @@ class BoardView(DetailView):
     template_name = 'contest/contest_board.html'
 
     @method_decorator(login_required)
+    @method_decorator(view_permission_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
         self.contest = self.get_object()
         check_permission(request.user, self.contest)
@@ -475,6 +484,9 @@ class SubmissionDetailView(DetailView):
     def dispatch(self, request, cpk=None, pk=None, *args, **kwargs):
         self.user = request.user
         self.contest = Contest.objects.filter(pk=cpk).first()
+        if self.user != self.get_object().submission.user \
+            and not request.user.has_perm("ojuser.change_groupprofile", self.contest.group):
+                raise Http404()
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

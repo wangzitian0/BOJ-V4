@@ -44,6 +44,9 @@ function submit() {
         if (result.code == 0) {
             location.href = "{% url 'contest:submission-list' contest.pk %}";
         }
+        else{
+            location.reload();
+        }
     }, "json");
 }
 

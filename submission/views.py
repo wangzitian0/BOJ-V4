@@ -95,11 +95,13 @@ class SubmissionListView(ListView):
 class SubmissionDetailView(DetailView):
 
     model = Submission
-    permission_classes = (IsAuthenticated, SubmissionPermission)
 
     @method_decorator(login_required)
-    def dispatch(self, request, pid=None, *args, **kwargs):
+    def dispatch(self, request, pk=None, *args, **kwargs):
         self.user = request.user
+        problem = self.get_object().problem
+        if not problem or not problem.view_by_user(request.user):
+            raise Http404("Submission does not exist")
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

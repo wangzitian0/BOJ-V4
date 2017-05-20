@@ -32,18 +32,6 @@ import logging
 logger = logging.getLogger('django')
 
 
-class ProblemViewPermission(BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        if not isinstance(obj, Problem):
-            return False
-        groups = obj.groups.all()
-        for g in groups:
-            if request.user.has_perm('ojuser.view_groupprofile', g):
-                return True
-        return False
-
-
 class ProblemChangePermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
@@ -59,7 +47,7 @@ class ProblemChangePermission(BasePermission):
 class FileViewSet(viewsets.ModelViewSet):
     queryset = File.objects.all()
     serializer_class = FileSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
 
 class ProblemViewSet(viewsets.ModelViewSet):
@@ -106,7 +94,6 @@ class ScoreViewSet(viewsets.ModelViewSet):
             return Response({'code': -1, 'msg': str(ex)})
         return Response({'code': 0, 'msg': 'xixi'})
 
-#        return super(ScoreViewSet, self).update(request, *args, **kwargs)
 
 
 class ProblemListView(ListView):
