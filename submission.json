@@ -1,0 +1,21 @@
+{
+	"submission_id": 0,
+	"problem_id": 0,
+	"language": "CPP11",
+	"source": "#include<bits/stdc++.h>\nusing namespace std;\n\nint main()\n{\n\tint a, b;\n\tscanf(\"%d%d\", &a, &b);\n\tprintf(\"%d\\n\", a + b);\n\treturn 0;\n}\n",
+	"time_limit": 1000,
+	"memory_limit": 65546,
+	"problem_data": [
+		{
+			"in": {
+				"filename": "asdfsdf",
+				"path":"/site_media/smedia/filer_private/78/a8/78a8c1c2-67ee-4c3e-9a7d-865ef64b3e18/sample.in"
+			},
+			"out": {
+				"filename": "qwerqrv",
+				"path": "/site_media/smedia/filer_private/79/6e/796e8230-d1e4-4959-841f-923cae219077/sample.out"
+			},
+			"position": 0
+		}
+	]
+}

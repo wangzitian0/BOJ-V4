@@ -1,0 +1,245 @@
+/*internal body setting*/
+body {
+    padding-top:60px;
+    padding-bottom:40px;
+}
+h1 {font-size:31.5px;}
+h2 {font-size:24.5px;}
+h3 {font-size:17.5px;}
+h4 {font-size:14px;}
+h1 small {font-size:24.5px;}
+h2 small {font-size:17.5px;}
+h3 small {font-size:14px;}
+h4 small {font-size:11.9px;}
+
+.page-header a.btn {
+    margin-right:12px;
+}
+
+input.kari-nav-input {
+	width: 144px;
+}
+
+footer.kari-footer {
+	text-align: center;
+	font-size: 12px;
+	line-height: 16px;
+}
+footer.kari-footer p {
+	margin: 6px;
+}
+
+.kari-noti {
+	margin-left: 12px;
+	color: #d64937;
+}
+.kari-prob-desc {
+	margin-bottom:24px;
+}
+.kari-prob-btn a.btn{
+	min-width: 50px;
+    margin-right:12px;
+}
+.kari-prob-desc strong, .kari-prob-desc em {
+    color: #111;
+}
+.kari-prob-info-spj {
+	color: #1f65bd;
+}
+.kari-prob-img {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+}
+/*
+.kari-prob-div p b, .kari-prob-div p i {
+	color: #1f65bd;
+}
+*/
+.kari-img-err {
+    height:256px;
+    margin-bottom:16px;
+}
+div.kari-head {
+    margin-bottom:24px;
+}
+div.kari-head-info {
+    margin-bottom:15px;
+}
+div.kari-head-info span {
+    font-size: 15px;
+    margin-right:24px;
+}
+div.kari-head-info span strong {
+    font-size: 18px;
+    margin-right:6px;
+    height: 30px;
+}
+textarea.kari-code {
+    font-size:13px;
+    line-height:20px;
+    font-family:Monaco, Menlo, Consolas, "Courier New", monospace;
+    word-break:break-all;
+    word-wrap:break-word;
+    white-space:pre-wrap;
+}
+p.kari-err-msg {
+    font-size:16px;
+    line-height:22px;
+    margin-bottom:12px;
+}
+td.kari-board-fb {
+    background-color:#468847 !important;
+    color:#dff0d8 !important;
+}
+td.kari-board-ac {
+    background-color:#dff0d8 !important;
+    color:#468847 !important;
+}
+td.kari-board-sending {
+    background-color:orange !important;
+}
+td.kari-board-send {
+    background-color:lightgrey !important;
+}
+td.kari-board-noac {
+    background-color:#f2dede !important;
+    color:#b94a48 !important;
+}
+
+.table th, .table td, .table thead {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table-left {
+  width: 100%;
+  margin-bottom: 20px;
+}
+.table-left th,
+.table-left td {
+  padding: 8px;
+  line-height: 20px;
+  text-align: left;
+  vertical-align: top;
+  border-top: 1px solid #dddddd;
+}
+.submission-info thead {
+}
+
+.judge-details {
+    text-indent: 2em;
+    font-size: 15px;
+    color: #5B5B5B;
+}
+
+.board-table {
+    padding: 0 10px;
+}
+
+.table-word-break {
+    word-break: break-all;
+    word-wrap: break-all;
+}
+
+/* status color */
+.status-ac {
+  color: #ff0000;
+  font-weight: bold;
+}
+a.status-ac:hover,
+a.status-ac:focus {
+  color: #ff6347;
+  font-weight: bold;
+}
+
+.status-pe {
+  color: #ffa500;
+  font-weight: bold;
+}
+a.status-pe:hover,
+a.status-pe:focus {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.status-wa {
+  color: #008000;
+  font-weight: bold;
+}
+a.status-wa:hover,
+a.status-wa:focus {
+  color: #32cd32;
+  font-weight: bold;
+}
+
+.status-re {
+  color: #008b8b;
+  font-weight: bold;
+}
+a.status-re:hover,
+a.status-re:focus {
+  color: #003eff;
+  font-weight: bold;
+}
+
+.status-tle {
+  color: #008b8b;
+  font-weight: bold;
+}
+a.status-tle:hover,
+a.status-tle:focus {
+  color: #003eff;
+  font-weight: bold;
+}
+
+.status-mle {
+  color: #008b8b;
+  font-weight: bold;
+}
+a.status-mle:hover,
+a.status-mle:focus {
+  color: #003eff;
+  font-weight: bold;
+}
+
+.status-ole {
+  color: #000000;
+  font-weight: bold;
+}
+a.status-ole:hover,
+a.status-ole:focus {
+  color: #000000;
+  font-weight: bold;
+}
+
+.status-ce {
+  color: #4169E1;
+  font-weight: bold;
+}
+a.status-ce:hover,
+a.status-ce:focus {
+  color: #191970;
+  font-weight: bold;
+}
+
+.status-pd {
+  color: #808080;
+  font-weight: bold;
+}
+a.status-pd:hover,
+a.status-pd:focus {
+  color: #7f7f7f;
+  font-weight: bold;
+}
+
+.status-jd {
+  color: #404040;
+  font-weight: bold;
+}
+a.status-jd:hover,
+a.status-jd:focus {
+  color: #7f7f7f;
+  font-weight: bold;
+}

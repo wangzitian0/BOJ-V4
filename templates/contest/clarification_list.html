@@ -1,0 +1,14 @@
+{% extends "contest/contest_base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load mptt_tags %}
+{% load django_tables2 %}
+{% load guardian_tags %}
+{% block body_extra_attributes %}onload="activateTag('contest_query')"{% endblock %}
+{% block contest_body %}
+    <h2>notification list</h2>
+    {% render_table clarification_table %}
+    {% bootstrap_pagination page_obj %}
+{% endblock %}
+
+

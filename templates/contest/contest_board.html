@@ -1,0 +1,61 @@
+{% extends "contest/contest_base.html" %}
+{% block body_extra_attributes %}onload="activateTag('contest_board')"{% endblock %}
+{% block contest_body %}
+
+<div>
+    <h2>排行榜</h2>
+    <table class="table table-bordered table-striped table-hover table-condensed" id="id_rank">
+    <thead>
+        <th width="10%">排名</th>
+        <th width="14%">用户</th>
+        <th width="8%">题数</th>
+        <th width="8%">{% if contest.contest_type == 0 %}罚时{% else %}得分{% endif %}</th>
+        {%for p in problems %}
+        <th>{{p.index}}</th>
+        {%endfor%}
+    </thead>
+    <tbody id="id_body"></tbody>
+</table>
+</div>
+
+{% endblock %}
+{% block script_extra %}
+    <script src='https://cdn.firebase.com/v0/firebase.js'></script>
+<script>
+    function getBoardData() {
+        $.get("/api/contest/{{ contest.pk }}/board/",
+            function(result) {
+                if (!result.length) {
+                    return;
+                }
+                $("#id_body").html("");
+                for(var i = 0; i < result.length; i ++){
+                    var tr = $("<tr></tr>");
+                    tr.append($("<td>"+ (i + 1) +"</td>"));
+                    tr.append($("<td>"+ result[i].username + "</td>"));
+                    tr.append($("<td>" + result[i].AC + "</td>"));
+                    tr.append($("<td>" + result[i].pen + "</td>"));
+                    for(var j = 0; j < result[i].pinfo.length; j ++) {
+                        var sub = $("<td></td>");
+                        var a = $("<a></a>");
+                        if (result[i].pinfo[j].AC > 0){
+                            sub.addClass("kari-board-ac");
+                            a.append(result[i].pinfo[j].AC);
+                            a.append("("+result[i].pinfo[j].ac_time+"+"+result[i].pinfo[j].pen+")");
+                        }
+                        else if(result[i].pinfo[j].AC < 0) {
+                            sub.addClass("kari-board-noac");
+                            a.append(result[i].pinfo[j].AC);
+                        }
+                        sub.append(a);
+                        tr.append(sub);
+                    }
+                    $("#id_body").append(tr);
+                }
+        }, "json");
+    }
+    getBoardData();
+    setInterval(getBoardData(), 10000);
+</script>
+{% endblock %}
+

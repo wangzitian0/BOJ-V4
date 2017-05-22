@@ -10,19 +10,10 @@ class Migration(migrations.Migration):
     dependencies = [
         ('filer', '0002_auto_20150606_2003'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('auth', '0006_require_contenttypes_0002'),
+        ('ojuser', '0001_initial'),
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Language',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('key', models.CharField(unique=True, max_length=6)),
-                ('name', models.CharField(max_length=30)),
-                ('desc', models.TextField(default='None')),
-            ],
-        ),
         migrations.CreateModel(
             name='Problem',
             fields=[
@@ -32,23 +23,35 @@ class Migration(migrations.Migration):
                 ('memory_limit', models.IntegerField(default=65536)),
                 ('code_length_limit', models.IntegerField(default=65536)),
                 ('problem_desc', models.TextField(default='None')),
-                ('is_spj', models.IntegerField(default=0)),
+                ('is_spj', models.BooleanField(default=False)),
+                ('is_checked', models.BooleanField(default=False)),
                 ('created_time', models.DateTimeField(auto_now_add=True)),
                 ('last_updated_time', models.DateTimeField(auto_now=True)),
-                ('allowed_lang', models.ManyToManyField(related_name='problems', to='problem.Language')),
-                ('author', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
-                ('groups', models.ManyToManyField(related_name='problems', to='auth.Group')),
+                ('groups', models.ManyToManyField(related_name='problems', to='ojuser.GroupProfile', blank=True)),
+                ('superadmin', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'permissions': (('view_problem', 'Can view problem'),),
             },
         ),
         migrations.CreateModel(
+            name='ProblemCase',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('sample_in', models.CharField(max_length=256, null=True, blank=True)),
+                ('sample_out', models.CharField(max_length=256, null=True, blank=True)),
+                ('score', models.IntegerField(default=0)),
+                ('position', models.IntegerField(default=0)),
+                ('info', models.TextField(blank=True)),
+                ('input_data', models.OneToOneField(related_name='incase', null=True, blank=True, to='filer.File')),
+                ('output_data', models.OneToOneField(related_name='outcase', null=True, blank=True, to='filer.File')),
+                ('problem', models.ForeignKey(related_name='cases', to='problem.Problem')),
+            ],
+        ),
+        migrations.CreateModel(
             name='ProblemDataInfo',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('score', models.IntegerField(default=0)),
-                ('info', models.TextField(blank=True)),
                 ('data', models.OneToOneField(related_name='datainfo', null=True, blank=True, to='filer.File')),
                 ('problem', models.ForeignKey(related_name='datainfo', to='problem.Problem')),
             ],

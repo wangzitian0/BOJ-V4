@@ -1,45 +1,101 @@
 {% extends "site_base.html" %}
+{% load staticfiles %}
+{% block extra_head_base %}
 
-{% load i18n %}
-{% load bootstrap3 %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8"
+          xmlns="http://www.w3.org/1999/html">
 
-{% block head_title %}My Groups{% endblock %}
+    <!--CombineResourcesFilter-->
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css" type="text/css" charset="utf-8">
+    <!--link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" charset="utf-8"-->
 
-{% block body_class %}my-groups{% endblock %}
+    <!--/CombineResourcesFilter-->
 
+    <link rel="stylesheet" href="{{ STATIC_URL }}editormd/css/editormd.css" />
+    <link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon" />
+    <link type="text/css" rel="stylesheet" href="{{ STATIC_URL }}editormd/lib/katex.min.css">
+    <script id="-cdnjs-cloudflare-com-ajax-libs-KaTeX-0-3-0-katex-min" type="text/javascript" src="{{ STATIC_URL }}editormd/lib/katex.min.js"></script>
+
+{% endblock %}
+
+{% block head_title %}{{ object.pk }}. {{ object.title }}{% endblock %}
 {% block body_base %}
 <section class="jumbotron">
   <div class="container">
-    {% include "_messages.html" %}
-	<div class="row">
-		<h1>{{ object.pk }}. {{ object.title }}</h1>
-	</div>
-	<div class="row">
-    <h4>time_limit: {{ object.time_limit }}</h4>
-	</div>
-	<div class="row">
-    <h4>memory_limit: {{ object.memory_limit }}</h4>
-	</div>
-	<div class="row">
-    <h4>code_length_limit: {{ object.code_length_limit }}</h4>
-	</div>
-	<div class="row">
-		<h4>last_updated_time: {{ object.last_updated_time }}</h4>
-	</div>
-	<div class="row">
-    <h4>author: {{ object.superadmin }}</h4>
-	</div>
-	<div class="row">
-    <h4>is_spj: {{ object.is_spj }}</h4>
-	</div>
-	<div class="row">
-		<div class="panel_content">
-    <p>{{ object.problem_desc }}</p>
-		</div>
-    <div>
-	<div class="row">
-      <a href="{% url 'submission:submission-add' object.pk %}" class="btn btn-large btn-primary">Submit</a>
-    <div>
+      <h1>{{ object.pk }}. <strong>{{ object.title }}</strong></h1>
+      <table class="table">
+          <tbody>
+          <tr>
+                <td>time_limit: {{ object.time_limit }}</td>
+                <td>memory_limit: {{ object.memory_limit }}</td>
+          </tr>
+          <tr>
+                <td>author: {{ object.superadmin }}</td>
+                <td>is special judge: {{ object.is_spj }}</td>
+          </tr>
+          </tbody>
+        </table>
+      <div class="row">
+          <h4>prolem description</h4>
+          <div id="test-editormd-view"><textarea>{{ object.description }}</textarea></div>
+      </div>
+      <br>
+      {% if object.sample_in %}
+      <div class="row">
+          <h4>Sample input</h4>
+          <pre><code>{{ object.sample_in }}</code></pre>
+      </div>
+      {% endif %}
+      {% if object.sample_in %}
+       <div class="row">
+           <h4>Sample output</h4>
+           <pre><code>{{ object.sample_out }}</code></pre>
+      </div>
+        {% endif %}
+       <div class="row">
+           <a href="{% url 'submission:submission-add' object.pk%}" class="btn btn-default">Submit</a>
+           <a href="{% url 'problem:problem-update' object.pk%}" class="btn btn-default pull-right">Update Problem</a>
+      </div>
   </div>
+  <script src="{{ STATIC_URL }}js/jquery.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/marked.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/prettify.min.js"></script>
+
+  <script src="{{ STATIC_URL }}editormd/lib/raphael.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/underscore.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/sequence-diagram.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/flowchart.min.js"></script>
+  <script src="{{ STATIC_URL }}editormd/lib/jquery.flowchart.min.js"></script>
+
+  <script src="{{ STATIC_URL }}editormd/editormd.js"></script>
+  <script type="text/javascript">
+      $(function() {
+          var testEditormdView, testEditormdView2;
+
+          testEditormdView = editormd.markdownToHTML("test-editormd-view", {
+              //markdown        : markdown ,//+ "\r\n" + $("#append-test").text(),
+              //htmlDecode      : true,       // 开启 HTML 标签解析，为了安全性，默认不开启
+              htmlDecode      : "style,script,iframe",  // you can filter tags decode
+              //toc             : false,
+              tocm            : true,    // Using [TOCM]
+              //tocContainer    : "#custom-toc-container", // 自定义 ToC 容器层
+              //gfm             : false,
+              //tocDropdown     : true,
+              // markdownSourceCode : true, // 是否保留 Markdown 源码，即是否删除保存源码的 Textarea 标签
+              emoji           : true,
+              taskList        : true,
+              tex             : true,  // 默认不解析
+              flowChart       : true,  // 默认不解析
+              sequenceDiagram : true,  // 默认不解析
+          });
+
+          //console.log("返回一个 jQuery 实例 =>", testEditormdView);
+
+          // 获取Markdown源码
+          console.log(testEditormdView.getMarkdown());
+
+          //alert(testEditormdView.getMarkdown());
+      });
+  </script>
 </section>
 {% endblock %}

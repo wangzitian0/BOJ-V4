@@ -1,0 +1,21 @@
+{% extends "site_base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load mptt_tags %}
+{% load django_tables2 %}
+{% load guardian_tags %}
+
+{% block head_title %}{% if object %}Answer{% else %}Add-Question{% endif %}{% endblock %}
+{% block body %}
+    <div class="page-header">
+        <Meta http-equiv="Refresh" Content="50;">
+        <a class="btn btn-primary pull-right" href="{% url 'contest:contest-detail' contest.pk %}">返回测验</a>
+    </div>
+    <form id="id-form" method="post" action="">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <input type="submit" value="Save" />
+    </form>
+{% endblock %}
+
+

@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 pool = redis.ConnectionPool(host='127.0.0.1', port=6379)
 r = redis.StrictRedis(connection_pool=pool)
 
+
 def calc_contest_score(sub):
     if not sub.contest:
         return

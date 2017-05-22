@@ -1,21 +1,47 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import detail_route
+from bojv4.conf import LANGUAGE
 
-from .models import Submission
+from .models import Submission, CaseResult
+from .forms import SubmissionForm
 from .serializers import SubmissionSerializer
+from .tables import SubmissionTable
+from .filters import SubmissionFilter
 
 from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
+from django.http import JsonResponse, HttpResponseNotAllowed, Http404, HttpResponseForbidden
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.contrib.messages.views import SuccessMessageMixin
+from rest_framework.permissions import BasePermission
+from django.shortcuts import get_object_or_404
+from guardian.shortcuts import get_objects_for_user
+from django_tables2 import RequestConfig
 
 from problem.models import Problem
-from django.shortcuts import get_object_or_404
-from .forms import SubmissionForm
-from django_tables2 import RequestConfig
-from .tables import SubmissionTable
+from ojuser.models import GroupProfile
+import logging
+logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
+
+
+class SubmissionPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.user:
+            return True
+        return obj.problem.view_by_user(user=request.user)
+
+
+class CaseResultPermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.user:
+            return True
+        return obj.submission.problem.view_by_user(user=request.user)
 
 
 class SubmissionViewSet(viewsets.ModelViewSet):
@@ -23,9 +49,35 @@ class SubmissionViewSet(viewsets.ModelViewSet):
     serializer_class = SubmissionSerializer
     permission_classes = (IsAuthenticated,)
 
+
 class SubmissionListView(ListView):
 
     model = Submission
+    paginate_by = 20
+
+    def get_queryset(self):
+        groups = get_objects_for_user(self.user, 'ojuser.view_groupprofile', GroupProfile)
+        ans = self.user.submissions.all()
+        for g in groups:
+            for p in g.problems.all():
+                ans |= p.submissions.all()
+        res = reduce(lambda x, y : x | y, map(lambda x: x.problems.all(), groups)).distinct()
+        self.submission_can_view_qs = ans.distinct()
+        print self.request.GET
+        self.filter = SubmissionFilter(
+            self.request.GET,
+            queryset=self.submission_can_view_qs,
+            problems=res
+        )
+        print "filters=========="
+        # self.filter.filters.get('problem').queryset = res
+        print type(self.filter.qs)
+        return self.filter.qs.order_by('-pk')
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        self.user = request.user
+        return super(SubmissionListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SubmissionListView, self).get_context_data(**kwargs)
@@ -33,6 +85,10 @@ class SubmissionListView(ListView):
         RequestConfig(self.request).configure(submissions_table)
         #  add filter here
         context['submissions_table'] = submissions_table
+        #  add filter here
+        context['filter'] = self.filter
+        # context['submission_can_view'] = self.submission_can_view_qs
+
         return context
 
 
@@ -40,26 +96,64 @@ class SubmissionDetailView(DetailView):
 
     model = Submission
 
+    @method_decorator(login_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        self.user = request.user
+        problem = self.get_object().problem
+        if not problem or not problem.view_by_user(request.user):
+            raise Http404("Submission does not exist")
+        return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
+        logger.warning('============test===============')
+        status = self.object.get_status_display()
+
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
+        context['status'] = status
+        context['compile_message'] = self.object.get_info('compile-message')
+        cases = []
+        for c in self.object.cases.all():
+            cases.append({
+                'status': c.status,
+                'position': c.position,
+                'time': c.running_time,
+                'memory': c.running_memory,
+            })
+        if self.object.status == 'JD' and self.object.cases.count() < self.object.problem.cases.count():
+            cases.append({
+                'status': 'Judging',
+                'position': self.object.cases.count(),
+                'time': 0,
+                'memory': 0,
+            })
+        context['cases'] = cases
         return context
 
 
-class SubmissionCreateView(CreateView):
+class SubmissionCreateView(SuccessMessageMixin, CreateView):
     model = Submission
     form_class = SubmissionForm
     template_name_suffix = '_create_form'
+    success_message = "your submission has been created successfully"
 
     @method_decorator(login_required)
     def dispatch(self, request, pid=None, *args, **kwargs):
         pid = self.kwargs['pid']
-        self.problem = get_object_or_404(Problem.objects.all(), pk=pid)
+        self.problem = Problem.objects.filter(pk=pid).first()
+        if not self.problem:
+            print "no problem"
+        else:
+            print "have p, ", request.user.username
+        if not self.problem or not self.problem.view_by_user(request.user):
+            raise Http404("Problem does not exist")
+        if not self.problem.is_checked:
+            return HttpResponseForbidden()
         self.user = request.user
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kw = super(SubmissionCreateView, self).get_form_kwargs()
-        kw['qs'] = self.problem.allowed_lang.all()
+        kw['qs'] = LANGUAGE.choice()
         return kw
 
     def get_context_data(self, **kwargs):
@@ -71,6 +165,12 @@ class SubmissionCreateView(CreateView):
         self.object = form.save(commit=False)
         self.object.problem = self.problem
         self.object.user = self.request.user
+        print self.object.code
+        try:
+            self.object.save()
+            self.object.judge()
+        except Exception as ex:
+            logger.warning(ex)
         return super(SubmissionCreateView, self).form_valid(form)
 
     def get_success_url(self):
